@@ -86,14 +86,16 @@ body { font-family: 'Noto Sans JP', sans-serif; height: 100%; height: 100dvh; di
     <select id="langSelect" onchange="changeLang(this.value)" style="background:rgba(255,255,255,0.15);border:1px solid rgba(255,255,255,0.2);color:#fff;padding:4px 8px;border-radius:8px;cursor:pointer;font-size:12px;outline:none;">
       <option value="ja" style="color:#000;">🇯🇵 日本語</option>
       <option value="en" style="color:#000;">🇺🇸 English</option>
-      <option value="zh" style="color:#000;">🇨🇳 中文</option>
+      <option value="zh" style="color:#000;">🇨🇳 普通话</option>
+      <option value="yue" style="color:#000;">🇭🇰 廣東話</option>
       <option value="ko" style="color:#000;">🇰🇷 한국어</option>
-      <option value="vi" style="color:#000;">🇻🇳 Tiếng Việt</option>
       <option value="pt" style="color:#000;">🇵🇹 Português</option>
-      <option value="tl" style="color:#000;">🇵🇭 Tagalog</option>
-      <option value="ne" style="color:#000;">🇳🇵 नेपाली</option>
-      <option value="id" style="color:#000;">🇮🇩 Indonesia</option>
       <option value="es" style="color:#000;">🇪🇸 Español</option>
+      <option value="th" style="color:#000;">🇹🇭 ภาษาไทย</option>
+      <option value="vi" style="color:#000;">🇻🇳 Tiếng Việt</option>
+      <option value="tl" style="color:#000;">🇵🇭 Tagalog</option>
+      <option value="id" style="color:#000;">🇮🇩 Indonesia</option>
+      <option value="ne" style="color:#000;">🇳🇵 नेपाली</option>
     </select>
     <div class="status">
       <div class="status-dot"></div>
@@ -705,7 +707,16 @@ const translations = {
     apiKeyBtn: "⚙ API密钥",
     disclaimer: "按Enter发送 · Mr. B-EAR是AI。重要事项请向工作人员确认。",
     suggestions: ["请告诉我通话范围","产品的特点是什么？","防水防尘性能如何？","可以多少人同时通话？","降噪效果有多好？","想知道价格","年度投资效益如何？","想试用演示机"],
-    langInstruction: "请务必用简体中文回答。"
+    langInstruction: "请务必用简体中文（普通话）回答。"
+  },
+  yue: {
+    welcomeTitle: "請咨詢現場通訊嘅煩惱",
+    placeholder: "請輸入您嘅問題...",
+    online: "在線",
+    apiKeyBtn: "⚙ API密鑰",
+    disclaimer: "撳Enter發送 · Mr. B-EAR係AI。重要事項請向工作人員確認。",
+    suggestions: ["請話我知通話範圍","產品有咩特點？","防水防塵性能點樣？","可以幾多人同時通話？","降噪效果有幾好？","想知道價格","年度投資效益點樣？","想試用演示機"],
+    langInstruction: "請務必用廣東話（繁體字）回答。"
   },
   ko: {
     welcomeTitle: "현장 통화 고민, 상담해 주세요",
@@ -769,6 +780,15 @@ const translations = {
     disclaimer: "Presione Enter para enviar · Mr. B-EAR es una IA. Confirme asuntos importantes con nuestro personal.",
     suggestions: ["¿Cuál es el alcance de comunicación?","¿Cuáles son las características?","¿Cómo es la resistencia al agua y polvo?","¿Cuántos pueden hablar a la vez?","¿Qué tan bueno es el noise canceling?","Quiero saber el precio","¿Cuál es el ROI anual?","Quiero probar una demo"],
     langInstruction: "Por favor responda solo en español."
+  },
+  th: {
+    welcomeTitle: "ปรึกษาเราเกี่ยวกับปัญหาการสื่อสารที่หน้างาน",
+    placeholder: "พิมพ์คำถามของคุณ...",
+    online: "ออนไลน์",
+    apiKeyBtn: "⚙ คีย์ API",
+    disclaimer: "กด Enter เพื่อส่ง · Mr. B-EAR เป็น AI กรุณายืนยันเรื่องสำคัญกับเจ้าหน้าที่",
+    suggestions: ["ระยะการสื่อสารเท่าไหร่?","คุณสมบัติของผลิตภัณฑ์คืออะไร?","การกันน้ำกันฝุ่นเป็นอย่างไร?","พูดพร้อมกันได้กี่คน?","การตัดเสียงรบกวนดีแค่ไหน?","อยากทราบราคา","ROI ต่อปีเท่าไหร่?","อยากลองเครื่องเดโม่"],
+    langInstruction: "กรุณาตอบเป็นภาษาไทยเท่านั้น"
   }
 };
 
