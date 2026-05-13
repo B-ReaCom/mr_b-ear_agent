@@ -2,7 +2,7 @@
 <html lang="ja">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0, interactive-widget=resizes-content, viewport-fit=cover">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
 <title>Mr. B-EAR - ALVO 1.9 AIエージェント</title>
 <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+JP:wght@400;500;700&family=Barlow:wght@600;700&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@tabler/icons-webfont@latest/tabler-icons.min.css">
@@ -63,9 +63,6 @@ body { font-family: 'Noto Sans JP', sans-serif; height: 100vh; display: flex; fl
 @media (max-width: 768px) {
   .welcome-icon img { height: 120px; width: auto; }
   .avatar { width: 55px; height: 55px; }
-  .input-area { position: fixed; bottom: 0; left: 0; right: 0; padding: 1rem; background: white; border-top: 0.5px solid #e5e7eb; z-index: 100; max-height: 25vh; }
-  .messages { padding-bottom: 140px; }
-  body { overflow: hidden; }
 }
 </style>
 </head>
@@ -736,7 +733,7 @@ async function sendMessage(text) {
   } finally {
     loading = false;
     sendBtn.disabled = false;
-    renderMessages(true);
+    renderMessages();
     inputEl.focus();
   }
 }
@@ -893,15 +890,6 @@ window.addEventListener('load', () => {
   if (!localStorage.getItem('anthropic_api_key')) {
     document.getElementById('apiKeyPanel').style.display = 'block';
     document.getElementById('apiKeyStatus').textContent = '⚠ APIキーを入力して保存してください';
-  }
-  // スマホキーボード表示時のスクロール調整
-  if (window.visualViewport) {
-    window.visualViewport.addEventListener('resize', () => {
-      const input = document.getElementById('input');
-      if (input && document.activeElement === input) {
-        setTimeout(() => input.scrollIntoView({ behavior: 'smooth', block: 'end' }), 100);
-      }
-    });
   }
 });
 </script>
