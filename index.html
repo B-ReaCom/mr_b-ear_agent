@@ -693,15 +693,17 @@ inputEl.addEventListener('input', () => {
 
 sendBtn.onclick = () => sendMessage();
 
-// スマホキーボード表示時のスクロール防止
-let lastScrollTop = 0;
-window.addEventListener('scroll', () => {
-  if (document.activeElement === inputEl) {
-    window.scrollTo(0, 0);
-  } else {
-    lastScrollTop = window.scrollY;
-  }
-}, { passive: false });
+// スマホキーボード表示時の入力エリア位置調整
+const inputArea = document.querySelector('.input-area');
+if (window.visualViewport) {
+  window.visualViewport.addEventListener('resize', () => {
+    const keyboardHeight = window.innerHeight - window.visualViewport.height;
+    inputArea.style.bottom = keyboardHeight + 'px';
+    // メッセージエリアのパディングを動的調整
+    const messagesEl = document.querySelector('.messages');
+    messagesEl.style.paddingBottom = (keyboardHeight + 140) + 'px';
+  });
+}
 
 async function sendMessage(text) {
   const userText = text || inputEl.value.trim();
