@@ -345,6 +345,15 @@ async function sendMessage(text) {
     const data = await response.json();
     const reply = data.content?.find(b => b.type === 'text')?.text || '申し訳ございません。回答の取得に失敗しました。';
     messages.push({ role: 'assistant', content: reply });
+    // スプレッドシートにログを記録
+    fetch('https://script.google.com/macros/s/AKfycbz0Jm2Fc_7pimlmmjGaH2CP_wkQL8MQWsthm0_BBKMOHXIRrdE-lqyTOaDhDT6tRazM/exec', {
+      method: 'POST',
+      body: JSON.stringify({
+        question: userText,
+        answer: reply,
+        device: /Mobile|Android|iPhone|iPad/.test(navigator.userAgent) ? 'スマホ' : 'PC'
+      })
+    }).catch(() => {});
   } catch {
     messages.push({ role: 'assistant', content: '通信エラーが発生しました。しばらく経ってから再度お試しください。' });
   } finally {
