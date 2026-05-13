@@ -744,7 +744,7 @@ async function sendMessage(text) {
   } finally {
     loading = false;
     sendBtn.disabled = false;
-    renderMessages();
+    renderMessages(true);
     inputEl.focus();
   }
 }
