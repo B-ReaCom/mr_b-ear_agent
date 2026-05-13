@@ -744,12 +744,12 @@ async function sendMessage(text) {
   } finally {
     loading = false;
     sendBtn.disabled = false;
-    renderMessages(true);
+    renderMessages();
     inputEl.focus();
   }
 }
 
-function renderMessages(scrollToTop = false) {
+function renderMessages() {
   const welcome = document.querySelector('.welcome');
   if (messages.length > 0 && welcome) welcome.remove();
 
@@ -781,12 +781,8 @@ function renderMessages(scrollToTop = false) {
     }
     messagesEl.appendChild(div);
   });
-  if (scrollToTop) {
-    const lastMsg = messagesEl.lastElementChild;
-    if (lastMsg) lastMsg.scrollIntoView({ block: 'start', behavior: 'smooth' });
-  } else {
-    messagesEl.scrollTop = messagesEl.scrollHeight;
-  }
+  const lastMsg = messagesEl.lastElementChild;
+  if (lastMsg) lastMsg.scrollIntoView({ block: 'start', behavior: 'smooth' });
 }
 
 function showLoading() {
@@ -801,7 +797,7 @@ function showLoading() {
     </div>
   `;
   messagesEl.appendChild(div);
-  messagesEl.scrollTop = messagesEl.scrollHeight;
+  div.scrollIntoView({ block: 'start', behavior: 'smooth' });
 }
 
 function copyMessage(idx) {
