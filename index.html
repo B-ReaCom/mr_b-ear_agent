@@ -690,6 +690,20 @@ inputEl.addEventListener('input', () => {
   inputEl.style.height = Math.min(inputEl.scrollHeight, 120) + 'px';
 });
 
+// スマホキーボード表示時のスクロール固定
+let initialScrollPos = 0;
+inputEl.addEventListener('focus', () => {
+  initialScrollPos = window.scrollY || window.pageYOffset || 0;
+  document.body.style.position = 'fixed';
+  document.body.style.width = '100%';
+});
+
+inputEl.addEventListener('blur', () => {
+  document.body.style.position = '';
+  document.body.style.width = '';
+  window.scrollTo(0, initialScrollPos);
+});
+
 sendBtn.onclick = () => sendMessage();
 
 async function sendMessage(text) {
