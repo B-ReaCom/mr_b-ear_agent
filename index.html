@@ -360,12 +360,12 @@ async function sendMessage(text) {
   } finally {
     loading = false;
     sendBtn.disabled = false;
-    renderMessages();
+    renderMessages(true);
     inputEl.focus();
   }
 }
 
-function renderMessages() {
+function renderMessages(scrollToTop = false) {
   const welcome = document.querySelector('.welcome');
   if (messages.length > 0 && welcome) welcome.remove();
 
@@ -391,7 +391,12 @@ function renderMessages() {
     }
     messagesEl.appendChild(div);
   });
-  messagesEl.scrollTop = messagesEl.scrollHeight;
+  if (scrollToTop) {
+    const lastMsg = messagesEl.lastElementChild;
+    if (lastMsg) lastMsg.scrollIntoView({ block: 'start', behavior: 'smooth' });
+  } else {
+    messagesEl.scrollTop = messagesEl.scrollHeight;
+  }
 }
 
 function showLoading() {
