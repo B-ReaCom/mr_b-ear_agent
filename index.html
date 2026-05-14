@@ -1328,9 +1328,22 @@ function recordQuestion(questionText) {
   saveRateLimitData(data);
 }
 
-// ===== Haiku 4.5 による質問妥当性事前判定（レベル4） =====
-async function judgeQuestionRelevance(questionText) {
-  try {
+// ===== Claude API 呼び出しヘルパー =====
+// USE_SERVER_PROXY = true の場合：サーバー側Edge Function経由（推奨・IP制限あり）
+// USE_SERVER_PROXY = false の場合：クライアントから直接Anthropic API呼び出し（フォールバック用）
+const USE_SERVER_PROXY = true;
+
+async function callClaudeAPI(payload) {
+  if (USE_SERVER_PROXY) {
+    // サーバー側プロキシ経由（推奨）
+    const response = await fetch('/api/chat', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(payload)
+    });
+    return { response, data: await response.json() };
+  } else {
+    // 直接Anthropic API呼び出し（フォールバック）
     const response = await fetch('https://api.anthropic.com/v1/messages', {
       method: 'POST',
       headers: {
@@ -1339,14 +1352,21 @@ async function judgeQuestionRelevance(questionText) {
         'anthropic-version': '2023-06-01',
         'anthropic-dangerous-direct-browser-access': 'true'
       },
-      body: JSON.stringify({
-        model: 'claude-haiku-4-5',
-        max_tokens: 10,
-        system: 'あなたは質問の妥当性を判定する分類器です。質問がB-EAR株式会社の業務用無線機・通信機器（ALVO 1.9、BRIDGECOM X10、X10コンパクト、X5、R2、LT、X10アスリート、VoiSniper、VoiSniperアドバンス等）またはハンズフリー同時通話・現場通信・導入相談・デモ・価格・スペックなどに関連する場合は「YES」のみ、関連しない場合（雑談、天気、コード作成、数学、料理、占い、ゲーム、無意味な文字列、極めて短い入力、製品と無関係な雑学など）は「NO」のみ回答してください。「YES」または「NO」以外は出力禁止。',
-        messages: [{ role: 'user', content: questionText }]
-      })
+      body: JSON.stringify(payload)
     });
-    const data = await response.json();
+    return { response, data: await response.json() };
+  }
+}
+
+// ===== Haiku 4.5 による質問妥当性事前判定（レベル4） =====
+async function judgeQuestionRelevance(questionText) {
+  try {
+    const { data } = await callClaudeAPI({
+      model: 'claude-haiku-4-5',
+      max_tokens: 10,
+      system: 'あなたは質問の妥当性を判定する分類器です。質問がB-EAR株式会社の業務用無線機・通信機器（ALVO 1.9、BRIDGECOM X10、X10コンパクト、X5、R2、LT、X10アスリート、VoiSniper、VoiSniperアドバンス等）またはハンズフリー同時通話・現場通信・導入相談・デモ・価格・スペックなどに関連する場合は「YES」のみ、関連しない場合（雑談、天気、コード作成、数学、料理、占い、ゲーム、無意味な文字列、極めて短い入力、製品と無関係な雑学など）は「NO」のみ回答してください。「YES」または「NO」以外は出力禁止。',
+      messages: [{ role: 'user', content: questionText }]
+    });
     const judgment = (data.content?.find(b => b.type === 'text')?.text || '').trim().toUpperCase();
     // 判定が「NO」を含む場合のみ拒否（あいまいな場合は通す）
     return !judgment.startsWith('NO');
@@ -1396,27 +1416,31 @@ async function sendMessage(text) {
   }
 
   try {
-    const response = await fetch('https://api.anthropic.com/v1/messages', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json', 'x-api-key': localStorage.getItem('anthropic_api_key') || '', 'anthropic-version': '2023-06-01', 'anthropic-dangerous-direct-browser-access': 'true' },
-      body: JSON.stringify({
-        model: 'claude-sonnet-4-6',
-        max_tokens: 2500,
-        system: [
-          {
-            type: "text",
-            text: SYSTEM_PROMPT,
-            cache_control: { type: "ephemeral" }
-          },
-          {
-            type: "text",
-            text: '【重要：回答言語】\n' + (translations[currentLang] || translations.ja).langInstruction
-          }
-        ],
-        messages: messages,
-      }),
+    const { response, data } = await callClaudeAPI({
+      model: 'claude-sonnet-4-6',
+      max_tokens: 2500,
+      system: [
+        {
+          type: "text",
+          text: SYSTEM_PROMPT,
+          cache_control: { type: "ephemeral" }
+        },
+        {
+          type: "text",
+          text: '【重要：回答言語】\n' + (translations[currentLang] || translations.ja).langInstruction
+        }
+      ],
+      messages: messages,
     });
-    const data = await response.json();
+    // サーバー側レート制限の検出
+    if (response.status === 429 && data.message) {
+      messages.push({ role: 'assistant', content: data.message });
+      loading = false;
+      sendBtn.disabled = false;
+      renderMessages();
+      inputEl.focus();
+      return;
+    }
     const reply = data.content?.find(b => b.type === 'text')?.text || '申し訳ございません。回答の取得に失敗しました。';
     messages.push({ role: 'assistant', content: reply });
     // スプレッドシートにログを記録
