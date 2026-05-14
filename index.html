@@ -1256,7 +1256,7 @@ if (window.visualViewport) {
 const RATE_LIMIT_CONFIG = {
   sessionDurationMs: 20 * 60 * 1000,    // 20分セッション
   maxQuestionsPerSession: 20,            // 1セッション最大20質問
-  cooldownMs: 5 * 1000,                  // 5秒クールダウン
+  cooldownMs: 10 * 1000,                 // 10秒クールダウン
   duplicateBlockCount: 3,                // 同一質問3回目以降ブロック
   blockedDurationMs: 30 * 60 * 1000      // 制限超過後30分ブロック
 };
