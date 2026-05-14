@@ -884,7 +884,7 @@ async function sendMessage(text) {
       method: 'POST',
       headers: { 'Content-Type': 'application/json', 'x-api-key': localStorage.getItem('anthropic_api_key') || '', 'anthropic-version': '2023-06-01', 'anthropic-dangerous-direct-browser-access': 'true' },
       body: JSON.stringify({
-        model: 'claude-3-5-sonnet-20241022',
+        model: 'claude-sonnet-4-6',
         max_tokens: 2500,
         system: SYSTEM_PROMPT + '\n\n【重要：回答言語】\n' + (translations[currentLang] || translations.ja).langInstruction,
         messages: messages,
