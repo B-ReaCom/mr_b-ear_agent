@@ -1328,6 +1328,34 @@ function recordQuestion(questionText) {
   saveRateLimitData(data);
 }
 
+// ===== Haiku 4.5 による質問妥当性事前判定（レベル4） =====
+async function judgeQuestionRelevance(questionText) {
+  try {
+    const response = await fetch('https://api.anthropic.com/v1/messages', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'x-api-key': localStorage.getItem('anthropic_api_key') || '',
+        'anthropic-version': '2023-06-01',
+        'anthropic-dangerous-direct-browser-access': 'true'
+      },
+      body: JSON.stringify({
+        model: 'claude-haiku-4-5',
+        max_tokens: 10,
+        system: 'あなたは質問の妥当性を判定する分類器です。質問がB-EAR株式会社の業務用無線機・通信機器（ALVO 1.9、BRIDGECOM X10、X10コンパクト、X5、R2、LT、X10アスリート、VoiSniper、VoiSniperアドバンス等）またはハンズフリー同時通話・現場通信・導入相談・デモ・価格・スペックなどに関連する場合は「YES」のみ、関連しない場合（雑談、天気、コード作成、数学、料理、占い、ゲーム、無意味な文字列、極めて短い入力、製品と無関係な雑学など）は「NO」のみ回答してください。「YES」または「NO」以外は出力禁止。',
+        messages: [{ role: 'user', content: questionText }]
+      })
+    });
+    const data = await response.json();
+    const judgment = (data.content?.find(b => b.type === 'text')?.text || '').trim().toUpperCase();
+    // 判定が「NO」を含む場合のみ拒否（あいまいな場合は通す）
+    return !judgment.startsWith('NO');
+  } catch {
+    // 判定APIエラー時は安全側で通す（ユーザー体験優先）
+    return true;
+  }
+}
+
 async function sendMessage(text) {
   const userText = text || inputEl.value.trim();
   if (!userText || loading) return;
@@ -1354,6 +1382,18 @@ async function sendMessage(text) {
   loading = true;
   sendBtn.disabled = true;
   showLoading();
+
+  // Haiku 4.5 による事前判定（レベル4：製品と関係ない質問をブロック）
+  const isRelevant = await judgeQuestionRelevance(userText);
+  if (!isRelevant) {
+    const rejectMsg = '申し訳ありませんが、私はB-EAR株式会社の製品（ReaCom ALVO 1.9、BRIDGECOMシリーズ等）に関するご質問にお答えする専門アシスタントです。製品についてお聞かせいただけますか？\n\n例：「ALVO 1.9の通話距離は？」「BRIDGECOM X10の特徴は？」「トンネル工事で使える製品は？」';
+    messages.push({ role: 'assistant', content: rejectMsg });
+    loading = false;
+    sendBtn.disabled = false;
+    renderMessages();
+    inputEl.focus();
+    return;
+  }
 
   try {
     const response = await fetch('https://api.anthropic.com/v1/messages', {
