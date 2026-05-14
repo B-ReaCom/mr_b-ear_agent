@@ -12,6 +12,40 @@ const RATE_LIMITS = {
   perDay: 200,       // 1日に200リクエストまで
 };
 
+// ===== Origin 許可リスト（CSRF対策） =====
+// 自社ドメインからのリクエストのみ許可
+const ALLOWED_ORIGIN_PATTERNS = [
+  /^https:\/\/mr-b-ear-agent\.vercel\.app$/,           // 本番ドメイン
+  /^https:\/\/mr-b-ear-agent-[\w-]+\.vercel\.app$/,    // Vercel プレビュー
+  /^https:\/\/[\w-]+\.bearidge\.com$/,                  // ベアリッジ系
+  /^https:\/\/bearidge\.com$/,
+  /^http:\/\/localhost(:\d+)?$/,                        // ローカル開発
+  /^http:\/\/127\.0\.0\.1(:\d+)?$/,
+];
+
+function isAllowedOrigin(req) {
+  const origin = req.headers.get('origin');
+  const referer = req.headers.get('referer');
+  // Origin ヘッダーが優先
+  if (origin) {
+    return ALLOWED_ORIGIN_PATTERNS.some(p => p.test(origin));
+  }
+  // Origin がない場合は Referer をチェック
+  if (referer) {
+    return ALLOWED_ORIGIN_PATTERNS.some(p => {
+      // Referer は完全URLなので、ホスト部分のみマッチング
+      try {
+        const url = new URL(referer);
+        return p.test(url.origin);
+      } catch {
+        return false;
+      }
+    });
+  }
+  // どちらもない場合はブロック（直接 curl などからのアクセスを防止）
+  return false;
+}
+
 // インメモリ・レート制限ストア（Edge Function インスタンスごと）
 // 注：本格運用にはVercel KVまたはUpstash Redisの利用を推奨
 const rateLimitStore = new Map();
@@ -100,23 +134,41 @@ function estimateCost(usage, model) {
   return costUSD;
 }
 
+// CORS ヘッダーを動的に決定（Originが許可リストにあればその値、なければ拒否）
+function buildCorsHeaders(req) {
+  const origin = req.headers.get('origin') || '';
+  const isAllowed = ALLOWED_ORIGIN_PATTERNS.some(p => p.test(origin));
+  return {
+    'Access-Control-Allow-Origin': isAllowed ? origin : 'null',
+    'Access-Control-Allow-Methods': 'POST, OPTIONS',
+    'Access-Control-Allow-Headers': 'Content-Type',
+    'Vary': 'Origin'
+  };
+}
+
 export default async function handler(req) {
+  const corsHeaders = buildCorsHeaders(req);
+
   // CORS プリフライト
   if (req.method === 'OPTIONS') {
-    return new Response(null, {
-      status: 204,
-      headers: {
-        'Access-Control-Allow-Origin': '*',
-        'Access-Control-Allow-Methods': 'POST, OPTIONS',
-        'Access-Control-Allow-Headers': 'Content-Type',
-      },
-    });
+    return new Response(null, { status: 204, headers: corsHeaders });
   }
 
   if (req.method !== 'POST') {
     return new Response(JSON.stringify({ error: 'Method not allowed' }), {
       status: 405,
-      headers: { 'Content-Type': 'application/json' }
+      headers: { 'Content-Type': 'application/json', ...corsHeaders }
+    });
+  }
+
+  // ===== Origin 検証（CSRF対策・他サイトからのAPI叩き防止） =====
+  if (!isAllowedOrigin(req)) {
+    return new Response(JSON.stringify({
+      error: 'forbidden_origin',
+      message: '許可されていないオリジンからのアクセスです。'
+    }), {
+      status: 403,
+      headers: { 'Content-Type': 'application/json', ...corsHeaders }
     });
   }
 
@@ -133,7 +185,8 @@ export default async function handler(req) {
       status: 429,
       headers: {
         'Content-Type': 'application/json',
-        'Retry-After': String(rateLimitResult.retryAfter)
+        'Retry-After': String(rateLimitResult.retryAfter),
+        ...corsHeaders
       }
     });
   }
@@ -146,7 +199,7 @@ export default async function handler(req) {
       message: 'ANTHROPIC_API_KEY が設定されていません。Vercel ダッシュボードで環境変数を設定してください。'
     }), {
       status: 500,
-      headers: { 'Content-Type': 'application/json' }
+      headers: { 'Content-Type': 'application/json', ...corsHeaders }
     });
   }
 
@@ -183,7 +236,7 @@ export default async function handler(req) {
       status: upstream.status,
       headers: {
         'Content-Type': 'application/json',
-        'Access-Control-Allow-Origin': '*'
+        ...corsHeaders
       }
     });
   } catch (error) {
@@ -192,7 +245,7 @@ export default async function handler(req) {
       message: error.message
     }), {
       status: 500,
-      headers: { 'Content-Type': 'application/json' }
+      headers: { 'Content-Type': 'application/json', ...corsHeaders }
     });
   }
 }
