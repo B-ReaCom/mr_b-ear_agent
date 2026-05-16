@@ -1,0 +1,227 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>シンプル計算機</title>
+<style>
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body {
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    min-height: 100vh;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 20px;
+  }
+  .calculator {
+    background: #2c2c2c;
+    border-radius: 20px;
+    padding: 24px;
+    box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+    width: 100%;
+    max-width: 340px;
+  }
+  .display {
+    background: #1a1a1a;
+    color: #fff;
+    font-size: 2.5rem;
+    font-weight: 300;
+    text-align: right;
+    padding: 24px 16px;
+    border-radius: 12px;
+    margin-bottom: 16px;
+    min-height: 90px;
+    word-wrap: break-word;
+    word-break: break-all;
+    overflow: hidden;
+  }
+  .display .history {
+    font-size: 0.9rem;
+    color: #888;
+    min-height: 1.2rem;
+    margin-bottom: 4px;
+  }
+  .buttons {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 10px;
+  }
+  button {
+    border: none;
+    border-radius: 50%;
+    aspect-ratio: 1;
+    font-size: 1.4rem;
+    font-weight: 500;
+    cursor: pointer;
+    transition: transform 0.1s, filter 0.1s;
+    color: #fff;
+  }
+  button:active { transform: scale(0.95); filter: brightness(1.2); }
+  .num { background: #505050; }
+  .num:hover { background: #5a5a5a; }
+  .op { background: #ff9500; }
+  .op:hover { background: #ffaa33; }
+  .fn { background: #a5a5a5; color: #000; }
+  .fn:hover { background: #b5b5b5; }
+  .zero { aspect-ratio: auto; border-radius: 999px; grid-column: span 2; }
+</style>
+</head>
+<body>
+  <div class="calculator">
+    <div class="display">
+      <div class="history" id="history"></div>
+      <div id="result">0</div>
+    </div>
+    <div class="buttons">
+      <button class="fn" data-action="clear">AC</button>
+      <button class="fn" data-action="sign">+/-</button>
+      <button class="fn" data-action="percent">%</button>
+      <button class="op" data-op="/">÷</button>
+
+      <button class="num" data-num="7">7</button>
+      <button class="num" data-num="8">8</button>
+      <button class="num" data-num="9">9</button>
+      <button class="op" data-op="*">×</button>
+
+      <button class="num" data-num="4">4</button>
+      <button class="num" data-num="5">5</button>
+      <button class="num" data-num="6">6</button>
+      <button class="op" data-op="-">−</button>
+
+      <button class="num" data-num="1">1</button>
+      <button class="num" data-num="2">2</button>
+      <button class="num" data-num="3">3</button>
+      <button class="op" data-op="+">+</button>
+
+      <button class="num zero" data-num="0">0</button>
+      <button class="num" data-action="dot">.</button>
+      <button class="op" data-action="equals">=</button>
+    </div>
+  </div>
+
+<script>
+(function () {
+  const resultEl = document.getElementById('result');
+  const historyEl = document.getElementById('history');
+
+  let current = '0';
+  let previous = null;
+  let operator = null;
+  let justEvaluated = false;
+
+  function format(n) {
+    if (!isFinite(n)) return 'エラー';
+    const s = Number(n).toPrecision(12);
+    return parseFloat(s).toString();
+  }
+
+  function render() {
+    resultEl.textContent = current.length > 12 ? format(parseFloat(current)) : current;
+    historyEl.textContent = previous !== null && operator
+      ? `${format(parseFloat(previous))} ${opSymbol(operator)}`
+      : '';
+  }
+
+  function opSymbol(op) {
+    return { '+': '+', '-': '−', '*': '×', '/': '÷' }[op] || op;
+  }
+
+  function inputNumber(n) {
+    if (justEvaluated) { current = '0'; justEvaluated = false; }
+    if (current === '0') current = n;
+    else current += n;
+    render();
+  }
+
+  function inputDot() {
+    if (justEvaluated) { current = '0'; justEvaluated = false; }
+    if (!current.includes('.')) current += '.';
+    render();
+  }
+
+  function clearAll() {
+    current = '0'; previous = null; operator = null; justEvaluated = false;
+    render();
+  }
+
+  function toggleSign() {
+    if (current === '0') return;
+    current = current.startsWith('-') ? current.slice(1) : '-' + current;
+    render();
+  }
+
+  function percent() {
+    current = format(parseFloat(current) / 100);
+    render();
+  }
+
+  function compute(a, b, op) {
+    switch (op) {
+      case '+': return a + b;
+      case '-': return a - b;
+      case '*': return a * b;
+      case '/': return b === 0 ? NaN : a / b;
+    }
+  }
+
+  function setOperator(op) {
+    if (operator && !justEvaluated && previous !== null) {
+      const r = compute(parseFloat(previous), parseFloat(current), operator);
+      current = format(r);
+      previous = current;
+    } else {
+      previous = current;
+    }
+    operator = op;
+    justEvaluated = true;
+    render();
+  }
+
+  function equals() {
+    if (operator === null || previous === null) return;
+    const r = compute(parseFloat(previous), parseFloat(current), operator);
+    historyEl.textContent = `${format(parseFloat(previous))} ${opSymbol(operator)} ${format(parseFloat(current))} =`;
+    current = format(r);
+    previous = null;
+    operator = null;
+    justEvaluated = true;
+    resultEl.textContent = current;
+  }
+
+  document.querySelectorAll('button').forEach(btn => {
+    btn.addEventListener('click', () => {
+      if (btn.dataset.num !== undefined) inputNumber(btn.dataset.num);
+      else if (btn.dataset.op) setOperator(btn.dataset.op);
+      else {
+        switch (btn.dataset.action) {
+          case 'clear': clearAll(); break;
+          case 'sign': toggleSign(); break;
+          case 'percent': percent(); break;
+          case 'dot': inputDot(); break;
+          case 'equals': equals(); break;
+        }
+      }
+    });
+  });
+
+  document.addEventListener('keydown', (e) => {
+    if (/^[0-9]$/.test(e.key)) inputNumber(e.key);
+    else if (['+', '-', '*', '/'].includes(e.key)) setOperator(e.key);
+    else if (e.key === 'Enter' || e.key === '=') { e.preventDefault(); equals(); }
+    else if (e.key === '.') inputDot();
+    else if (e.key === '%') percent();
+    else if (e.key === 'Escape') clearAll();
+    else if (e.key === 'Backspace') {
+      if (justEvaluated) return;
+      current = current.length > 1 ? current.slice(0, -1) : '0';
+      render();
+    }
+  });
+
+  render();
+})();
+</script>
+</body>
+</html>
