@@ -1422,7 +1422,7 @@ async function judgeQuestionRelevance(questionText) {
     const { data } = await callClaudeAPI({
       model: 'claude-haiku-4-5',
       max_tokens: 10,
-      system: 'あなたは質問の妥当性を判定する分類器です。質問がB-EAR株式会社の業務用無線機・通信機器（ALVO 1.9、BRIDGECOM X10、X10コンパクト、X5、R2、LT、X10アスリート、VoiSniper、VoiSniperアドバンス等）またはハンズフリー同時通話・現場通信・導入相談・デモ・価格・スペックなどに関連する場合は「YES」のみ、関連しない場合（雑談、天気、コード作成、数学、料理、占い、ゲーム、無意味な文字列、極めて短い入力、製品と無関係な雑学など）は「NO」のみ回答してください。「YES」または「NO」以外は出力禁止。',
+      system: 'あなたは質問の妥当性を判定する分類器です。以下のいずれかに関連する場合は「YES」のみ、それ以外（雑談、天気、コード作成、数学、料理、占い、ゲーム、無意味な文字列、極めて短い入力、B-EARと無関係な雑学など）は「NO」のみ回答してください。「YES」または「NO」以外は出力禁止。\n\n【YESと判定すべきトピック】\n1. B-EAR製品（ALVO 1.9、BRIDGECOM X10、X10コンパクト、X5、R2、LT、X10アスリート、VoiSniper、VoiSniperアドバンス、咽喉マイク等）\n2. ハンズフリー同時通話・現場通信・導入相談・デモ・価格・スペック\n3. 株式会社ベアリッジ／B-EAR の会社情報・代表・経営理念・事業内容・導入実績\n4. 採用・求人・キャリア・就職・転職・募集・働きたい・仕事に興味\n5. 勤務地・本社・オフィス・所在地・住所\n6. レンタル・貸出・リース\n7. 代理店紹介・販売代理店・取扱店\n8. 見積・問い合わせ・連絡先\n9. 修理・サポート・保証',
       messages: [{ role: 'user', content: questionText }]
     });
     const judgment = (data.content?.find(b => b.type === 'text')?.text || '').trim();
@@ -1490,7 +1490,7 @@ async function sendMessage(text) {
   if (!isRelevant) {
     // 直前にpushしたuserメッセージを表示専用に変更（次回API送信時に除外）
     messages[messages.length - 1]._display_only = true;
-    const rejectMsg = '申し訳ありませんが、私はB-EAR株式会社の製品（ReaCom ALVO 1.9、BRIDGECOMシリーズ等）に関するご質問にお答えする専門アシスタントです。製品についてお聞かせいただけますか？\n\n例：「ALVO 1.9の通話距離は？」「BRIDGECOM X10の特徴は？」「トンネル工事で使える製品は？」';
+    const rejectMsg = '申し訳ありませんが、私は株式会社ベアリッジ（B-EAR）に関するご質問にお答えする専門アシスタントです。\n\n以下のような内容についてお聞かせください：\n・製品（ALVO 1.9、BRIDGECOM X10、X5、X10コンパクト、X10アスリート、LT、R2、VoiSniper など）\n・価格・見積・デモ機・レンタル\n・代理店紹介\n・修理・サポート・保証\n・会社情報・勤務地\n・採用・求人・キャリア';
     messages.push({ role: 'assistant', content: rejectMsg, _display_only: true, _system: true });
     loading = false;
     sendBtn.disabled = false;
