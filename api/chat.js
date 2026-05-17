@@ -205,6 +205,7 @@ export default async function handler(req) {
 
   try {
     const body = await req.json();
+    const isStream = body.stream === true;
 
     // Anthropic API へ転送
     const upstream = await fetch('https://api.anthropic.com/v1/messages', {
@@ -217,6 +218,65 @@ export default async function handler(req) {
       body: JSON.stringify(body)
     });
 
+    // ===== ストリーミング応答（SSE） =====
+    if (isStream && upstream.ok && upstream.body) {
+      // ストリームを2分岐：1つはクライアントへ、もう1つは使用量ログ収集用
+      const [streamForClient, streamForLog] = upstream.body.tee();
+
+      // バックグラウンドで使用量を集計
+      (async () => {
+        const reader = streamForLog.getReader();
+        const decoder = new TextDecoder();
+        let buffer = '';
+        let usage = null;
+        try {
+          while (true) {
+            const { done, value } = await reader.read();
+            if (done) break;
+            buffer += decoder.decode(value, { stream: true });
+            const lines = buffer.split('\n');
+            buffer = lines.pop() || '';
+            for (const line of lines) {
+              if (!line.startsWith('data: ')) continue;
+              const payload = line.slice(6).trim();
+              if (!payload || payload === '[DONE]') continue;
+              try {
+                const event = JSON.parse(payload);
+                if (event.type === 'message_start' && event.message && event.message.usage) {
+                  usage = { ...event.message.usage };
+                } else if (event.type === 'message_delta' && event.usage) {
+                  usage = { ...(usage || {}), ...event.usage };
+                }
+              } catch {}
+            }
+          }
+        } catch {}
+        if (usage) {
+          const cost = estimateCost(usage, body.model);
+          logUsage({
+            type: 'api_usage',
+            ip: ip,
+            model: body.model,
+            usage: usage,
+            cost_usd: cost,
+            timestamp: new Date().toISOString()
+          });
+        }
+      })();
+
+      return new Response(streamForClient, {
+        status: upstream.status,
+        headers: {
+          'Content-Type': 'text/event-stream',
+          'Cache-Control': 'no-cache, no-transform',
+          'Connection': 'keep-alive',
+          'X-Accel-Buffering': 'no',
+          ...corsHeaders
+        }
+      });
+    }
+
+    // ===== 非ストリーミング応答（従来パス） =====
     const data = await upstream.json();
 
     // 使用量ログ送信（非同期、失敗してもOK）
