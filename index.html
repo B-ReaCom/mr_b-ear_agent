@@ -26,10 +26,20 @@ body { font-family: 'Noto Sans JP', sans-serif; height: 100%; height: 100dvh; di
 .welcome-icon-wrap { display: flex; justify-content: center; margin-bottom: 1.5rem; }
 .welcome-icon { position: relative; display: inline-block; }
 .welcome-icon > img.product-img { height: 150px; width: auto; display: block; }
-.welcome-icon .mikuma { position: absolute; bottom: 0; right: -32px; width: 65px; transform: rotate(18deg); pointer-events: none; z-index: 0; }
+.welcome-icon .mikuma { position: absolute; bottom: -8px; right: -22px; width: 78px; height: auto; pointer-events: none; z-index: 0; }
 .welcome-icon > img.product-img { position: relative; z-index: 1; }
-.welcome-tag { font-size: 13px; color: #4b5563; letter-spacing: 0.06em; margin-bottom: 6px; font-weight: 500; }
-.welcome-heading { font-family: 'Noto Sans JP', sans-serif; font-size: 30px; font-weight: 700; color: #111827; line-height: 1.3; margin-bottom: 2rem; }
+.welcome-text { display: inline-block; text-align: left; margin-bottom: 2rem; }
+.faq-panel { position: fixed; top: 0; right: 0; width: 360px; max-width: 88vw; height: 100%; background: #ffffff; box-shadow: -4px 0 20px rgba(0,0,0,0.18); z-index: 1000; transform: translateX(100%); transition: transform 0.28s ease; display: flex; flex-direction: column; }
+.faq-panel.open { transform: translateX(0); }
+.faq-panel-header { background: #1a1a1a; color: #fff; padding: 14px 16px; display: flex; justify-content: space-between; align-items: center; font-size: 15px; font-weight: 600; border-bottom: 2px solid #E8A020; }
+.faq-close-btn { background: transparent; border: none; color: #fff; font-size: 22px; cursor: pointer; padding: 0 6px; line-height: 1; }
+.faq-panel-list { overflow-y: auto; padding: 12px 14px; flex: 1; }
+.faq-panel-item { width: 100%; text-align: left; padding: 14px 14px; margin-bottom: 8px; background: #f9fafb; border: 1px solid #e5e7eb; border-radius: 10px; color: #1f2937; font-size: 14px; line-height: 1.5; cursor: pointer; transition: all 0.15s; }
+.faq-panel-item:hover { background: #E8A020; color: #1a1a1a; border-color: #E8A020; }
+.faq-overlay { position: fixed; inset: 0; background: rgba(0,0,0,0.32); z-index: 999; display: none; }
+.faq-overlay.open { display: block; }
+.welcome-tag { font-size: 16px; color: #4b5563; letter-spacing: 0.04em; margin-bottom: 4px; font-weight: 500; }
+.welcome-heading { font-family: 'Noto Sans JP', sans-serif; font-size: 36px; font-weight: 700; color: #111827; line-height: 1.25; margin-bottom: 0; }
 .suggestions { display: flex; flex-wrap: wrap; gap: 8px; justify-content: center; max-width: 600px; margin: 0 auto; }
 .suggestion-btn { padding: 8px 14px; border-radius: 20px; border: 1px solid #d1d5db; background: white; color: #1f2937; font-size: 13px; cursor: pointer; transition: all 0.15s; }
 .suggestion-btn:hover { background: #E8A020; color: #1a1a1a; border-color: #E8A020; }
@@ -71,9 +81,9 @@ body { font-family: 'Noto Sans JP', sans-serif; height: 100%; height: 100dvh; di
 ::-webkit-scrollbar-thumb { background: #444; border-radius: 2px; }
 @media (max-width: 768px) {
   .welcome-icon > img.product-img { height: 120px; width: auto; }
-  .welcome-icon .mikuma { width: 50px; right: -22px; }
-  .welcome-tag { font-size: 11px; }
-  .welcome-heading { font-size: 22px; }
+  .welcome-icon .mikuma { width: 60px; right: -16px; bottom: -6px; }
+  .welcome-tag { font-size: 13px; }
+  .welcome-heading { font-size: 28px; }
   .avatar { width: 55px; height: 55px; }
   .header { padding: 0 0.75rem; gap: 0.5rem; }
   .title-tag { font-size: 9px; }
@@ -95,6 +105,7 @@ body { font-family: 'Noto Sans JP', sans-serif; height: 100%; height: 100dvh; di
     <div class="title"><ruby>Mr. B-EAR<rt>ミスター&nbsp;ベアー</rt></ruby></div>
   </div>
   <div style="display:flex;align-items:center;gap:8px;">
+    <button id="faqBtn" onclick="toggleFaqPanel()" style="background:rgba(255,255,255,0.15);border:none;color:#fff;padding:4px 10px;border-radius:8px;cursor:pointer;font-size:12px;white-space:nowrap;">☰ FAQ</button>
     <select id="langSelect" onchange="changeLang(this.value)" style="background:rgba(255,255,255,0.15);border:1px solid rgba(255,255,255,0.2);color:#fff;padding:4px 8px;border-radius:8px;cursor:pointer;font-size:12px;outline:none;">
       <option value="ja" style="color:#000;">🇯🇵 日本語</option>
       <option value="en" style="color:#000;">🇺🇸 English</option>
@@ -124,6 +135,15 @@ body { font-family: 'Noto Sans JP', sans-serif; height: 100%; height: 100dvh; di
   <div id="apiKeyStatus" style="font-size:11px;color:rgba(255,255,255,0.5);margin-top:6px;text-align:center;"></div>
 </div>
 
+<div id="faqPanel" class="faq-panel">
+  <div class="faq-panel-header">
+    <span id="faqPanelTitle">よくある質問</span>
+    <button onclick="toggleFaqPanel()" class="faq-close-btn" aria-label="close">×</button>
+  </div>
+  <div id="faqPanelList" class="faq-panel-list"></div>
+</div>
+<div id="faqOverlay" class="faq-overlay" onclick="toggleFaqPanel()"></div>
+
 <div class="messages" id="messages">
   <div class="welcome">
     <div class="welcome-icon">
@@ -150,8 +170,10 @@ body { font-family: 'Noto Sans JP', sans-serif; height: 100%; height: 100dvh; di
         <circle cx="80" cy="46" r="2.5" fill="#111"/>
       </svg>
     </div>
-    <div class="welcome-tag" id="welcomeTag">B-EARのこと</div>
-    <div class="welcome-heading" id="welcomeHeading">何でも聞いてください</div>
+    <div class="welcome-text">
+      <div class="welcome-tag" id="welcomeTag">B-EARのこと</div>
+      <div class="welcome-heading" id="welcomeHeading">何でも聞いてください</div>
+    </div>
     <div class="suggestions" id="suggestions">
       <button class="suggestion-btn" onclick="sendMessage('通話範囲を教えて')">通話範囲を教えて</button>
       <button class="suggestion-btn" onclick="sendMessage('製品の特長はナニ？')">製品の特長はナニ？</button>
@@ -1111,6 +1133,8 @@ const translations = {
     welcomeTitle: "現場の通話のお悩み、ご相談ください",
     welcomeTag: "B-EARのこと",
     welcomeHeading: "何でも聞いてください",
+    faqTitle: "よくある質問",
+    faqQuestions: ["見積り依頼をしたい","デモ機は何台借りれるの？","今の現場に合うのかな？","どこで注文すればいいの？","どんな現場に向いているの？"],
     placeholder: "質問を入力してください...",
     online: "オンライン",
     apiKeyBtn: "⚙ APIキー",
@@ -1122,6 +1146,8 @@ const translations = {
     welcomeTitle: "Tell us about your on-site communication challenges",
     welcomeTag: "About B-EAR",
     welcomeHeading: "Ask us anything",
+    faqTitle: "Frequently Asked Questions",
+    faqQuestions: ["I'd like to request a quote","How many demo units can I borrow?","Will it work at my site?","Where can I place an order?","What kind of sites is it suited for?"],
     placeholder: "Type your question...",
     online: "Online",
     apiKeyBtn: "⚙ API Key",
@@ -1133,6 +1159,8 @@ const translations = {
     welcomeTitle: "请咨询现场通讯方面的烦恼",
     welcomeTag: "关于 B-EAR",
     welcomeHeading: "有问必答",
+    faqTitle: "常见问题",
+    faqQuestions: ["我想申请报价","可以借几台演示机？","适合我的现场吗？","在哪里下单？","适合什么样的现场？"],
     placeholder: "请输入您的问题...",
     online: "在线",
     apiKeyBtn: "⚙ API密钥",
@@ -1144,6 +1172,8 @@ const translations = {
     welcomeTitle: "請咨詢現場通訊嘅煩惱",
     welcomeTag: "關於 B-EAR",
     welcomeHeading: "有問必答",
+    faqTitle: "常見問題",
+    faqQuestions: ["我想申請報價","可以借幾多部演示機？","啱唔啱我哋個現場？","喺邊度落單？","啱咩現場？"],
     placeholder: "請輸入您嘅問題...",
     online: "在線",
     apiKeyBtn: "⚙ API密鑰",
@@ -1155,6 +1185,8 @@ const translations = {
     welcomeTitle: "현장 통화 고민, 상담해 주세요",
     welcomeTag: "B-EAR에 대해",
     welcomeHeading: "무엇이든 물어보세요",
+    faqTitle: "자주 묻는 질문",
+    faqQuestions: ["견적을 요청하고 싶어요","데모기기는 몇 대 빌릴 수 있나요?","우리 현장에 맞을까요?","어디서 주문하면 되나요?","어떤 현장에 적합한가요?"],
     placeholder: "질문을 입력해 주세요...",
     online: "온라인",
     apiKeyBtn: "⚙ API 키",
@@ -1166,6 +1198,8 @@ const translations = {
     welcomeTitle: "Hãy hỏi chúng tôi về vấn đề liên lạc tại công trường",
     welcomeTag: "Về B-EAR",
     welcomeHeading: "Hỏi chúng tôi bất cứ điều gì",
+    faqTitle: "Câu hỏi thường gặp",
+    faqQuestions: ["Tôi muốn yêu cầu báo giá","Có thể mượn bao nhiêu máy demo?","Có phù hợp với công trường của tôi không?","Tôi đặt hàng ở đâu?","Phù hợp với loại công trường nào?"],
     placeholder: "Nhập câu hỏi của bạn...",
     online: "Trực tuyến",
     apiKeyBtn: "⚙ Khóa API",
@@ -1177,6 +1211,8 @@ const translations = {
     welcomeTitle: "Conte-nos sobre seus desafios de comunicação no local",
     welcomeTag: "Sobre a B-EAR",
     welcomeHeading: "Pergunte-nos qualquer coisa",
+    faqTitle: "Perguntas frequentes",
+    faqQuestions: ["Gostaria de solicitar um orçamento","Quantas unidades demo posso emprestar?","Funcionará no meu local?","Onde posso fazer o pedido?","Para que tipo de local é adequado?"],
     placeholder: "Digite sua pergunta...",
     online: "Online",
     apiKeyBtn: "⚙ Chave API",
@@ -1188,6 +1224,8 @@ const translations = {
     welcomeTitle: "Magtanong sa amin tungkol sa komunikasyon sa site",
     welcomeTag: "Tungkol sa B-EAR",
     welcomeHeading: "Magtanong ka ng kahit ano",
+    faqTitle: "Mga madalas itanong",
+    faqQuestions: ["Gusto kong humingi ng quote","Ilang demo unit ang puwedeng hiramin?","Bagay ba sa site namin?","Saan ako pwedeng mag-order?","Sa anong site bagay ito?"],
     placeholder: "I-type ang iyong tanong...",
     online: "Online",
     apiKeyBtn: "⚙ API Key",
@@ -1199,6 +1237,8 @@ const translations = {
     welcomeTitle: "साइटको सञ्चार समस्याबारे सोध्नुहोस्",
     welcomeTag: "B-EAR बारे",
     welcomeHeading: "जे पनि सोध्नुहोस्",
+    faqTitle: "बारम्बार सोधिने प्रश्न",
+    faqQuestions: ["कोटेसन माग्न चाहन्छु","कति वटा डेमो लिन सकिन्छ?","मेरो साइटमा मिल्छ कि?","कहाँ अर्डर गर्ने?","कस्तो साइटका लागि उपयुक्त छ?"],
     placeholder: "तपाईंको प्रश्न लेख्नुहोस्...",
     online: "अनलाइन",
     apiKeyBtn: "⚙ API कुञ्जी",
@@ -1210,6 +1250,8 @@ const translations = {
     welcomeTitle: "Konsultasikan masalah komunikasi di lokasi kerja",
     welcomeTag: "Tentang B-EAR",
     welcomeHeading: "Tanyakan apa saja",
+    faqTitle: "Pertanyaan yang sering diajukan",
+    faqQuestions: ["Saya ingin minta penawaran","Berapa unit demo yang bisa dipinjam?","Apakah cocok untuk lokasi saya?","Di mana saya bisa memesan?","Cocok untuk jenis lokasi apa?"],
     placeholder: "Ketik pertanyaan Anda...",
     online: "Online",
     apiKeyBtn: "⚙ Kunci API",
@@ -1221,6 +1263,8 @@ const translations = {
     welcomeTitle: "Consúltenos sobre desafíos de comunicación en obra",
     welcomeTag: "Sobre B-EAR",
     welcomeHeading: "Pregúntenos lo que sea",
+    faqTitle: "Preguntas frecuentes",
+    faqQuestions: ["Quisiera solicitar un presupuesto","¿Cuántas unidades demo puedo prestar?","¿Funcionará en mi obra?","¿Dónde puedo hacer el pedido?","¿Para qué tipo de obra es adecuado?"],
     placeholder: "Escriba su pregunta...",
     online: "En línea",
     apiKeyBtn: "⚙ Clave API",
@@ -1232,6 +1276,8 @@ const translations = {
     welcomeTitle: "ปรึกษาเราเกี่ยวกับปัญหาการสื่อสารที่หน้างาน",
     welcomeTag: "เกี่ยวกับ B-EAR",
     welcomeHeading: "ถามอะไรก็ได้",
+    faqTitle: "คำถามที่พบบ่อย",
+    faqQuestions: ["ต้องการขอใบเสนอราคา","ขอยืมเครื่องเดโม่ได้กี่เครื่อง?","เหมาะกับหน้างานของผมไหม?","สั่งซื้อได้ที่ไหน?","เหมาะกับหน้างานแบบไหน?"],
     placeholder: "พิมพ์คำถามของคุณ...",
     online: "ออนไลน์",
     apiKeyBtn: "⚙ คีย์ API",
@@ -1257,6 +1303,8 @@ function applyTranslations() {
   if (tagEl && t.welcomeTag) tagEl.textContent = t.welcomeTag;
   const headEl = document.getElementById('welcomeHeading');
   if (headEl && t.welcomeHeading) headEl.textContent = t.welcomeHeading;
+  const faqPanel = document.getElementById('faqPanel');
+  if (faqPanel && faqPanel.classList.contains('open')) renderFaqList();
   const inputEl2 = document.getElementById('input');
   if (inputEl2) inputEl2.placeholder = t.placeholder;
   const statusEl = document.getElementById('statusText');
@@ -1709,6 +1757,33 @@ function toggleApiKeyPanel() {
       document.getElementById('apiKeyStatus').textContent = '✓ APIキーが設定されています';
     }
   }
+}
+
+function toggleFaqPanel() {
+  const panel = document.getElementById('faqPanel');
+  const overlay = document.getElementById('faqOverlay');
+  if (!panel || !overlay) return;
+  const willOpen = !panel.classList.contains('open');
+  panel.classList.toggle('open', willOpen);
+  overlay.classList.toggle('open', willOpen);
+  if (willOpen) renderFaqList();
+}
+
+function renderFaqList() {
+  const t = translations[currentLang] || translations.ja;
+  const listEl = document.getElementById('faqPanelList');
+  const titleEl = document.getElementById('faqPanelTitle');
+  if (titleEl && t.faqTitle) titleEl.textContent = t.faqTitle;
+  if (!listEl) return;
+  listEl.innerHTML = '';
+  const qs = (t.faqQuestions && t.faqQuestions.length) ? t.faqQuestions : (translations.ja.faqQuestions || []);
+  qs.forEach(q => {
+    const btn = document.createElement('button');
+    btn.className = 'faq-panel-item';
+    btn.textContent = q;
+    btn.onclick = () => { toggleFaqPanel(); sendMessage(q); };
+    listEl.appendChild(btn);
+  });
 }
 
 function saveApiKey() {
