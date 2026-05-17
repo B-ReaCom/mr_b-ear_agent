@@ -960,6 +960,44 @@ Q113. 設定の柔軟性に違いはありますか？
 【BRIDGECOM X10/X10コンパクト/X5】1台の本機を本体設定により「マスター（ID00）」「サブマスター（ID01）」「子機」のいずれにも変更可能。運用現場に合わせて自由に役割を切り替えられる。
 
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+Q. 連絡先・見積依頼・代理店・採用・会社情報
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+Q114. 見積はどこへ依頼すればよいですか？
+お見積りには2つの方法がある。
+【方法①：B-EARへ直接ご連絡】
+B-EAR本社にご連絡いただければ、お話を伺ったうえで最適な販売代理店を紹介する。
+・メール：info@bearidge.com
+・電話：0569-89-7969
+【方法②：販売代理店へ直接連絡】
+お近くまたはお取引のある販売代理店へ直接ご連絡いただいてもよい。
+販売代理店一覧：https://bearidge.com/corporate/shoplist/
+正式な金額・割引条件は、必要台数・構成・導入時期を確認のうえお見積りで案内する。
+
+Q115. ベアリッジ（B-EAR）の連絡先を教えてください。
+B-EAR（株式会社ベアリッジ）の連絡先は以下のとおり。
+・電話：0569-89-7969
+・営業窓口：sales@bearidge.jp
+・お問い合わせ全般：info@bearidge.com
+・本社：愛知県
+製品検討・デモ依頼・販売代理店紹介・サポート全般のご相談に対応する。
+
+Q116. 販売代理店はどこで確認できますか？
+B-EAR製品（BRIDGECOMシリーズ・ReaCom ALVO 1.9）の販売代理店一覧は以下で確認できる。
+URL：https://bearidge.com/corporate/shoplist/
+最寄りの代理店や、業界別に強みを持つ代理店から選定可能である。代理店経由でのご購入が基本となるが、どの代理店が適しているか分からない場合はB-EAR本社（info@bearidge.com / 0569-89-7969）へご連絡いただきたい。
+
+Q117. ベアリッジ（B-EAR）への採用応募はどこで確認できますか？
+B-EARの採用情報は専用の求人サイトで公開している。
+採用ページ：https://kyujinbu.com/bearidge/
+業務内容・募集職種・応募方法はそちらをご確認いただきたい。エンジニア・営業・サポート等、各種職種を募集している。
+
+Q118. ベアリッジ（B-EAR）はどんな会社ですか？
+ベアリッジ（株式会社ベアリッジ）は、業務現場向けのワイヤレス通信機器を開発・販売するメーカーである。主力ブランドはBRIDGECOMシリーズで、累計販売台数30,000台以上の実績を持つ。建設・工場・港湾・スポーツ・イベント・交通・医療など、騒音や距離が課題となる現場で採用されている。
+2026年8月には次世代製品ReaCom ALVO 1.9を販売開始予定で、1.9GHz帯DECT方式・ENC 2.0ノイズキャンセル・AES 256bit暗号化・Bluetooth 5.2対応など、最新の業務通信機能を集約している。
+コンセプト「三熊（さんくま）」：見クマ（観察する）・聞クマ（耳を傾ける）・言クマ（伝える）を掲げ、現場の声に応える通信機を作り続けている。
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 【厳守ルール - 必ず守ること】
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 
@@ -1278,8 +1316,6 @@ function changeLang(lang) {
 
 function applyTranslations() {
   const t = translations[currentLang] || translations.ja;
-  const welcomeEl = document.getElementById('welcomeTitle');
-  if (welcomeEl) welcomeEl.textContent = t.welcomeTitle;
   const tagEl = document.getElementById('welcomeTag');
   if (tagEl && t.welcomeTag) tagEl.textContent = t.welcomeTag;
   const headEl = document.getElementById('welcomeHeading');
@@ -1392,7 +1428,7 @@ function checkRateLimit(questionText) {
     data.blockedUntil = 0;
   }
 
-  // クールダウンチェック（5秒以内の連続送信）
+  // クールダウンチェック（cooldownMs 以内の連続送信）
   if (data.questions.length > 0) {
     const lastQuestion = data.questions[data.questions.length - 1];
     const elapsed = now - lastQuestion.time;
@@ -1662,7 +1698,7 @@ function showLoading() {
 function copyMessage(idx) {
   const msg = messages[idx];
   if (!msg) return;
-  const text = msg.content + '\n\n— Mr.B-EAR (ALVO 1.9 AIエージェント) より\nhttps://mr-b-ear-agent.vercel.app/';
+  const text = msg.content + '\n\n— Mr. B-EAR (ALVO 1.9 AIエージェント) より\nhttps://mr-b-ear-agent.vercel.app/';
   navigator.clipboard.writeText(text).then(() => {
     const btns = document.querySelectorAll(`[data-idx="${idx}"] .msg-btn`);
     if (btns[0]) {
@@ -1677,10 +1713,10 @@ function copyMessage(idx) {
 function shareMessage(idx) {
   const msg = messages[idx];
   if (!msg) return;
-  const text = msg.content + '\n\n— Mr.B-EAR (ALVO 1.9 AIエージェント) より\nhttps://mr-b-ear-agent.vercel.app/';
+  const text = msg.content + '\n\n— Mr. B-EAR (ALVO 1.9 AIエージェント) より\nhttps://mr-b-ear-agent.vercel.app/';
   if (navigator.share) {
     navigator.share({
-      title: 'Mr.B-EAR からの回答',
+      title: 'Mr. B-EAR からの回答',
       text: text,
       url: 'https://mr-b-ear-agent.vercel.app/'
     }).catch(() => {});
@@ -1694,8 +1730,8 @@ function shareMessage(idx) {
 function emailMessage(idx) {
   const msg = messages[idx];
   if (!msg) return;
-  const subject = encodeURIComponent('Mr.B-EAR からの回答 (ALVO 1.9について)');
-  const body = encodeURIComponent(msg.content + '\n\n— Mr.B-EAR (ALVO 1.9 AIエージェント) より\nhttps://mr-b-ear-agent.vercel.app/');
+  const subject = encodeURIComponent('Mr. B-EAR からの回答 (ALVO 1.9について)');
+  const body = encodeURIComponent(msg.content + '\n\n— Mr. B-EAR (ALVO 1.9 AIエージェント) より\nhttps://mr-b-ear-agent.vercel.app/');
   window.location.href = `mailto:?subject=${subject}&body=${body}`;
 }
 
