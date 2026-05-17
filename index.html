@@ -156,14 +156,11 @@ body { font-family: 'Noto Sans JP', sans-serif; height: 100%; height: 100dvh; di
       </div>
     </div>
     <div class="suggestions" id="suggestions">
-      <button class="suggestion-btn" onclick="sendMessage('通話範囲を教えて')">通話範囲を教えて</button>
-      <button class="suggestion-btn" onclick="sendMessage('製品の特長はナニ？')">製品の特長はナニ？</button>
-      <button class="suggestion-btn" onclick="sendMessage('防水・防塵性能はどれくらい？')">防水・防塵性能はどれくらい？</button>
-      <button class="suggestion-btn" onclick="sendMessage('同時通話は何人できるの？')">同時通話は何人できるの？</button>
       <button class="suggestion-btn" onclick="sendMessage('ノイキャンはどれだけスゴいの？')">ノイキャンはどれだけスゴいの？</button>
-      <button class="suggestion-btn" onclick="sendMessage('価格が知りたい')">価格が知りたい</button>
+      <button class="suggestion-btn" onclick="sendMessage('製品の特長はナニ？')">製品の特長はナニ？</button>
       <button class="suggestion-btn" onclick="sendMessage('年間の投資効果はどれくらい？')">年間の投資効果はどれくらい？</button>
-      <button class="suggestion-btn" onclick="sendMessage('デモ機を試したい')">デモ機を試したい</button>
+      <button class="suggestion-btn" onclick="sendMessage('B-EARは求人してる？')">B-EARは求人してる？</button>
+      <button class="suggestion-btn" onclick="sendMessage('自分の現場に合うかな？')">自分の現場に合うかな？</button>
     </div>
   </div>
 </div>
@@ -1080,12 +1077,12 @@ const translations = {
     welcomeTag: "B-EARのこと",
     welcomeHeading: "何でも聞いてください",
     faqTitle: "よくある質問",
-    faqQuestions: ["見積り依頼をしたい","デモ機は何台借りれるの？","今の現場に合うのかな？","どこで注文すればいいの？","どんな現場に向いているの？"],
+    faqQuestions: ["価格はいくら？","デモ機を試せる？","通話距離はどれくらい？","見積りを頼みたいけど？","代理店を紹介して","どんな現場で使えるの？","ALVO 1.9とBRIDGECOM X10は何が違うの？","B-EARってどんなメーカー？","修理・サポート・保証はどうなの？"],
     placeholder: "質問を入力してください...",
     online: "オンライン",
     apiKeyBtn: "⚙ APIキー",
     disclaimer: "Enterで送信 · ミスターB-EARはAIです。重要な事項は担当者にご確認ください。",
-    suggestions: ["通話範囲を教えて","製品の特長はナニ？","防水・防塵性能はどれくらい？","同時通話は何人できるの？","ノイキャンはどれだけスゴいの？","価格が知りたい","年間の投資効果はどれくらい？","デモ機を試したい"],
+    suggestions: ["ノイキャンはどれだけスゴいの？","製品の特長はナニ？","年間の投資効果はどれくらい？","B-EARは求人してる？","自分の現場に合うかな？"],
     langInstruction: "必ず日本語で回答してください。"
   },
   en: {
@@ -1093,12 +1090,12 @@ const translations = {
     welcomeTag: "About B-EAR",
     welcomeHeading: "Ask us anything",
     faqTitle: "Frequently Asked Questions",
-    faqQuestions: ["I'd like to request a quote","How many demo units can I borrow?","Will it work at my site?","Where can I place an order?","What kind of sites is it suited for?"],
+    faqQuestions: ["How much does it cost?","Can I try a demo unit?","What's the talk range?","I'd like to request a quote","Introduce me to a dealer","What kind of sites is it suited for?","What's the difference between ALVO 1.9 and BRIDGECOM X10?","What kind of company is B-EAR?","What about repair, support and warranty?"],
     placeholder: "Type your question...",
     online: "Online",
     apiKeyBtn: "⚙ API Key",
     disclaimer: "Press Enter to send · Mr. B-EAR is an AI. Please confirm important matters with our staff.",
-    suggestions: ["What's the talk range?","What are the product features?","How is the IP rating?","How many can talk at once?","How good is the noise canceling?","I'd like to know the price","What's the annual ROI?","I'd like to try a demo"],
+    suggestions: ["How good is the noise canceling?","What are the product features?","What's the annual ROI?","Is B-EAR hiring?","Will it work at my site?"],
     langInstruction: "Please respond in English only."
   },
   zh: {
@@ -1106,12 +1103,12 @@ const translations = {
     welcomeTag: "关于 B-EAR",
     welcomeHeading: "有问必答",
     faqTitle: "常见问题",
-    faqQuestions: ["我想申请报价","可以借几台演示机？","适合我的现场吗？","在哪里下单？","适合什么样的现场？"],
+    faqQuestions: ["价格是多少？","可以试用演示机吗？","通话距离有多远？","想申请报价","介绍代理店","适合什么样的现场？","ALVO 1.9和BRIDGECOM X10有什么区别？","B-EAR是什么样的厂商？","维修、支持和保修怎么样？"],
     placeholder: "请输入您的问题...",
     online: "在线",
     apiKeyBtn: "⚙ API密钥",
     disclaimer: "按Enter发送 · Mr. B-EAR是AI。重要事项请向工作人员确认。",
-    suggestions: ["请告诉我通话范围","产品的特点是什么？","防水防尘性能如何？","可以多少人同时通话？","降噪效果有多好？","想知道价格","年度投资效益如何？","想试用演示机"],
+    suggestions: ["降噪效果有多好？","产品的特点是什么？","年度投资效益如何？","B-EAR在招人吗？","适合我的现场吗？"],
     langInstruction: "请务必用简体中文（普通话）回答。"
   },
   yue: {
@@ -1119,12 +1116,12 @@ const translations = {
     welcomeTag: "關於 B-EAR",
     welcomeHeading: "有問必答",
     faqTitle: "常見問題",
-    faqQuestions: ["我想申請報價","可以借幾多部演示機？","啱唔啱我哋個現場？","喺邊度落單？","啱咩現場？"],
+    faqQuestions: ["價錢幾多？","可以試用演示機嗎？","通話距離有幾遠？","想申請報價","介紹代理店","啱咩現場？","ALVO 1.9同BRIDGECOM X10有咩唔同？","B-EAR係咩公司？","維修、支援、保固點樣？"],
     placeholder: "請輸入您嘅問題...",
     online: "在線",
     apiKeyBtn: "⚙ API密鑰",
     disclaimer: "撳Enter發送 · Mr. B-EAR係AI。重要事項請向工作人員確認。",
-    suggestions: ["請話我知通話範圍","產品有咩特點？","防水防塵性能點樣？","可以幾多人同時通話？","降噪效果有幾好？","想知道價格","年度投資效益點樣？","想試用演示機"],
+    suggestions: ["降噪效果有幾好？","產品有咩特點？","年度投資效益點樣？","B-EAR有冇請人？","啱唔啱我哋個現場？"],
     langInstruction: "請務必用廣東話（繁體字）回答。"
   },
   ko: {
@@ -1132,12 +1129,12 @@ const translations = {
     welcomeTag: "B-EAR에 대해",
     welcomeHeading: "무엇이든 물어보세요",
     faqTitle: "자주 묻는 질문",
-    faqQuestions: ["견적을 요청하고 싶어요","데모기기는 몇 대 빌릴 수 있나요?","우리 현장에 맞을까요?","어디서 주문하면 되나요?","어떤 현장에 적합한가요?"],
+    faqQuestions: ["가격은 얼마인가요?","데모기기를 사용해 볼 수 있나요?","통화 범위는 어떻게 되나요?","견적을 요청하고 싶어요","대리점을 소개해 주세요","어떤 현장에 적합한가요?","ALVO 1.9와 BRIDGECOM X10의 차이는?","B-EAR는 어떤 회사인가요?","수리·지원·보증은 어떻게 되나요?"],
     placeholder: "질문을 입력해 주세요...",
     online: "온라인",
     apiKeyBtn: "⚙ API 키",
     disclaimer: "Enter로 전송 · Mr. B-EAR는 AI입니다. 중요한 사항은 담당자에게 확인하세요.",
-    suggestions: ["통화 범위를 알려 주세요","제품의 특징은 무엇인가요?","방수·방진 성능은 어떤가요?","동시 통화는 몇 명 가능한가요?","노이즈 캔슬링은 얼마나 좋은가요?","가격이 궁금합니다","연간 투자 효과는 어떤가요?","데모기기를 사용해 보고 싶습니다"],
+    suggestions: ["노이즈 캔슬링은 얼마나 좋은가요?","제품의 특징은 무엇인가요?","연간 투자 효과는 어떤가요?","B-EAR는 채용 중인가요?","우리 현장에 맞을까요?"],
     langInstruction: "반드시 한국어로 답변해 주세요."
   },
   vi: {
@@ -1145,12 +1142,12 @@ const translations = {
     welcomeTag: "Về B-EAR",
     welcomeHeading: "Hỏi chúng tôi bất cứ điều gì",
     faqTitle: "Câu hỏi thường gặp",
-    faqQuestions: ["Tôi muốn yêu cầu báo giá","Có thể mượn bao nhiêu máy demo?","Có phù hợp với công trường của tôi không?","Tôi đặt hàng ở đâu?","Phù hợp với loại công trường nào?"],
+    faqQuestions: ["Giá bao nhiêu?","Có thể thử máy demo không?","Phạm vi liên lạc là bao xa?","Tôi muốn yêu cầu báo giá","Giới thiệu đại lý cho tôi","Phù hợp với loại công trường nào?","ALVO 1.9 và BRIDGECOM X10 khác nhau như thế nào?","B-EAR là công ty như thế nào?","Sửa chữa, hỗ trợ và bảo hành thế nào?"],
     placeholder: "Nhập câu hỏi của bạn...",
     online: "Trực tuyến",
     apiKeyBtn: "⚙ Khóa API",
     disclaimer: "Nhấn Enter để gửi · Mr. B-EAR là AI. Vui lòng xác nhận thông tin quan trọng với nhân viên.",
-    suggestions: ["Phạm vi liên lạc là bao xa?","Đặc điểm sản phẩm là gì?","Khả năng chống nước, bụi thế nào?","Bao nhiêu người có thể nói cùng lúc?","Chống ồn tốt đến đâu?","Tôi muốn biết giá","Hiệu quả đầu tư hàng năm là bao nhiêu?","Tôi muốn thử máy demo"],
+    suggestions: ["Chống ồn tốt đến đâu?","Đặc điểm sản phẩm là gì?","Hiệu quả đầu tư hàng năm là bao nhiêu?","B-EAR có đang tuyển dụng không?","Có phù hợp với công trường của tôi không?"],
     langInstruction: "Vui lòng chỉ trả lời bằng tiếng Việt."
   },
   pt: {
@@ -1158,12 +1155,12 @@ const translations = {
     welcomeTag: "Sobre a B-EAR",
     welcomeHeading: "Pergunte-nos qualquer coisa",
     faqTitle: "Perguntas frequentes",
-    faqQuestions: ["Gostaria de solicitar um orçamento","Quantas unidades demo posso emprestar?","Funcionará no meu local?","Onde posso fazer o pedido?","Para que tipo de local é adequado?"],
+    faqQuestions: ["Quanto custa?","Posso testar uma unidade demo?","Qual é o alcance de comunicação?","Gostaria de solicitar um orçamento","Apresente-me um revendedor","Para que tipo de local é adequado?","Qual a diferença entre ALVO 1.9 e BRIDGECOM X10?","Que tipo de empresa é a B-EAR?","E sobre reparo, suporte e garantia?"],
     placeholder: "Digite sua pergunta...",
     online: "Online",
     apiKeyBtn: "⚙ Chave API",
     disclaimer: "Pressione Enter para enviar · Mr. B-EAR é uma IA. Confirme informações importantes com nossa equipe.",
-    suggestions: ["Qual é o alcance de comunicação?","Quais são as características do produto?","Como é a proteção contra água e poeira?","Quantas pessoas podem falar ao mesmo tempo?","Quão bom é o cancelamento de ruído?","Quero saber o preço","Qual é o ROI anual?","Quero testar uma demonstração"],
+    suggestions: ["Quão bom é o cancelamento de ruído?","Quais são as características do produto?","Qual é o ROI anual?","A B-EAR está contratando?","Funcionará no meu local?"],
     langInstruction: "Por favor, responda apenas em português."
   },
   tl: {
@@ -1171,12 +1168,12 @@ const translations = {
     welcomeTag: "Tungkol sa B-EAR",
     welcomeHeading: "Magtanong ka ng kahit ano",
     faqTitle: "Mga madalas itanong",
-    faqQuestions: ["Gusto kong humingi ng quote","Ilang demo unit ang puwedeng hiramin?","Bagay ba sa site namin?","Saan ako pwedeng mag-order?","Sa anong site bagay ito?"],
+    faqQuestions: ["Magkano ang presyo?","Puwede bang subukan ang demo unit?","Ano ang saklaw ng komunikasyon?","Gusto kong humingi ng quote","Mag-introduce ng dealer","Sa anong site bagay ito?","Ano ang pagkakaiba ng ALVO 1.9 at BRIDGECOM X10?","Anong klaseng kumpanya ang B-EAR?","Paano ang pagkukumpuni, suporta at warranty?"],
     placeholder: "I-type ang iyong tanong...",
     online: "Online",
     apiKeyBtn: "⚙ API Key",
     disclaimer: "Pindutin ang Enter para ipadala · Si Mr. B-EAR ay AI. Pakikumpirma ang mahahalagang bagay sa aming staff.",
-    suggestions: ["Ano ang saklaw ng komunikasyon?","Ano ang mga tampok ng produkto?","Gaano kahusay ang waterproof at dustproof?","Ilan ang pwedeng mag-usap nang sabay?","Gaano kahusay ang noise canceling?","Gusto kong malaman ang presyo","Ano ang annual ROI?","Gusto kong subukan ang demo"],
+    suggestions: ["Gaano kahusay ang noise canceling?","Ano ang mga tampok ng produkto?","Ano ang annual ROI?","Nagre-recruit ba ang B-EAR?","Bagay ba sa site namin?"],
     langInstruction: "Mangyaring sumagot lamang sa Tagalog."
   },
   ne: {
@@ -1184,12 +1181,12 @@ const translations = {
     welcomeTag: "B-EAR बारे",
     welcomeHeading: "जे पनि सोध्नुहोस्",
     faqTitle: "बारम्बार सोधिने प्रश्न",
-    faqQuestions: ["कोटेसन माग्न चाहन्छु","कति वटा डेमो लिन सकिन्छ?","मेरो साइटमा मिल्छ कि?","कहाँ अर्डर गर्ने?","कस्तो साइटका लागि उपयुक्त छ?"],
+    faqQuestions: ["मूल्य कति हो?","डेमो लिन सकिन्छ?","सञ्चार दायरा कति छ?","कोटेसन माग्न चाहन्छु","डिलर परिचय गराउनुहोस्","कस्तो साइटका लागि उपयुक्त छ?","ALVO 1.9 र BRIDGECOM X10 मा के फरक छ?","B-EAR कस्तो कम्पनी हो?","मर्मत·सहायता·वारेन्टी के हुन्छ?"],
     placeholder: "तपाईंको प्रश्न लेख्नुहोस्...",
     online: "अनलाइन",
     apiKeyBtn: "⚙ API कुञ्जी",
     disclaimer: "पठाउन Enter थिच्नुहोस् · Mr. B-EAR एक AI हो। महत्त्वपूर्ण कुराहरू कर्मचारीसँग पुष्टि गर्नुहोस्।",
-    suggestions: ["सञ्चार दायरा कति छ?","उत्पादनका विशेषताहरू के हुन्?","जलरोधी र धूलोप्रतिरोधी क्षमता कस्तो छ?","एकैसाथ कति जना कुरा गर्न सक्छन्?","नोइज क्यान्सलिङ कत्तिको राम्रो छ?","मूल्य जान्न चाहन्छु","वार्षिक लगानी प्रतिफल कति छ?","डेमो प्रयास गर्न चाहन्छु"],
+    suggestions: ["ध्वनि नियन्त्रण कत्तिको राम्रो छ?","उत्पादनका विशेषताहरू के हुन्?","वार्षिक लगानी प्रतिफल कति छ?","B-EAR ले रोजगारी दिँदै छ?","मेरो साइटमा मिल्छ कि?"],
     langInstruction: "कृपया केवल नेपाली भाषामा जवाफ दिनुहोस्।"
   },
   id: {
@@ -1197,12 +1194,12 @@ const translations = {
     welcomeTag: "Tentang B-EAR",
     welcomeHeading: "Tanyakan apa saja",
     faqTitle: "Pertanyaan yang sering diajukan",
-    faqQuestions: ["Saya ingin minta penawaran","Berapa unit demo yang bisa dipinjam?","Apakah cocok untuk lokasi saya?","Di mana saya bisa memesan?","Cocok untuk jenis lokasi apa?"],
+    faqQuestions: ["Berapa harganya?","Bisa mencoba unit demo?","Berapa jangkauan komunikasi?","Saya ingin minta penawaran","Tolong perkenalkan dealer","Cocok untuk jenis lokasi apa?","Apa bedanya ALVO 1.9 dan BRIDGECOM X10?","B-EAR perusahaan seperti apa?","Bagaimana perbaikan, dukungan, dan garansi?"],
     placeholder: "Ketik pertanyaan Anda...",
     online: "Online",
     apiKeyBtn: "⚙ Kunci API",
     disclaimer: "Tekan Enter untuk mengirim · Mr. B-EAR adalah AI. Konfirmasi hal penting dengan staf kami.",
-    suggestions: ["Berapa jangkauan komunikasi?","Apa fitur produk?","Bagaimana ketahanan air dan debu?","Berapa orang bisa bicara bersamaan?","Seberapa baik noise canceling?","Saya ingin tahu harganya","Berapa ROI tahunan?","Saya ingin mencoba demo"],
+    suggestions: ["Seberapa baik noise canceling?","Apa fitur produk?","Berapa ROI tahunan?","Apakah B-EAR sedang merekrut?","Apakah cocok untuk lokasi saya?"],
     langInstruction: "Mohon jawab hanya dalam bahasa Indonesia."
   },
   es: {
@@ -1210,12 +1207,12 @@ const translations = {
     welcomeTag: "Sobre B-EAR",
     welcomeHeading: "Pregúntenos lo que sea",
     faqTitle: "Preguntas frecuentes",
-    faqQuestions: ["Quisiera solicitar un presupuesto","¿Cuántas unidades demo puedo prestar?","¿Funcionará en mi obra?","¿Dónde puedo hacer el pedido?","¿Para qué tipo de obra es adecuado?"],
+    faqQuestions: ["¿Cuánto cuesta?","¿Puedo probar una unidad demo?","¿Cuál es el alcance de comunicación?","Quisiera solicitar un presupuesto","Preséntenme un distribuidor","¿Para qué tipo de obra es adecuado?","¿Qué diferencia hay entre ALVO 1.9 y BRIDGECOM X10?","¿Qué tipo de empresa es B-EAR?","¿Cómo es la reparación, soporte y garantía?"],
     placeholder: "Escriba su pregunta...",
     online: "En línea",
     apiKeyBtn: "⚙ Clave API",
     disclaimer: "Presione Enter para enviar · Mr. B-EAR es una IA. Confirme asuntos importantes con nuestro personal.",
-    suggestions: ["¿Cuál es el alcance de comunicación?","¿Cuáles son las características?","¿Cómo es la resistencia al agua y polvo?","¿Cuántos pueden hablar a la vez?","¿Qué tan bueno es el noise canceling?","Quiero saber el precio","¿Cuál es el ROI anual?","Quiero probar una demo"],
+    suggestions: ["¿Qué tan bueno es el noise canceling?","¿Cuáles son las características?","¿Cuál es el ROI anual?","¿B-EAR está contratando?","¿Funcionará en mi obra?"],
     langInstruction: "Por favor responda solo en español."
   },
   th: {
@@ -1223,12 +1220,12 @@ const translations = {
     welcomeTag: "เกี่ยวกับ B-EAR",
     welcomeHeading: "ถามอะไรก็ได้",
     faqTitle: "คำถามที่พบบ่อย",
-    faqQuestions: ["ต้องการขอใบเสนอราคา","ขอยืมเครื่องเดโม่ได้กี่เครื่อง?","เหมาะกับหน้างานของผมไหม?","สั่งซื้อได้ที่ไหน?","เหมาะกับหน้างานแบบไหน?"],
+    faqQuestions: ["ราคาเท่าไหร่?","ขอทดลองเครื่องเดโม่ได้ไหม?","ระยะการสื่อสารเท่าไหร่?","ต้องการขอใบเสนอราคา","ช่วยแนะนำตัวแทนจำหน่าย","เหมาะกับหน้างานแบบไหน?","ALVO 1.9 และ BRIDGECOM X10 ต่างกันอย่างไร?","B-EAR เป็นบริษัทแบบไหน?","การซ่อม สนับสนุน และรับประกันเป็นอย่างไร?"],
     placeholder: "พิมพ์คำถามของคุณ...",
     online: "ออนไลน์",
     apiKeyBtn: "⚙ คีย์ API",
     disclaimer: "กด Enter เพื่อส่ง · Mr. B-EAR เป็น AI กรุณายืนยันเรื่องสำคัญกับเจ้าหน้าที่",
-    suggestions: ["ระยะการสื่อสารเท่าไหร่?","คุณสมบัติของผลิตภัณฑ์คืออะไร?","การกันน้ำกันฝุ่นเป็นอย่างไร?","พูดพร้อมกันได้กี่คน?","การตัดเสียงรบกวนดีแค่ไหน?","อยากทราบราคา","ROI ต่อปีเท่าไหร่?","อยากลองเครื่องเดโม่"],
+    suggestions: ["ระบบตัดเสียงรบกวนดีแค่ไหน?","คุณสมบัติของผลิตภัณฑ์คืออะไร?","ROI ต่อปีเท่าไหร่?","B-EAR กำลังรับสมัครพนักงานอยู่ไหม?","เหมาะกับหน้างานของผมไหม?"],
     langInstruction: "กรุณาตอบเป็นภาษาไทยเท่านั้น"
   }
 };
