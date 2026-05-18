@@ -15,8 +15,10 @@ html { height: 100%; height: 100dvh; overflow: hidden; }
 body { font-family: 'Noto Sans JP', sans-serif; height: 100%; height: 100dvh; display: flex; flex-direction: column; background: #f5f5f5; overflow: hidden; }
 .header { background: #1a1a1a; padding: 0 1.5rem; display: flex; align-items: center; gap: 0; border-bottom: 2px solid #E8A020; height: 80px; }
 .brand { margin-left: 1.5rem; }
-.header-actions { display: flex; align-items: center; gap: 8px; margin-left: 20px; flex: 1; }
+.header-actions { display: flex; align-items: center; gap: 0; margin-left: 20px; flex: 1; }
+.header-actions #langSelect { margin-left: 20px; }
 .header-actions .status { margin-left: auto; }
+.header-actions #apiKeyBtn { margin-left: 8px; }
 .logo { width: 64px; height: 64px; border-radius: 6px; overflow: hidden; flex-shrink: 0; }
 .logo img { width: 100%; height: 100%; object-fit: cover; display: block; }
 .brand { display: flex; flex-direction: column; justify-content: center; min-width: 0; }
@@ -90,7 +92,9 @@ body { font-family: 'Noto Sans JP', sans-serif; height: 100%; height: 100dvh; di
   .avatar { width: 55px; height: 55px; }
   .header { padding: 0 0.75rem; gap: 0; height: 72px; }
   .brand { margin-left: 0.75rem; }
-  .header-actions { margin-left: 7px; gap: 6px; }
+  .header-actions { margin-left: 7px; gap: 0; }
+  .header-actions #langSelect { margin-left: 15px; }
+  .header-actions #apiKeyBtn { margin-left: 6px; }
   .title-tag { font-size: 9px; margin-bottom: 3px; }
   .title-ruby { font-size: 5.5px; }
   .title { font-size: 16px; margin-top: 0; line-height: 1; }
@@ -112,10 +116,6 @@ body { font-family: 'Noto Sans JP', sans-serif; height: 100%; height: 100dvh; di
   </div>
   <div class="header-actions">
     <button id="faqBtn" onclick="toggleFaqPanel()" style="background:rgba(255,255,255,0.15);border:1px solid rgba(255,255,255,0.2);color:#fff;padding:4px 12px;border-radius:8px;cursor:pointer;font-size:12px;white-space:nowrap;min-width:120px;text-align:center;">☰ よくある質問</button>
-    <div class="status">
-      <div class="status-dot"></div>
-      <span class="status-text" id="statusText">オンライン</span>
-    </div>
     <select id="langSelect" onchange="changeLang(this.value)" style="background:rgba(255,255,255,0.15);border:1px solid rgba(255,255,255,0.2);color:#fff;padding:4px 8px;border-radius:8px;cursor:pointer;font-size:12px;outline:none;min-width:87px;">
       <option value="ja" style="color:#000;">🇯🇵 日本語</option>
       <option value="en" style="color:#000;">🇺🇸 English</option>
@@ -130,6 +130,10 @@ body { font-family: 'Noto Sans JP', sans-serif; height: 100%; height: 100dvh; di
       <option value="id" style="color:#000;">🇮🇩 Indonesia</option>
       <option value="ne" style="color:#000;">🇳🇵 नेपाली</option>
     </select>
+    <div class="status">
+      <div class="status-dot"></div>
+      <span class="status-text" id="statusText">オンライン</span>
+    </div>
     <button id="apiKeyBtn" onclick="toggleApiKeyPanel()" style="background:rgba(255,255,255,0.15);border:1px solid rgba(255,255,255,0.2);color:#fff;padding:4px 10px;border-radius:8px;cursor:pointer;font-size:12px;">⚙ APIキー</button>
   </div>
 </div>
@@ -178,7 +182,7 @@ body { font-family: 'Noto Sans JP', sans-serif; height: 100%; height: 100dvh; di
     <textarea id="input" class="chat-input" placeholder="質問を入力してください..." rows="1"></textarea>
     <button id="sendBtn" class="send-btn" aria-label="送信"><img src="data:image/png;base64,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" alt="送信" class="bear-icon" /></button>
   </div>
-  <div class="disclaimer" id="disclaimer">Enterで送信 · ミスターB-EARはAIです。重要な事項は担当者にご確認ください。</div>
+  <div class="disclaimer" id="disclaimer">Enterで送信 · Mr. B-EARはAIです。重要な事項は担当者にご確認ください。</div>
 </div>
 
 <script>
@@ -187,7 +191,7 @@ const FAQ_CONTENT = `
 
 > 作成日: 2026-05-16
 > 目的: 4文書（ALVO FAQ、ALVO分析版、BRIDGECOM追加版、不足追加データ）を1つにまとめ、重複統一・矛盾解消を実施
-> 対象: AIエージェント「ミスターB-EAR」の学習・参照用FAQ
+> 対象: AIエージェント「Mr. B-EAR」の学習・参照用FAQ
 
 ---
 
@@ -255,7 +259,7 @@ B-EARが現場でバリューを実践するための心得。「見クマ（現
 - 友人や従業員、親しい取引先・お客様からも「ベアさん」「クマさん」と普段から呼ばれている。
 - 普段は温厚だが、キレると手がつけられないらしい…。
 - 昨今の熊出没問題を危惧している。
-- 近年AIにハマり出し、PC作業に疎くコードなど一切無知ながら、Claude・ChatGPT・Geminiを駆使して **一人でこの AI Agent Mr. B-EAR を作り上げた生みの親**。
+- 近年AIにハマり出し、PC作業に疎くコードなど一切無知ながら、Claude・ChatGPT・Geminiを駆使して **このAIエージェント「Mr. B-EAR」を一人で作り上げた生みの親** でもあります。
 
 **代表の発信**：
 - 中橋康太郎ブログ（note）: https://note.com/b_ear
@@ -754,7 +758,7 @@ X10をベースにスポーツ・競技用途に特化した同時通話無線�
 - 現在の通信課題
 - 同時通話の必要性とその理由
 
-B-EARが多くの情報を確認するのは、単に見積金額を出すためではなく、現場に最も適した構成を提案し、導入後に納得いただくため。AIエージェント ミスターB-EARでは、これらを6W・4Hに沿って自然に確認する。
+B-EARが多くの情報を確認するのは、単に見積金額を出すためではなく、現場に最も適した構成を提案し、導入後に納得いただくため。AIエージェント Mr. B-EARでは、これらを6W・4Hに沿って自然に確認する。
 
 ---
 
@@ -1206,12 +1210,13 @@ const translations = {
     welcomeTitle: "現場の通話のお悩み、ご相談ください",
     welcomeTag: "B-EARのこと",
     welcomeHeading: "何でも聞いてください",
+    faqBtn: "☰ よくある質問",
     faqTitle: "よくある質問",
     faqQuestions: ["価格はいくら？","デモ機を試せる？","通話距離はどれくらい？","見積りを頼みたいけど？","代理店を紹介して","どんな現場で使えるの？","ALVO 1.9とBRIDGECOM X10は何が違うの？","B-EARってどんなメーカー？","修理・サポート・保証はどうなの？","B-EARの代表はどんな人？"],
     placeholder: "質問を入力してください...",
     online: "オンライン",
     apiKeyBtn: "⚙ APIキー",
-    disclaimer: "Enterで送信 · ミスターB-EARはAIです。重要な事項は担当者にご確認ください。",
+    disclaimer: "Enterで送信 · Mr. B-EARはAIです。重要な事項は担当者にご確認ください。",
     suggestions: ["ノイキャンはどれだけスゴいの？","製品の特長はナニ？","年間の投資効果はどれくらい？","B-EARは求人してる？","自分の現場に合うかな？"],
     langInstruction: "必ず日本語で回答してください。"
   },
@@ -1219,6 +1224,7 @@ const translations = {
     welcomeTitle: "Tell us about your on-site communication challenges",
     welcomeTag: "About B-EAR",
     welcomeHeading: "Ask us anything",
+    faqBtn: "☰ FAQ",
     faqTitle: "Frequently Asked Questions",
     faqQuestions: ["How much does it cost?","Can I try a demo unit?","What's the talk range?","I'd like to request a quote","Introduce me to a dealer","What kind of sites is it suited for?","What's the difference between ALVO 1.9 and BRIDGECOM X10?","What kind of company is B-EAR?","What about repair, support and warranty?","What is the B-EAR representative like?"],
     placeholder: "Type your question...",
@@ -1232,6 +1238,7 @@ const translations = {
     welcomeTitle: "请咨询现场通讯方面的烦恼",
     welcomeTag: "关于 B-EAR",
     welcomeHeading: "有问必答",
+    faqBtn: "☰ 常见问题",
     faqTitle: "常见问题",
     faqQuestions: ["价格是多少？","可以试用演示机吗？","通话距离有多远？","想申请报价","介绍代理店","适合什么样的现场？","ALVO 1.9和BRIDGECOM X10有什么区别？","B-EAR是什么样的厂商？","维修、支持和保修怎么样？","B-EAR的代表是怎样的人？"],
     placeholder: "请输入您的问题...",
@@ -1245,6 +1252,7 @@ const translations = {
     welcomeTitle: "請咨詢現場通訊嘅煩惱",
     welcomeTag: "關於 B-EAR",
     welcomeHeading: "有問必答",
+    faqBtn: "☰ 常見問題",
     faqTitle: "常見問題",
     faqQuestions: ["價錢幾多？","可以試用演示機嗎？","通話距離有幾遠？","想申請報價","介紹代理店","啱咩現場？","ALVO 1.9同BRIDGECOM X10有咩唔同？","B-EAR係咩公司？","維修、支援、保固點樣？","B-EAR個代表係咩人？"],
     placeholder: "請輸入您嘅問題...",
@@ -1258,6 +1266,7 @@ const translations = {
     welcomeTitle: "현장 통화 고민, 상담해 주세요",
     welcomeTag: "B-EAR에 대해",
     welcomeHeading: "무엇이든 물어보세요",
+    faqBtn: "☰ 자주 묻는 질문",
     faqTitle: "자주 묻는 질문",
     faqQuestions: ["가격은 얼마인가요?","데모기기를 사용해 볼 수 있나요?","통화 범위는 어떻게 되나요?","견적을 요청하고 싶어요","대리점을 소개해 주세요","어떤 현장에 적합한가요?","ALVO 1.9와 BRIDGECOM X10의 차이는?","B-EAR는 어떤 회사인가요?","수리·지원·보증은 어떻게 되나요?","B-EAR 대표는 어떤 사람인가요?"],
     placeholder: "질문을 입력해 주세요...",
@@ -1271,6 +1280,7 @@ const translations = {
     welcomeTitle: "Hãy hỏi chúng tôi về vấn đề liên lạc tại công trường",
     welcomeTag: "Về B-EAR",
     welcomeHeading: "Hỏi chúng tôi bất cứ điều gì",
+    faqBtn: "☰ Câu hỏi thường gặp",
     faqTitle: "Câu hỏi thường gặp",
     faqQuestions: ["Giá bao nhiêu?","Có thể thử máy demo không?","Phạm vi liên lạc là bao xa?","Tôi muốn yêu cầu báo giá","Giới thiệu đại lý cho tôi","Phù hợp với loại công trường nào?","ALVO 1.9 và BRIDGECOM X10 khác nhau như thế nào?","B-EAR là công ty như thế nào?","Sửa chữa, hỗ trợ và bảo hành thế nào?","Người đại diện B-EAR là người như thế nào?"],
     placeholder: "Nhập câu hỏi của bạn...",
@@ -1284,6 +1294,7 @@ const translations = {
     welcomeTitle: "Conte-nos sobre seus desafios de comunicação no local",
     welcomeTag: "Sobre a B-EAR",
     welcomeHeading: "Pergunte-nos qualquer coisa",
+    faqBtn: "☰ Perguntas frequentes",
     faqTitle: "Perguntas frequentes",
     faqQuestions: ["Quanto custa?","Posso testar uma unidade demo?","Qual é o alcance de comunicação?","Gostaria de solicitar um orçamento","Apresente-me um revendedor","Para que tipo de local é adequado?","Qual a diferença entre ALVO 1.9 e BRIDGECOM X10?","Que tipo de empresa é a B-EAR?","E sobre reparo, suporte e garantia?","Como é o representante da B-EAR?"],
     placeholder: "Digite sua pergunta...",
@@ -1297,6 +1308,7 @@ const translations = {
     welcomeTitle: "Magtanong sa amin tungkol sa komunikasyon sa site",
     welcomeTag: "Tungkol sa B-EAR",
     welcomeHeading: "Magtanong ka ng kahit ano",
+    faqBtn: "☰ Mga FAQ",
     faqTitle: "Mga madalas itanong",
     faqQuestions: ["Magkano ang presyo?","Puwede bang subukan ang demo unit?","Ano ang saklaw ng komunikasyon?","Gusto kong humingi ng quote","Mag-introduce ng dealer","Sa anong site bagay ito?","Ano ang pagkakaiba ng ALVO 1.9 at BRIDGECOM X10?","Anong klaseng kumpanya ang B-EAR?","Paano ang pagkukumpuni, suporta at warranty?","Anong klaseng tao ang representative ng B-EAR?"],
     placeholder: "I-type ang iyong tanong...",
@@ -1310,6 +1322,7 @@ const translations = {
     welcomeTitle: "साइटको सञ्चार समस्याबारे सोध्नुहोस्",
     welcomeTag: "B-EAR बारे",
     welcomeHeading: "जे पनि सोध्नुहोस्",
+    faqBtn: "☰ बारम्बार सोधिने प्रश्न",
     faqTitle: "बारम्बार सोधिने प्रश्न",
     faqQuestions: ["मूल्य कति हो?","डेमो लिन सकिन्छ?","सञ्चार दायरा कति छ?","कोटेसन माग्न चाहन्छु","डिलर परिचय गराउनुहोस्","कस्तो साइटका लागि उपयुक्त छ?","ALVO 1.9 र BRIDGECOM X10 मा के फरक छ?","B-EAR कस्तो कम्पनी हो?","मर्मत·सहायता·वारेन्टी के हुन्छ?","B-EAR का प्रतिनिधि कस्तो व्यक्ति हुनुहुन्छ?"],
     placeholder: "तपाईंको प्रश्न लेख्नुहोस्...",
@@ -1323,6 +1336,7 @@ const translations = {
     welcomeTitle: "Konsultasikan masalah komunikasi di lokasi kerja",
     welcomeTag: "Tentang B-EAR",
     welcomeHeading: "Tanyakan apa saja",
+    faqBtn: "☰ FAQ",
     faqTitle: "Pertanyaan yang sering diajukan",
     faqQuestions: ["Berapa harganya?","Bisa mencoba unit demo?","Berapa jangkauan komunikasi?","Saya ingin minta penawaran","Tolong perkenalkan dealer","Cocok untuk jenis lokasi apa?","Apa bedanya ALVO 1.9 dan BRIDGECOM X10?","B-EAR perusahaan seperti apa?","Bagaimana perbaikan, dukungan, dan garansi?","Seperti apa perwakilan B-EAR?"],
     placeholder: "Ketik pertanyaan Anda...",
@@ -1336,6 +1350,7 @@ const translations = {
     welcomeTitle: "Consúltenos sobre desafíos de comunicación en obra",
     welcomeTag: "Sobre B-EAR",
     welcomeHeading: "Pregúntenos lo que sea",
+    faqBtn: "☰ Preguntas frecuentes",
     faqTitle: "Preguntas frecuentes",
     faqQuestions: ["¿Cuánto cuesta?","¿Puedo probar una unidad demo?","¿Cuál es el alcance de comunicación?","Quisiera solicitar un presupuesto","Preséntenme un distribuidor","¿Para qué tipo de obra es adecuado?","¿Qué diferencia hay entre ALVO 1.9 y BRIDGECOM X10?","¿Qué tipo de empresa es B-EAR?","¿Cómo es la reparación, soporte y garantía?","¿Cómo es el representante de B-EAR?"],
     placeholder: "Escriba su pregunta...",
@@ -1349,6 +1364,7 @@ const translations = {
     welcomeTitle: "ปรึกษาเราเกี่ยวกับปัญหาการสื่อสารที่หน้างาน",
     welcomeTag: "เกี่ยวกับ B-EAR",
     welcomeHeading: "ถามอะไรก็ได้",
+    faqBtn: "☰ คำถามที่พบบ่อย",
     faqTitle: "คำถามที่พบบ่อย",
     faqQuestions: ["ราคาเท่าไหร่?","ขอทดลองเครื่องเดโม่ได้ไหม?","ระยะการสื่อสารเท่าไหร่?","ต้องการขอใบเสนอราคา","ช่วยแนะนำตัวแทนจำหน่าย","เหมาะกับหน้างานแบบไหน?","ALVO 1.9 และ BRIDGECOM X10 ต่างกันอย่างไร?","B-EAR เป็นบริษัทแบบไหน?","การซ่อม สนับสนุน และรับประกันเป็นอย่างไร?","ตัวแทน B-EAR เป็นคนแบบไหน?"],
     placeholder: "พิมพ์คำถามของคุณ...",
@@ -1382,6 +1398,8 @@ function applyTranslations() {
   if (statusEl) statusEl.textContent = t.online;
   const apiBtnEl = document.getElementById('apiKeyBtn');
   if (apiBtnEl) apiBtnEl.textContent = t.apiKeyBtn;
+  const faqBtnEl = document.getElementById('faqBtn');
+  if (faqBtnEl && t.faqBtn) faqBtnEl.textContent = t.faqBtn;
   const disclaimerEl = document.getElementById('disclaimer');
   if (disclaimerEl) disclaimerEl.textContent = t.disclaimer;
   const langSel = document.getElementById('langSelect');
