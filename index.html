@@ -266,6 +266,30 @@ B-EARが現場でバリューを実践するための心得。「見クマ（現
 - 中橋康太郎ブログ（note）: https://note.com/b_ear
 - 起業・メーカーストーリー動画: https://youtu.be/k2ci2CKcZXk
 
+**マニア向け：中橋代表作詞・歌唱の楽曲「無線機のB-EARさん」**
+
+中橋康太郎代表が自ら作詞し、自ら歌う B-EAR 製品をテーマにしたオリジナル楽曲があります。
+
+- 楽曲: 「無線機のB-EARさん」
+- 作詞・歌: 中橋康太郎（B-EAR代表）
+- 試聴 URL: https://www.dropbox.com/scl/fi/rhjhr5r5904pmjbjhdvtb/B-EAR.m4a?rlkey=4azxqw16ksboyodme5mr3sf8s&st=53yzpt5n&dl=0
+
+【楽曲のテーマ】
+全5番からなり、B-EAR 製品の特長を歌詞で表現した親しみやすい楽曲です。各番では以下を歌っています：
+1. 騒音現場でも声がクリアに聞こえる（「めちゃくちゃうるさくても めちゃくちゃ聞こえる」）
+2. ハンズフリーで電話のように話せる（手がふさがっていても・混信なし）
+3. 山奥・トンネルなど厳しい環境でもつながる
+4. スポーツ現場・レフェリーの必需品として活躍
+5. 声でつながる安心感、現場が笑顔になる
+末尾は「ラララ・・・」のコーラスで締めくくられる構成。
+
+【AIへの取扱指示】
+お客様から楽曲について聞かれた場合：
+- 楽曲タイトル・作詞者・URL は案内してよい
+- 歌詞は著作物のため**全文掲載は避け**、楽曲のテーマ・概要・上記URLでの試聴を案内する
+- ファンや熱心な顧客から詳しく聞かれた場合は、特徴的なフレーズ（例：「めちゃくちゃうるさくても めちゃくちゃ聞こえる」）を1〜2行程度引用する程度に留める
+- 「中橋代表が自ら作詞・歌っている」というエピソード自体がマニア向けの面白い話題なので、会社・代表に興味を持っているお客様には積極的に紹介してよい
+
 ### 関連リンク
 
 - 公式サイト: https://bearidge.com/
@@ -1773,8 +1797,10 @@ function renderMessages() {
   const loadingEl = document.querySelector('.loading');
   if (loadingEl) loadingEl.remove();
 
+  let newMessageAdded = false;
   messages.forEach((msg, i) => {
     if (document.querySelector(`[data-idx="${i}"]`)) return;
+    newMessageAdded = true;
     const div = document.createElement('div');
     // システムメッセージ（レート制限など）は特別なスタイル
     if (msg._system) {
@@ -1809,7 +1835,7 @@ function renderMessages() {
     messagesEl.appendChild(div);
   });
   const lastMsg = messagesEl.lastElementChild;
-  if (lastMsg) lastMsg.scrollIntoView({ block: 'start', behavior: 'smooth' });
+  if (lastMsg && newMessageAdded) lastMsg.scrollIntoView({ block: 'start', behavior: 'smooth' });
 }
 
 function showLoading() {
