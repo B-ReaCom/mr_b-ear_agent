@@ -6,11 +6,24 @@ export const config = {
 };
 
 // ===== レート制限設定 =====
+// 注：本格運用には Vercel KV 化が中期目標
+// （現状はインメモリのため、Edge Function インスタンスごとに独立カウント）
 const RATE_LIMITS = {
   perMinute: 5,      // 1分間に5リクエストまで
   perHour: 50,       // 1時間に50リクエストまで
-  perDay: 200,       // 1日に200リクエストまで
+  perDay: 50,        // 1日に50リクエストまで（コスト攻撃対策で 200 → 50 に引き下げ）
 };
+
+// ===== リクエストボディ検証用設定 =====
+// 許可するモデル（不正モデルでコスト攻撃を防ぐ）
+const ALLOWED_MODELS = new Set([
+  'claude-sonnet-4-6',
+  'claude-haiku-4-5',
+  'claude-haiku-4-5-20251001',
+  'claude-sonnet-4-5'
+]);
+const MAX_TOKENS_LIMIT = 3000;
+const MAX_MESSAGES_TOTAL_LEN = 50000;
 
 // ===== Origin 許可リスト（CSRF対策） =====
 // 自社ドメインからのリクエストのみ許可
@@ -206,6 +219,45 @@ export default async function handler(req) {
   try {
     const body = await req.json();
 
+    // ===== リクエストボディ検証（コスト攻撃対策） =====
+    // モデル検証
+    if (!ALLOWED_MODELS.has(body.model)) {
+      return new Response(JSON.stringify({
+        error: 'invalid_model',
+        message: '指定されたモデルは許可されていません。'
+      }), {
+        status: 400,
+        headers: { 'Content-Type': 'application/json', ...corsHeaders }
+      });
+    }
+
+    // max_tokens 検証
+    const maxTok = body.max_tokens | 0;
+    if (maxTok < 1 || maxTok > MAX_TOKENS_LIMIT) {
+      return new Response(JSON.stringify({
+        error: 'invalid_max_tokens',
+        message: `max_tokens は 1〜${MAX_TOKENS_LIMIT} の範囲で指定してください。`
+      }), {
+        status: 400,
+        headers: { 'Content-Type': 'application/json', ...corsHeaders }
+      });
+    }
+
+    // メッセージ総文字数の検証
+    const totalLen = (body.messages || []).reduce((n, m) => {
+      if (typeof m.content === 'string') return n + m.content.length;
+      return n + JSON.stringify(m.content || '').length;
+    }, 0);
+    if (totalLen > MAX_MESSAGES_TOTAL_LEN) {
+      return new Response(JSON.stringify({
+        error: 'message_too_long',
+        message: `メッセージの総文字数が上限（${MAX_MESSAGES_TOTAL_LEN}文字）を超えています。`
+      }), {
+        status: 400,
+        headers: { 'Content-Type': 'application/json', ...corsHeaders }
+      });
+    }
+
     // Anthropic API へ転送
     const upstream = await fetch('https://api.anthropic.com/v1/messages', {
       method: 'POST',
@@ -240,9 +292,11 @@ export default async function handler(req) {
       }
     });
   } catch (error) {
+    // 詳細エラーはサーバーログのみに（クライアントに内部情報を漏らさない）
+    console.error('[chat.js] internal error:', error);
     return new Response(JSON.stringify({
       error: 'internal_error',
-      message: error.message
+      message: 'システムエラーが発生しました。しばらく経ってからお試しください。'
     }), {
       status: 500,
       headers: { 'Content-Type': 'application/json', ...corsHeaders }

@@ -8,12 +8,12 @@ ReaCom ALVO 1.9製品に関する質問に回答するAIエージェント。
 
 ## ファイル構成
 
-- `mr_bear_agent_standalone.html` - メインアプリケーション（スタンドアロン版）
+- `index.html` - メインアプリケーション（スタンドアロン版）
 - `README.md` - このファイル
 
 ## 更新方法
 
-1. `mr_bear_agent_standalone.html`を編集
+1. `index.html`を編集
 2. GitHubにコミット＆プッシュ
 3. Vercelが自動的にデプロイ（約30秒）
 
