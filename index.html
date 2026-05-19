@@ -4,8 +4,12 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover, user-scalable=no, maximum-scale=1">
 <title>Mr. B-EAR - ALVO 1.9 AIエージェント</title>
+<meta name="description" content="Mr. B-EAR：業務用同時通話無線機のAIエージェント。BRIDGECOM・ReaCom製品に関する質問に自動回答。">
+<meta property="og:title" content="AI Agent Mr. B-EAR">
+<meta property="og:description" content="Mr. B-EAR：業務用同時通話無線機のAIエージェント。">
+<meta property="og:type" content="website">
+<meta property="og:url" content="https://mr-b-ear-agent.vercel.app/">
 <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+JP:wght@400;500;700&family=Barlow:wght@600;700&display=swap" rel="stylesheet">
-<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@tabler/icons-webfont@latest/tabler-icons.min.css">
 <style>
 * { margin: 0; padding: 0; box-sizing: border-box; }
 html { height: 100%; height: 100dvh; overflow: hidden; }
@@ -28,6 +32,7 @@ body { font-family: 'Noto Sans JP', sans-serif; height: 100%; height: 100dvh; di
 .welcome-icon > img.product-img { height: 150px; width: auto; display: block; }
 .welcome-icon .mikuma { position: absolute; bottom: 0; right: -32px; width: 65px; transform: rotate(18deg); pointer-events: none; z-index: 0; }
 .welcome-icon > img.product-img { position: relative; z-index: 1; }
+.welcome-title { font-size: 16px; color: #4b5563; letter-spacing: 0.04em; margin-bottom: 8px; font-weight: 500; }
 .welcome-tag { font-size: 13px; color: #4b5563; letter-spacing: 0.06em; margin-bottom: 6px; font-weight: 500; }
 .welcome-heading { font-family: 'Noto Sans JP', sans-serif; font-size: 30px; font-weight: 700; color: #111827; line-height: 1.3; margin-bottom: 2rem; }
 .suggestions { display: flex; flex-wrap: wrap; gap: 8px; justify-content: center; max-width: 600px; margin: 0 auto; }
@@ -72,11 +77,13 @@ body { font-family: 'Noto Sans JP', sans-serif; height: 100%; height: 100dvh; di
 @media (max-width: 768px) {
   .welcome-icon > img.product-img { height: 120px; width: auto; }
   .welcome-icon .mikuma { width: 50px; right: -22px; }
+  .welcome-title { font-size: 14px; }
   .welcome-tag { font-size: 11px; }
   .welcome-heading { font-size: 22px; }
   .avatar { width: 55px; height: 55px; }
-  .header { padding: 0 0.75rem; gap: 0.5rem; }
-  .title-tag { font-size: 9px; }
+  .header { padding: 0 0.75rem; gap: 4px; }
+  .header-actions { gap: 2px; }
+  .title-tag { font-size: 9px; letter-spacing: 0.03em; }
   .title { font-size: 16px; margin-top: 5px; }
   .title rt { font-size: 6px; }
   .logo { width: 40px; height: 40px; }
@@ -150,6 +157,7 @@ body { font-family: 'Noto Sans JP', sans-serif; height: 100%; height: 100dvh; di
         <circle cx="80" cy="46" r="2.5" fill="#111"/>
       </svg>
     </div>
+    <div class="welcome-title" id="welcomeTitle">現場の通話のお悩み、ご相談ください</div>
     <div class="welcome-tag" id="welcomeTag">B-EARのこと</div>
     <div class="welcome-heading" id="welcomeHeading">何でも聞いてください</div>
     <div class="suggestions" id="suggestions">
@@ -176,6 +184,10 @@ body { font-family: 'Noto Sans JP', sans-serif; height: 100%; height: 100dvh; di
 <script>
 const FAQ_CONTENT = `
 あなたはAIエージェント「ミスターB-EAR」です。B-EAR株式会社（ベアリッジ）の全製品に関する専門家として、お客様の質問に丁寧・正確・プロフェッショナルに回答します。
+
+// TODO: 2026-08-01 以降、以下の表記を更新：
+// 「2026年8月販売開始」 → 「販売中」
+// 「購入に関するお問い合わせは B-EAR までご連絡ください」に統一
 
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 B-EAR 製品ブランド戦略
@@ -670,6 +682,7 @@ ALVO 1.9のノイズキャンセラー（ENC 2.0）は、ONとOFFの切替が可
 BRIDGECOM 全製品比較表
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 
+<!-- 注: 充電時間・役割切替は公式ハンドブック参照。X10アスリートはスポーツ特化のため固定仕様 -->
 項目      | X10        | X10コンパクト | X5         | X10アスリート | LT         | R2
 ────────────────────────────────────────────────────────────────
 型番      | BM-X10     | BM-X10CP    | BM-X5      | BM-X10AT    | BM-LTM/LTS | BM-R2
@@ -678,10 +691,13 @@ BRIDGECOM 全製品比較表
 CH数      | 40         | 40          | 40         | 40          | 80         | 4(CTCSS)
 同時通話  | 10台/9台   | 10台/9台    | 5台        | 10名        | 2人        | 受信のみ
 傍聴      | 無制限     | 無制限      | 入替式     | 無制限      | 無制限     | -
-通話距離  | -          | -           | -          | 300-900m    | 約150m     | -
+通話距離  | -          | -           | -          | 300-900m    | 約150m     | 受信専用（送信機側依存）
+充電時間  | 約5〜6時間 | 約2〜3時間  | 約3時間    | 約5〜6時間  | 約3〜4時間 | -
 連続通話  | 約12時間   | 約8時間     | 約10時間   | 約8時間     | 約10時間   | 約15時間
 重量      | -          | 98g         | 88g        | 106g        | 60g        | 50g
 防水      | IP67       | IPX4        | 非防水     | IP64        | -          | 非防水
+ノイズキャンセル | 自社オリジナル（本体内蔵） | 自社オリジナル（本体内蔵） | - | 100dB対応（別系統） | - | -
+本体役割切替 | 可（マスター/子機等） | 可（マスター/子機等） | 可（通常/固定） | 不可（固定スポーツ用） | 親機/子機 | -
 VOX機能   | なし       | あり(A0-A4) | なし       | 5段階       | -          | -
 
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
@@ -795,6 +811,8 @@ Q96. X10とX10アスリートの違いは？
 | 防水 | IP67 | IP64 |
 | タイムラグ | - | 0.08秒以下 |
 | 連続通話 | 約12時間 | 約8時間 |
+
+※ X10アスリートはスポーツ市場向け戦略価格のため、X10コンパクトより低価格です。スペック詳細は第3章を参照。
 
 Q97. X10アスリートのスペック詳細は？
 型番：BM-X10AT、周波数：2.400-2.483GHz（ISM）、サイズ：120×53×18.5mm、重量：106g、防水：IP64、バッテリー：1100mA リチウムイオン、動作時間：約8時間、動作温度：-10～+60℃、セキュリティ：65,536コード組み合わせ（4桁）、CH：40、最大同時通話：10名（傍聴無制限）、タイムラグ：0.08秒以下、VOX：5段階、ノイズキャンセル：100dB対応、内蔵アンテナ、FCC・CE認証、免許/登録不要。
@@ -1159,7 +1177,7 @@ const translations = {
     online: "온라인",
     apiKeyBtn: "⚙ API 키",
     disclaimer: "Enter로 전송 · Mr. B-EAR는 AI입니다. 중요한 사항은 담당자에게 확인하세요.",
-    suggestions: ["통화 범위를 알려 주세요","제품의 특징은 무엇인가요?","방수·방진 성능은 어떤가요?","동시 통화는 몇 명 가능한가요?","노이즈 캔슬링은 얼마나 좋은가요?","가격이 궁금합니다","연간 투자 효과는 어떤가요?","데모기기를 사용해 보고 싶습니다"],
+    suggestions: ["통화 범위를 알려 주세요","제품의 특징은 무엇인가요?","방수·방진 성능은 어떤가요?","동시 통화는 몇 명 가능한가요?","노이즈 캔슬링은 얼마나 좋은가요?","가격이 궁금합니다","연간 투자 효과는 어떤가요?","데모 기기를 사용해 볼 수 있나요?"],
     langInstruction: "반드시 한국어로 답변해 주세요."
   },
   vi: {
@@ -1192,7 +1210,7 @@ const translations = {
     online: "Online",
     apiKeyBtn: "⚙ API Key",
     disclaimer: "Pindutin ang Enter para ipadala · Si Mr. B-EAR ay AI. Pakikumpirma ang mahahalagang bagay sa aming staff.",
-    suggestions: ["Ano ang saklaw ng komunikasyon?","Ano ang mga tampok ng produkto?","Gaano kahusay ang waterproof at dustproof?","Ilan ang pwedeng mag-usap nang sabay?","Gaano kahusay ang noise canceling?","Gusto kong malaman ang presyo","Ano ang annual ROI?","Gusto kong subukan ang demo"],
+    suggestions: ["Ano ang saklaw ng komunikasyon?","Ano ang mga tampok ng produkto?","Gaano kahusay ang waterproof at dustproof?","Ilan ang pwedeng mag-usap nang sabay?","Gaano kahusay ang noise canceling?","Gusto kong malaman ang presyo","Ano ang annual ROI?","Magpakilala ng dealer"],
     langInstruction: "Mangyaring sumagot lamang sa Tagalog."
   },
   ne: {
@@ -1214,7 +1232,7 @@ const translations = {
     online: "Online",
     apiKeyBtn: "⚙ Kunci API",
     disclaimer: "Tekan Enter untuk mengirim · Mr. B-EAR adalah AI. Konfirmasi hal penting dengan staf kami.",
-    suggestions: ["Berapa jangkauan komunikasi?","Apa fitur produk?","Bagaimana ketahanan air dan debu?","Berapa orang bisa bicara bersamaan?","Seberapa baik noise canceling?","Saya ingin tahu harganya","Berapa ROI tahunan?","Saya ingin mencoba demo"],
+    suggestions: ["Berapa jangkauan komunikasi?","Apa fitur produk?","Bagaimana ketahanan air dan debu?","Berapa orang bisa bicara bersamaan?","Seberapa baik noise canceling?","Saya ingin tahu harganya","Berapa ROI tahunan?","Apakah layak beralih dari radio saat ini?"],
     langInstruction: "Mohon jawab hanya dalam bahasa Indonesia."
   },
   es: {
