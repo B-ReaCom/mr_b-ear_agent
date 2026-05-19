@@ -25,10 +25,15 @@ const ALERT_THRESHOLD_JPY = 20000;        // ¥20,000超過でアラート
 const ALERT_EMAIL_TO = 'sales@bearidge.jp'; // 通知先メールアドレス
 const USD_TO_JPY_RATE = 150;              // 為替レート（USD→JPY、必要に応じて調整）
 
+// ▼ ミッドランドハーツ 見積もり依頼の通知先（ダミー：実運用前に書き換え）
+const QUOTE_EMAIL_TO = 'example@midland-hearts.example';
+const QUOTE_EMAIL_CC = ''; // 必要ならカンマ区切りで追加
+
 // シート名
 const SHEET_QA_LOG = 'QA_LOG';            // Q&Aログシート（既存）
 const SHEET_USAGE_LOG = 'USAGE_LOG';      // API使用量ログ
 const SHEET_ALERT_STATUS = 'ALERT_STATUS'; // アラート送信状態
+const SHEET_QUOTE_LOG = 'QUOTE_LOG';      // 見積もり依頼ログ
 
 // ========== メイン処理 ==========
 function doPost(e) {
@@ -39,6 +44,9 @@ function doPost(e) {
     if (data.type === 'api_usage') {
       // API使用量ログ
       handleUsageLog(data);
+    } else if (data.type === 'quote_request') {
+      // ミッドランドハーツ 見積もり依頼
+      handleQuoteRequest(data);
     } else {
       // 既存のQ&Aログ
       handleQALog(data);
@@ -170,6 +178,109 @@ ${SpreadsheetApp.getActiveSpreadsheet().getUrl()}
     subject: subject,
     body: body
   });
+}
+
+// ========== ミッドランドハーツ 見積もり依頼処理 ==========
+function handleQuoteRequest(data) {
+  const ss = SpreadsheetApp.getActiveSpreadsheet();
+  let sheet = ss.getSheetByName(SHEET_QUOTE_LOG);
+  if (!sheet) {
+    sheet = ss.insertSheet(SHEET_QUOTE_LOG);
+    sheet.appendRow([
+      '日時', 'コース', 'お名前', '会社名', '部署', 'メール', '電話',
+      '製品内訳', '概算合計(JPY)', '6W4H', '備考', 'IP'
+    ]);
+  }
+
+  const customer = data.customer || {};
+  const items = data.items || [];
+  const sit = data.situation || null;
+
+  const itemsText = items.map(it =>
+    `${it.name} × ${it.quantity} = ¥${(it.unitPrice * it.quantity).toLocaleString()}`
+  ).join('\n');
+
+  const sitText = sit ? [
+    sit.who ? `[Who] ${sit.who}` : null,
+    sit.whom ? `[Whom] ${sit.whom}` : null,
+    sit.what ? `[What] ${sit.what}` : null,
+    sit.when ? `[When] ${sit.when}` : null,
+    sit.where ? `[Where] ${sit.where}` : null,
+    sit.why ? `[Why] ${sit.why}` : null,
+    sit.how ? `[How] ${sit.how}` : null,
+    sit.howMany ? `[How many] ${sit.howMany}` : null,
+    sit.howMuch ? `[How much] ${sit.howMuch}` : null,
+    sit.howLong ? `[How long] ${sit.howLong}` : null,
+  ].filter(Boolean).join('\n') : '';
+
+  sheet.appendRow([
+    new Date(data.timestamp || Date.now()),
+    data.mode === 'detailed' ? '詳しく相談' : 'クイック見積もり',
+    customer.name || '',
+    customer.company || '',
+    customer.department || '',
+    customer.email || '',
+    customer.phone || '',
+    itemsText,
+    data.subtotal || 0,
+    sitText,
+    data.notes || '',
+    data.ip || ''
+  ]);
+
+  // メール通知
+  sendQuoteNotification(data, itemsText, sitText);
+}
+
+function sendQuoteNotification(data, itemsText, sitText) {
+  const customer = data.customer || {};
+  const courseLabel = data.mode === 'detailed' ? '詳しく相談' : 'クイック見積もり';
+  const subject = `【自動見積もり依頼】${customer.name || '名前未入力'} 様（${courseLabel}）`;
+
+  let body = `ミッドランドハーツ 自動見積もりシステムにて依頼を受け付けました。
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━
+コース: ${courseLabel}
+受信日時: ${new Date(data.timestamp || Date.now()).toLocaleString('ja-JP')}
+━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+【お客様情報】
+お名前: ${customer.name || ''}
+会社名: ${customer.company || '(未入力)'}
+部署・役職: ${customer.department || '(未入力)'}
+メール: ${customer.email || ''}
+電話: ${customer.phone || '(未入力)'}
+
+【ご希望の製品】
+${itemsText || '(なし)'}
+
+概算合計（税抜）: ¥${(data.subtotal || 0).toLocaleString()}
+`;
+
+  if (sitText) {
+    body += `
+【ご利用シーン（6W4H）】
+${sitText}
+`;
+  }
+
+  if (data.notes) {
+    body += `
+【備考・ご要望】
+${data.notes}
+`;
+  }
+
+  body += `
+━━━━━━━━━━━━━━━━━━━━━━━━━━
+このメールは自動見積もりシステムより自動送信されています。
+ログはスプレッドシートでご確認ください：
+${SpreadsheetApp.getActiveSpreadsheet().getUrl()}
+`;
+
+  const options = { to: QUOTE_EMAIL_TO, subject, body };
+  if (QUOTE_EMAIL_CC) options.cc = QUOTE_EMAIL_CC;
+  MailApp.sendEmail(options);
 }
 
 // ========== 動作確認・手動テスト用 ==========

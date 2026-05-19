@@ -1,0 +1,996 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<title>ミッドランドハーツ｜自動見積もりシステム</title>
+<style>
+  :root {
+    --primary: #b85c38;
+    --primary-dark: #8b4426;
+    --primary-light: #f5e6df;
+    --accent: #2d4a3e;
+    --text: #2a2a2a;
+    --text-muted: #6b6b6b;
+    --border: #e2dcd6;
+    --bg: #faf7f4;
+    --card: #ffffff;
+    --error: #c0392b;
+    --success: #27ae60;
+    --radius: 10px;
+    --shadow: 0 2px 8px rgba(0,0,0,0.04);
+    --shadow-lg: 0 8px 24px rgba(0,0,0,0.08);
+  }
+  * { box-sizing: border-box; }
+  body {
+    margin: 0;
+    font-family: -apple-system, BlinkMacSystemFont, "Hiragino Kaku Gothic ProN", "Yu Gothic", Meiryo, sans-serif;
+    color: var(--text);
+    background: var(--bg);
+    line-height: 1.65;
+    -webkit-font-smoothing: antialiased;
+  }
+  header {
+    background: var(--card);
+    border-bottom: 1px solid var(--border);
+    padding: 18px 20px;
+    text-align: center;
+  }
+  header h1 {
+    margin: 0;
+    font-size: 18px;
+    font-weight: 600;
+    letter-spacing: 0.05em;
+  }
+  header .subtitle {
+    font-size: 12px;
+    color: var(--text-muted);
+    margin-top: 4px;
+  }
+  main {
+    max-width: 720px;
+    margin: 0 auto;
+    padding: 24px 16px 80px;
+  }
+  .screen { display: none; }
+  .screen.active { display: block; animation: fadeIn 0.3s ease; }
+  @keyframes fadeIn { from { opacity: 0; transform: translateY(4px); } to { opacity: 1; transform: translateY(0); } }
+
+  /* ===== コース選択画面 ===== */
+  .course-intro {
+    text-align: center;
+    margin-bottom: 28px;
+  }
+  .course-intro h2 {
+    font-size: 22px;
+    margin: 0 0 8px;
+    font-weight: 600;
+  }
+  .course-intro p {
+    color: var(--text-muted);
+    margin: 0;
+    font-size: 14px;
+  }
+  .course-cards {
+    display: grid;
+    grid-template-columns: 1fr;
+    gap: 16px;
+    margin-top: 24px;
+  }
+  @media (min-width: 640px) {
+    .course-cards { grid-template-columns: 1fr 1fr; }
+  }
+  .course-card {
+    background: var(--card);
+    border: 2px solid var(--border);
+    border-radius: var(--radius);
+    padding: 28px 22px;
+    cursor: pointer;
+    transition: all 0.2s;
+    text-align: left;
+    width: 100%;
+    font: inherit;
+    color: inherit;
+  }
+  .course-card:hover {
+    border-color: var(--primary);
+    transform: translateY(-2px);
+    box-shadow: var(--shadow-lg);
+  }
+  .course-card .icon {
+    font-size: 28px;
+    margin-bottom: 12px;
+  }
+  .course-card h3 {
+    margin: 0 0 6px;
+    font-size: 17px;
+    font-weight: 600;
+    color: var(--primary-dark);
+  }
+  .course-card .desc {
+    font-size: 13px;
+    color: var(--text-muted);
+    line-height: 1.5;
+    margin: 0 0 12px;
+  }
+  .course-card .meta {
+    font-size: 11px;
+    color: var(--text-muted);
+    background: var(--bg);
+    padding: 6px 10px;
+    border-radius: 6px;
+    display: inline-block;
+  }
+
+  /* ===== フォーム ===== */
+  .form-section {
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    padding: 22px;
+    margin-bottom: 18px;
+    box-shadow: var(--shadow);
+  }
+  .form-section h3 {
+    margin: 0 0 6px;
+    font-size: 16px;
+    font-weight: 600;
+    color: var(--primary-dark);
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+  .form-section h3::before {
+    content: '';
+    display: inline-block;
+    width: 3px;
+    height: 16px;
+    background: var(--primary);
+    border-radius: 2px;
+  }
+  .form-section .section-hint {
+    font-size: 12px;
+    color: var(--text-muted);
+    margin: 0 0 16px;
+    padding-left: 11px;
+  }
+  .field {
+    margin-bottom: 14px;
+  }
+  .field:last-child { margin-bottom: 0; }
+  .field label {
+    display: block;
+    font-size: 13px;
+    font-weight: 500;
+    margin-bottom: 6px;
+  }
+  .field label .required {
+    color: var(--error);
+    margin-left: 4px;
+    font-weight: 700;
+  }
+  .field label .optional {
+    color: var(--text-muted);
+    font-weight: 400;
+    font-size: 11px;
+    margin-left: 6px;
+  }
+  .field input,
+  .field textarea,
+  .field select {
+    width: 100%;
+    padding: 10px 12px;
+    border: 1px solid var(--border);
+    border-radius: 6px;
+    font: inherit;
+    font-size: 14px;
+    background: #fff;
+    transition: border-color 0.15s;
+  }
+  .field input:focus,
+  .field textarea:focus,
+  .field select:focus {
+    outline: none;
+    border-color: var(--primary);
+    box-shadow: 0 0 0 3px rgba(184,92,56,0.12);
+  }
+  .field textarea {
+    min-height: 70px;
+    resize: vertical;
+  }
+  .field .hint {
+    font-size: 11px;
+    color: var(--text-muted);
+    margin-top: 4px;
+  }
+  .row-2 {
+    display: grid;
+    grid-template-columns: 1fr;
+    gap: 14px;
+  }
+  @media (min-width: 560px) {
+    .row-2 { grid-template-columns: 1fr 1fr; }
+  }
+
+  /* ===== 製品選択 ===== */
+  .product-list {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+  }
+  .product-row {
+    display: grid;
+    grid-template-columns: 1fr auto;
+    gap: 12px;
+    align-items: center;
+    padding: 12px;
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    background: var(--bg);
+    transition: all 0.15s;
+  }
+  .product-row.selected {
+    background: var(--primary-light);
+    border-color: var(--primary);
+  }
+  .product-info {
+    min-width: 0;
+  }
+  .product-name {
+    font-size: 14px;
+    font-weight: 500;
+    margin-bottom: 2px;
+  }
+  .product-meta {
+    font-size: 12px;
+    color: var(--text-muted);
+  }
+  .product-price {
+    font-size: 13px;
+    color: var(--primary-dark);
+    font-weight: 500;
+    margin-top: 2px;
+  }
+  .qty-control {
+    display: flex;
+    align-items: center;
+    gap: 4px;
+  }
+  .qty-btn {
+    width: 30px;
+    height: 30px;
+    border: 1px solid var(--border);
+    background: #fff;
+    border-radius: 6px;
+    cursor: pointer;
+    font-size: 16px;
+    color: var(--text);
+    font-weight: 500;
+  }
+  .qty-btn:hover { border-color: var(--primary); color: var(--primary); }
+  .qty-input {
+    width: 48px;
+    text-align: center;
+    padding: 5px;
+    border: 1px solid var(--border);
+    border-radius: 6px;
+    font: inherit;
+    font-size: 14px;
+  }
+  .qty-input:focus { outline: none; border-color: var(--primary); }
+  .product-category {
+    font-size: 12px;
+    font-weight: 600;
+    color: var(--text-muted);
+    margin-top: 14px;
+    margin-bottom: 6px;
+    padding-bottom: 4px;
+    border-bottom: 1px dashed var(--border);
+  }
+  .product-category:first-child { margin-top: 0; }
+
+  /* ===== サマリー ===== */
+  .summary-box {
+    background: var(--primary-light);
+    border: 1px solid var(--primary);
+    border-radius: 8px;
+    padding: 14px 16px;
+    margin-top: 16px;
+  }
+  .summary-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    font-size: 14px;
+    margin-bottom: 4px;
+  }
+  .summary-row:last-child { margin-bottom: 0; }
+  .summary-total {
+    font-size: 18px;
+    font-weight: 600;
+    color: var(--primary-dark);
+    border-top: 1px solid rgba(184,92,56,0.3);
+    padding-top: 8px;
+    margin-top: 8px;
+  }
+
+  /* ===== ボタン ===== */
+  .actions {
+    display: flex;
+    gap: 10px;
+    margin-top: 22px;
+    flex-wrap: wrap;
+  }
+  .btn {
+    padding: 12px 20px;
+    border: none;
+    border-radius: 8px;
+    font: inherit;
+    font-size: 15px;
+    font-weight: 500;
+    cursor: pointer;
+    transition: all 0.15s;
+    flex: 1;
+    min-width: 120px;
+  }
+  .btn-primary {
+    background: var(--primary);
+    color: #fff;
+  }
+  .btn-primary:hover:not(:disabled) {
+    background: var(--primary-dark);
+  }
+  .btn-primary:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+  }
+  .btn-secondary {
+    background: #fff;
+    color: var(--text);
+    border: 1px solid var(--border);
+  }
+  .btn-secondary:hover {
+    border-color: var(--primary);
+    color: var(--primary);
+  }
+
+  /* ===== 確認画面 ===== */
+  .review-section {
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    padding: 22px;
+    margin-bottom: 14px;
+  }
+  .review-section h4 {
+    margin: 0 0 10px;
+    font-size: 14px;
+    color: var(--primary-dark);
+    font-weight: 600;
+  }
+  .review-grid {
+    display: grid;
+    grid-template-columns: 100px 1fr;
+    gap: 6px 12px;
+    font-size: 13px;
+  }
+  .review-grid .label { color: var(--text-muted); }
+  .review-grid .value { word-break: break-word; white-space: pre-wrap; }
+  .review-items {
+    border-top: 1px solid var(--border);
+    margin-top: 10px;
+    padding-top: 10px;
+    font-size: 13px;
+  }
+  .review-items .item-row {
+    display: grid;
+    grid-template-columns: 1fr auto;
+    padding: 4px 0;
+    gap: 8px;
+  }
+
+  /* ===== 完了画面 ===== */
+  .done-card {
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    padding: 40px 24px;
+    text-align: center;
+    box-shadow: var(--shadow-lg);
+  }
+  .done-icon {
+    font-size: 48px;
+    color: var(--success);
+    margin-bottom: 12px;
+  }
+  .done-card h2 {
+    margin: 0 0 8px;
+    font-size: 20px;
+  }
+  .done-card p {
+    color: var(--text-muted);
+    margin: 8px 0;
+    font-size: 14px;
+  }
+
+  /* ===== エラー表示 ===== */
+  .error-msg {
+    background: #fdf0ee;
+    border: 1px solid var(--error);
+    color: var(--error);
+    padding: 10px 14px;
+    border-radius: 6px;
+    font-size: 13px;
+    margin-bottom: 14px;
+    display: none;
+  }
+  .error-msg.active { display: block; }
+
+  /* ===== ローディング ===== */
+  .spinner {
+    display: inline-block;
+    width: 14px;
+    height: 14px;
+    border: 2px solid #fff;
+    border-top-color: transparent;
+    border-radius: 50%;
+    animation: spin 0.7s linear infinite;
+    vertical-align: -2px;
+    margin-right: 6px;
+  }
+  @keyframes spin { to { transform: rotate(360deg); } }
+</style>
+</head>
+<body>
+
+<header>
+  <h1>ミッドランドハーツ</h1>
+  <div class="subtitle">自動見積もりシステム</div>
+</header>
+
+<main>
+  <!-- ===== Screen 1: コース選択 ===== -->
+  <section id="screen-course" class="screen active">
+    <div class="course-intro">
+      <h2>お見積もり方法を選択してください</h2>
+      <p>お客様の状況に合わせた2つのコースをご用意しています</p>
+    </div>
+
+    <div class="course-cards">
+      <button type="button" class="course-card" data-course="quick">
+        <div class="icon">⚡</div>
+        <h3>クイック見積もり</h3>
+        <p class="desc">
+          製品を既にご存知の方、リピートのお客様向け。<br>
+          最短1分で見積もり依頼が完了します。
+        </p>
+        <span class="meta">所要時間 約1分</span>
+      </button>
+
+      <button type="button" class="course-card" data-course="detailed">
+        <div class="icon">🎯</div>
+        <h3>詳しく相談</h3>
+        <p class="desc">
+          初めての方、現場の状況を踏まえてご提案を受けたい方向け。<br>
+          利用シーンに合わせた最適なご提案を差し上げます。
+        </p>
+        <span class="meta">所要時間 約3〜5分</span>
+      </button>
+    </div>
+  </section>
+
+  <!-- ===== Screen 2: フォーム ===== -->
+  <section id="screen-form" class="screen">
+    <div class="error-msg" id="form-error"></div>
+
+    <!-- 連絡先 -->
+    <div class="form-section">
+      <h3>お客様情報</h3>
+      <p class="section-hint">ご連絡先をご記入ください</p>
+
+      <div class="row-2">
+        <div class="field">
+          <label>お名前<span class="required">*</span></label>
+          <input type="text" id="f-name" placeholder="山田 太郎" maxlength="100">
+        </div>
+        <div class="field">
+          <label>会社名<span class="optional">（任意）</span></label>
+          <input type="text" id="f-company" placeholder="株式会社○○" maxlength="200">
+        </div>
+      </div>
+
+      <div class="row-2 detailed-only" style="display:none">
+        <div class="field">
+          <label>部署・役職<span class="optional">（任意）</span></label>
+          <input type="text" id="f-department" placeholder="総務部 部長" maxlength="200">
+        </div>
+        <div class="field">
+          <label>お電話番号<span class="optional">（任意）</span></label>
+          <input type="tel" id="f-phone" placeholder="03-1234-5678" maxlength="50">
+        </div>
+      </div>
+
+      <div class="field">
+        <label>メールアドレス<span class="required">*</span></label>
+        <input type="email" id="f-email" placeholder="example@company.jp" maxlength="200">
+        <div class="hint">お見積もり結果をこちらにお送りします</div>
+      </div>
+
+      <div class="field quick-only">
+        <label>お電話番号<span class="optional">（任意）</span></label>
+        <input type="tel" id="f-phone-quick" placeholder="03-1234-5678" maxlength="50">
+      </div>
+    </div>
+
+    <!-- 6W4H（詳細コースのみ） -->
+    <div class="form-section detailed-only" style="display:none">
+      <h3>ご利用シーンについて</h3>
+      <p class="section-hint">わかる範囲でご記入ください。すべて任意項目です。</p>
+
+      <div class="field">
+        <label>どなたがお使いになりますか？<span class="optional">（Who）</span></label>
+        <textarea id="f-who" placeholder="例：聴覚に課題のある来店のお客様、社内の高齢スタッフ など"></textarea>
+      </div>
+
+      <div class="field">
+        <label>どなたのためにご検討中ですか？<span class="optional">（Whom）</span></label>
+        <textarea id="f-whom" placeholder="例：難聴の方、ご高齢のご家族 など"></textarea>
+      </div>
+
+      <div class="field">
+        <label>解決したい課題・聞き取りたい音は？<span class="optional">（What）</span></label>
+        <textarea id="f-what" placeholder="例：窓口での会話、会議室での発言、案内放送 など"></textarea>
+      </div>
+
+      <div class="row-2">
+        <div class="field">
+          <label>いつ頃の導入をご希望ですか？<span class="optional">（When）</span></label>
+          <input type="text" id="f-when" placeholder="例：来月中、未定 など" maxlength="500">
+        </div>
+        <div class="field">
+          <label>どちらでお使いになりますか？<span class="optional">（Where）</span></label>
+          <input type="text" id="f-where" placeholder="例：店舗、病院受付、自宅 など" maxlength="500">
+        </div>
+      </div>
+
+      <div class="field">
+        <label>ご検討の背景・課題感<span class="optional">（Why）</span></label>
+        <textarea id="f-why" placeholder="例：お客様からのご要望が増えてきた、現行機の更新タイミング など"></textarea>
+      </div>
+
+      <div class="field">
+        <label>どのようにお使いになる予定ですか？<span class="optional">（How）</span></label>
+        <textarea id="f-how" placeholder="例：窓口に設置、複数台を持ち運び、会議で利用 など"></textarea>
+      </div>
+
+      <div class="row-2">
+        <div class="field">
+          <label>必要数量の目安<span class="optional">（How many）</span></label>
+          <input type="text" id="f-howmany" placeholder="例：3台、まず1台 など" maxlength="500">
+        </div>
+        <div class="field">
+          <label>ご予算の目安<span class="optional">（How much）</span></label>
+          <input type="text" id="f-howmuch" placeholder="例：30万円程度、未定 など" maxlength="500">
+        </div>
+      </div>
+
+      <div class="field">
+        <label>どのくらいの期間ご使用予定ですか？<span class="optional">（How long）</span></label>
+        <input type="text" id="f-howlong" placeholder="例：常設、イベント期間のみ など" maxlength="500">
+      </div>
+    </div>
+
+    <!-- 製品選択 -->
+    <div class="form-section">
+      <h3>ご希望の製品</h3>
+      <p class="section-hint">必要な製品の数量をご入力ください</p>
+      <div id="product-list" class="product-list"></div>
+
+      <div class="summary-box">
+        <div class="summary-row summary-total">
+          <span>概算合計（税抜）</span>
+          <span id="summary-total">¥0</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- 備考 -->
+    <div class="form-section">
+      <h3>備考・ご要望</h3>
+      <p class="section-hint">その他ご質問やご要望がございましたらご記入ください</p>
+      <div class="field">
+        <textarea id="f-notes" rows="3" placeholder="納期のご希望、設置場所の制約、その他ご質問など"></textarea>
+      </div>
+    </div>
+
+    <div class="actions">
+      <button type="button" class="btn btn-secondary" id="btn-back-to-course">← 戻る</button>
+      <button type="button" class="btn btn-primary" id="btn-to-review">確認画面へ →</button>
+    </div>
+  </section>
+
+  <!-- ===== Screen 3: 確認 ===== -->
+  <section id="screen-review" class="screen">
+    <div class="error-msg" id="review-error"></div>
+
+    <div class="course-intro">
+      <h2>送信内容の確認</h2>
+      <p>内容をご確認のうえ、送信ボタンを押してください</p>
+    </div>
+
+    <div id="review-content"></div>
+
+    <div class="actions">
+      <button type="button" class="btn btn-secondary" id="btn-back-to-form">← 修正する</button>
+      <button type="button" class="btn btn-primary" id="btn-submit">この内容で送信する</button>
+    </div>
+  </section>
+
+  <!-- ===== Screen 4: 完了 ===== -->
+  <section id="screen-done" class="screen">
+    <div class="done-card">
+      <div class="done-icon">✓</div>
+      <h2>お見積もり依頼を承りました</h2>
+      <p>ご入力いただいたメールアドレス宛に、担当者よりご連絡いたします。</p>
+      <p style="font-size:12px; margin-top:18px">通常2営業日以内にご返信いたします。</p>
+      <div class="actions" style="margin-top:24px">
+        <button type="button" class="btn btn-secondary" id="btn-restart">最初に戻る</button>
+      </div>
+    </div>
+  </section>
+</main>
+
+<script>
+// ==========================================================================
+// 製品カタログ（ダミー価格・後で差し替え）
+// ▼▼▼ ここを実際の価格表で置き換えてください ▼▼▼
+// ==========================================================================
+const PRODUCTS = [
+  {
+    category: '本体（ヒアリングシステム）',
+    items: [
+      { sku: 'MH-001', name: '[ダミー] スタンダードモデル A', unitPrice: 98000, unit: '台' },
+      { sku: 'MH-002', name: '[ダミー] アドバンスモデル B', unitPrice: 148000, unit: '台' },
+      { sku: 'MH-003', name: '[ダミー] プロフェッショナル C', unitPrice: 248000, unit: '台' },
+    ]
+  },
+  {
+    category: 'オプション・アクセサリ',
+    items: [
+      { sku: 'MH-OP1', name: '[ダミー] 専用充電ケース', unitPrice: 12000, unit: '個' },
+      { sku: 'MH-OP2', name: '[ダミー] 外部マイク', unitPrice: 8500, unit: '本' },
+      { sku: 'MH-OP3', name: '[ダミー] 設置スタンド', unitPrice: 5500, unit: '個' },
+    ]
+  },
+  {
+    category: '保守・サポート',
+    items: [
+      { sku: 'MH-SV1', name: '[ダミー] 1年延長保証', unitPrice: 15000, unit: '式' },
+      { sku: 'MH-SV2', name: '[ダミー] 出張設置サポート', unitPrice: 25000, unit: '回' },
+    ]
+  }
+];
+// ==========================================================================
+// ▲▲▲ ここまでが価格表 ▲▲▲
+// ==========================================================================
+
+// ===== 状態 =====
+let currentCourse = 'quick'; // 'quick' or 'detailed'
+const quantities = {}; // { sku: quantity }
+
+// ===== DOM 取得 =====
+const $ = (id) => document.getElementById(id);
+const screens = {
+  course: $('screen-course'),
+  form: $('screen-form'),
+  review: $('screen-review'),
+  done: $('screen-done'),
+};
+
+function showScreen(name) {
+  Object.values(screens).forEach(s => s.classList.remove('active'));
+  screens[name].classList.add('active');
+  window.scrollTo({ top: 0, behavior: 'smooth' });
+}
+
+function showCourseElements(course) {
+  document.querySelectorAll('.detailed-only').forEach(el => {
+    el.style.display = course === 'detailed' ? '' : 'none';
+  });
+  document.querySelectorAll('.quick-only').forEach(el => {
+    el.style.display = course === 'quick' ? '' : 'none';
+  });
+}
+
+// ===== 製品リスト描画 =====
+function renderProductList() {
+  const container = $('product-list');
+  container.innerHTML = '';
+
+  PRODUCTS.forEach(group => {
+    const groupHeader = document.createElement('div');
+    groupHeader.className = 'product-category';
+    groupHeader.textContent = group.category;
+    container.appendChild(groupHeader);
+
+    group.items.forEach(item => {
+      const qty = quantities[item.sku] || 0;
+      const row = document.createElement('div');
+      row.className = 'product-row' + (qty > 0 ? ' selected' : '');
+      row.dataset.sku = item.sku;
+      row.innerHTML = `
+        <div class="product-info">
+          <div class="product-name">${escapeHtml(item.name)}</div>
+          <div class="product-meta">${escapeHtml(item.sku)}</div>
+          <div class="product-price">¥${item.unitPrice.toLocaleString()} / ${escapeHtml(item.unit)}</div>
+        </div>
+        <div class="qty-control">
+          <button type="button" class="qty-btn" data-action="dec" data-sku="${item.sku}">−</button>
+          <input type="number" class="qty-input" min="0" max="9999" value="${qty}" data-sku="${item.sku}">
+          <button type="button" class="qty-btn" data-action="inc" data-sku="${item.sku}">+</button>
+        </div>
+      `;
+      container.appendChild(row);
+    });
+  });
+
+  // 数量変更ハンドラ
+  container.querySelectorAll('.qty-btn').forEach(btn => {
+    btn.addEventListener('click', () => {
+      const sku = btn.dataset.sku;
+      const action = btn.dataset.action;
+      const cur = quantities[sku] || 0;
+      const next = action === 'inc' ? Math.min(9999, cur + 1) : Math.max(0, cur - 1);
+      quantities[sku] = next;
+      renderProductList();
+      updateSummary();
+    });
+  });
+  container.querySelectorAll('.qty-input').forEach(input => {
+    input.addEventListener('change', () => {
+      const sku = input.dataset.sku;
+      const val = Math.max(0, Math.min(9999, parseInt(input.value, 10) || 0));
+      quantities[sku] = val;
+      renderProductList();
+      updateSummary();
+    });
+  });
+}
+
+function updateSummary() {
+  let total = 0;
+  PRODUCTS.forEach(group => {
+    group.items.forEach(item => {
+      const qty = quantities[item.sku] || 0;
+      total += qty * item.unitPrice;
+    });
+  });
+  $('summary-total').textContent = '¥' + total.toLocaleString();
+}
+
+function escapeHtml(s) {
+  return String(s).replace(/[&<>"']/g, c => ({
+    '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;'
+  }[c]));
+}
+
+// ===== 入力値収集 =====
+function collectForm() {
+  const isDetailed = currentCourse === 'detailed';
+  const phoneField = isDetailed ? 'f-phone' : 'f-phone-quick';
+
+  const items = [];
+  PRODUCTS.forEach(group => {
+    group.items.forEach(item => {
+      const qty = quantities[item.sku] || 0;
+      if (qty > 0) {
+        items.push({
+          sku: item.sku,
+          name: item.name,
+          unitPrice: item.unitPrice,
+          quantity: qty,
+        });
+      }
+    });
+  });
+
+  const payload = {
+    mode: currentCourse,
+    customer: {
+      name: $('f-name').value.trim(),
+      company: $('f-company').value.trim(),
+      department: isDetailed ? $('f-department').value.trim() : '',
+      email: $('f-email').value.trim(),
+      phone: $(phoneField).value.trim(),
+    },
+    items,
+    notes: $('f-notes').value.trim(),
+  };
+
+  if (isDetailed) {
+    payload.situation = {
+      who: $('f-who').value.trim(),
+      whom: $('f-whom').value.trim(),
+      what: $('f-what').value.trim(),
+      when: $('f-when').value.trim(),
+      where: $('f-where').value.trim(),
+      why: $('f-why').value.trim(),
+      how: $('f-how').value.trim(),
+      howMany: $('f-howmany').value.trim(),
+      howMuch: $('f-howmuch').value.trim(),
+      howLong: $('f-howlong').value.trim(),
+    };
+  }
+
+  return payload;
+}
+
+function validateForm(payload) {
+  const errors = [];
+  if (!payload.customer.name) errors.push('お名前を入力してください');
+  if (!payload.customer.email) errors.push('メールアドレスを入力してください');
+  else if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(payload.customer.email)) {
+    errors.push('メールアドレスの形式が正しくありません');
+  }
+  if (payload.items.length === 0) errors.push('製品を1つ以上選択してください');
+  return errors;
+}
+
+// ===== 確認画面の描画 =====
+function renderReview(payload) {
+  const container = $('review-content');
+  const sit = payload.situation;
+  const courseLabel = payload.mode === 'detailed' ? '詳しく相談' : 'クイック見積もり';
+
+  let html = `
+    <div class="review-section">
+      <h4>コース</h4>
+      <div>${courseLabel}</div>
+    </div>
+    <div class="review-section">
+      <h4>お客様情報</h4>
+      <div class="review-grid">
+        <div class="label">お名前</div><div class="value">${escapeHtml(payload.customer.name)}</div>
+        ${payload.customer.company ? `<div class="label">会社名</div><div class="value">${escapeHtml(payload.customer.company)}</div>` : ''}
+        ${payload.customer.department ? `<div class="label">部署・役職</div><div class="value">${escapeHtml(payload.customer.department)}</div>` : ''}
+        <div class="label">メール</div><div class="value">${escapeHtml(payload.customer.email)}</div>
+        ${payload.customer.phone ? `<div class="label">電話</div><div class="value">${escapeHtml(payload.customer.phone)}</div>` : ''}
+      </div>
+    </div>
+  `;
+
+  if (sit && (sit.who || sit.whom || sit.what || sit.when || sit.where || sit.why || sit.how || sit.howMany || sit.howMuch || sit.howLong)) {
+    const sitRows = [
+      ['Who', 'どなたが', sit.who],
+      ['Whom', 'どなたのために', sit.whom],
+      ['What', '解決したい課題', sit.what],
+      ['When', '導入時期', sit.when],
+      ['Where', '利用場所', sit.where],
+      ['Why', '背景・課題', sit.why],
+      ['How', '利用方法', sit.how],
+      ['How many', '数量', sit.howMany],
+      ['How much', '予算', sit.howMuch],
+      ['How long', '期間', sit.howLong],
+    ].filter(r => r[2]);
+
+    html += `<div class="review-section"><h4>ご利用シーン</h4><div class="review-grid">`;
+    sitRows.forEach(([key, lbl, val]) => {
+      html += `<div class="label">${escapeHtml(lbl)}</div><div class="value">${escapeHtml(val)}</div>`;
+    });
+    html += `</div></div>`;
+  }
+
+  let total = 0;
+  let itemsHtml = '';
+  payload.items.forEach(it => {
+    const sub = it.unitPrice * it.quantity;
+    total += sub;
+    itemsHtml += `
+      <div class="item-row">
+        <div>${escapeHtml(it.name)} × ${it.quantity}</div>
+        <div>¥${sub.toLocaleString()}</div>
+      </div>
+    `;
+  });
+
+  html += `
+    <div class="review-section">
+      <h4>ご希望の製品</h4>
+      <div class="review-items">${itemsHtml}</div>
+      <div class="summary-box" style="margin-top:12px">
+        <div class="summary-row summary-total">
+          <span>概算合計（税抜）</span>
+          <span>¥${total.toLocaleString()}</span>
+        </div>
+      </div>
+    </div>
+  `;
+
+  if (payload.notes) {
+    html += `
+      <div class="review-section">
+        <h4>備考・ご要望</h4>
+        <div class="value" style="white-space:pre-wrap; font-size:13px">${escapeHtml(payload.notes)}</div>
+      </div>
+    `;
+  }
+
+  container.innerHTML = html;
+}
+
+// ===== 送信 =====
+async function submitQuote(payload) {
+  const btn = $('btn-submit');
+  const errBox = $('review-error');
+  errBox.classList.remove('active');
+  btn.disabled = true;
+  btn.innerHTML = '<span class="spinner"></span>送信中...';
+
+  try {
+    const res = await fetch('/api/quote', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(payload),
+    });
+    const data = await res.json();
+    if (!res.ok) {
+      throw new Error(data.message || '送信に失敗しました');
+    }
+    showScreen('done');
+  } catch (e) {
+    errBox.textContent = e.message || '送信に失敗しました。時間をおいて再度お試しください。';
+    errBox.classList.add('active');
+  } finally {
+    btn.disabled = false;
+    btn.textContent = 'この内容で送信する';
+  }
+}
+
+// ===== イベント =====
+document.querySelectorAll('.course-card').forEach(card => {
+  card.addEventListener('click', () => {
+    currentCourse = card.dataset.course;
+    showCourseElements(currentCourse);
+    showScreen('form');
+  });
+});
+
+$('btn-back-to-course').addEventListener('click', () => showScreen('course'));
+
+$('btn-to-review').addEventListener('click', () => {
+  const payload = collectForm();
+  const errors = validateForm(payload);
+  const errBox = $('form-error');
+  if (errors.length > 0) {
+    errBox.textContent = errors.join(' / ');
+    errBox.classList.add('active');
+    return;
+  }
+  errBox.classList.remove('active');
+  renderReview(payload);
+  showScreen('review');
+});
+
+$('btn-back-to-form').addEventListener('click', () => showScreen('form'));
+
+$('btn-submit').addEventListener('click', () => {
+  const payload = collectForm();
+  submitQuote(payload);
+});
+
+$('btn-restart').addEventListener('click', () => {
+  // リセット
+  Object.keys(quantities).forEach(k => delete quantities[k]);
+  document.querySelectorAll('#screen-form input, #screen-form textarea').forEach(el => el.value = '');
+  renderProductList();
+  updateSummary();
+  showScreen('course');
+});
+
+// 初期化
+renderProductList();
+updateSummary();
+</script>
+
+</body>
+</html>
