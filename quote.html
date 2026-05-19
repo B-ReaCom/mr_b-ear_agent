@@ -445,7 +445,7 @@
 
 <header>
   <h1>ミッドランドハーツ</h1>
-  <div class="subtitle">自動見積もりシステム</div>
+  <div class="subtitle">BRIDGECOM X10 自動見積もりシステム</div>
 </header>
 
 <main>
@@ -642,31 +642,75 @@
 
 <script>
 // ==========================================================================
-// 製品カタログ（ダミー価格・後で差し替え）
-// ▼▼▼ ここを実際の価格表で置き換えてください ▼▼▼
+// 製品カタログ（BRIDGECOM X10 価格表より生成）
+// 価格は税抜・販売価格
+// ▼▼▼ 内容を変更する場合はこのブロックを編集 ▼▼▼
 // ==========================================================================
 const PRODUCTS = [
   {
-    category: '本体（ヒアリングシステム）',
+    category: '本体・電源',
     items: [
-      { sku: 'MH-001', name: '[ダミー] スタンダードモデル A', unitPrice: 98000, unit: '台' },
-      { sku: 'MH-002', name: '[ダミー] アドバンスモデル B', unitPrice: 148000, unit: '台' },
-      { sku: 'MH-003', name: '[ダミー] プロフェッショナル C', unitPrice: 248000, unit: '台' },
+      { sku: 'BM-X10AT',  name: 'BRIDGECOM X10 アスリート 本体',           unitPrice: 90500, unit: '台' },
+      { sku: 'B-X10ac',   name: 'X10アスリート専用充電器',                  unitPrice: 40000, unit: '個' },
+      { sku: 'BM-X5bt',   name: 'リチウム電池',                             unitPrice: 3100,  unit: '個' },
+      { sku: 'B-F06',     name: 'USB充電ケーブル Type-C',                   unitPrice: 300,   unit: '本' },
+      { sku: 'BM-60W',    name: '6ポート USB急速充電器（黒）',              unitPrice: 6000,  unit: '個' },
+      { sku: 'BM-60W10',  name: '10ポート USB急速充電器（黒）',             unitPrice: 6300,  unit: '個' },
+      { sku: 'B-A10ac',   name: 'BRIDGECOMスピーカー ACアダプター',         unitPrice: 13000, unit: '個' },
+      { sku: 'B-A10ss',   name: 'BRIDGECOMスピーカー シガーソケット',       unitPrice: 13000, unit: '個' },
+      { sku: 'B-A10usb',  name: 'BRIDGECOMスピーカー USB充電ケーブル',      unitPrice: 13000, unit: '個' },
     ]
   },
   {
-    category: 'オプション・アクセサリ',
+    category: 'ヘッドホン・イヤホン',
     items: [
-      { sku: 'MH-OP1', name: '[ダミー] 専用充電ケース', unitPrice: 12000, unit: '個' },
-      { sku: 'MH-OP2', name: '[ダミー] 外部マイク', unitPrice: 8500, unit: '本' },
-      { sku: 'MH-OP3', name: '[ダミー] 設置スタンド', unitPrice: 5500, unit: '個' },
+      { sku: 'B-H03',         name: '標準型ヘッドホンマイク',                  unitPrice: 6800, unit: '個' },
+      { sku: 'BM-GSRM2.5F',   name: '耳掛け式イヤホン 2.5mm F',                unitPrice: 1820, unit: '個' },
+      { sku: 'BM-GSRM2.5s',   name: '耳掛け式イヤホン 2.5mm S',                unitPrice: 1820, unit: '個' },
+      { sku: 'BM-SHSE2.5',    name: '小型高遮音性イヤホン 2.5mm',              unitPrice: 3200, unit: '個' },
+      { sku: 'BM-LCOE2.5',    name: 'オープンエアイヤホン 2.5mm',              unitPrice: 1820, unit: '個' },
     ]
   },
   {
-    category: '保守・サポート',
+    category: 'マイク',
     items: [
-      { sku: 'MH-SV1', name: '[ダミー] 1年延長保証', unitPrice: 15000, unit: '式' },
-      { sku: 'MH-SV2', name: '[ダミー] 出張設置サポート', unitPrice: 25000, unit: '回' },
+      { sku: 'B-RFAD',     name: 'ボイスナイパー アドバンス',                          unitPrice: 15600, unit: '個' },
+      { sku: 'B-RFXM',     name: 'VoiSniper ボイスナイパー RFXM',                      unitPrice: 11400, unit: '個' },
+      { sku: 'B-A05',      name: 'グースネックマイク（強力マグネット付）',             unitPrice: 28200, unit: '個' },
+      { sku: 'B-E10tnt',   name: 'X10用 PTT切替機能付タイピンマイク',                  unitPrice: 7000,  unit: '個' },
+      { sku: 'B-E06tn',    name: 'ピン型マイク 風防付 X10用',                          unitPrice: 12700, unit: '個' },
+      { sku: 'B-E06tnt',   name: 'ピン型マイク 風防付 X10用 通話ボタン付',             unitPrice: 13000, unit: '個' },
+      { sku: 'B-E03wptn',  name: 'ヘルメット取付型 防水マイク X10用',                  unitPrice: 29200, unit: '個' },
+      { sku: 'B-E03wptnt', name: 'ヘルメット取付型 防水マイク X10用 通話ボタン付',     unitPrice: 31000, unit: '個' },
+      { sku: 'B-E03dptn',  name: 'ヘルメット取付型 防滴マイク X10用',                  unitPrice: 23800, unit: '個' },
+      { sku: 'B-E03dptnt', name: 'ヘルメット取付型 防滴マイク X10用 通話ボタン付',     unitPrice: 26400, unit: '個' },
+    ]
+  },
+  {
+    category: '中継ケーブル（防水仕様）',
+    items: [
+      { sku: 'B-RCLwptn',   name: '中継接続ケーブルコネクター X10用 防水仕様',  unitPrice: 36300, unit: '個' },
+      { sku: 'B-RCL005wp',  name: '中継延長接続ケーブル 防水仕様 5m',           unitPrice: 24240, unit: '本' },
+      { sku: 'B-RCL010wp',  name: '中継延長接続ケーブル 防水仕様 10m',          unitPrice: 26280, unit: '本' },
+      { sku: 'B-RCL025wp',  name: '中継延長接続ケーブル 防水仕様 25m',          unitPrice: 35160, unit: '本' },
+      { sku: 'B-RCL050wp',  name: '中継延長接続ケーブル 防水仕様 50m',          unitPrice: 53760, unit: '本' },
+      { sku: 'B-RCL100wp',  name: '中継延長接続ケーブル 防水仕様 100m',         unitPrice: 68160, unit: '本' },
+    ]
+  },
+  {
+    category: 'ケース・装着アクセサリー',
+    items: [
+      { sku: 'B-X10hc',    name: 'X10 アスリート専用ケース',                   unitPrice: 1500, unit: '個' },
+      { sku: 'B-A11',      name: 'ソフトキャリーケース',                       unitPrice: 8500, unit: '個' },
+      { sku: 'B-A11(10)',  name: 'ソフトキャリーケース 10',                    unitPrice: 8500, unit: '個' },
+      { sku: 'B-A11(F)',   name: 'ソフトキャリーケース F',                     unitPrice: 8500, unit: '個' },
+      { sku: 'B-A06',      name: 'オリジナルケース',                           unitPrice: 1200, unit: '個' },
+      { sku: 'B-CPA01',    name: 'アームバンド',                               unitPrice: 2300, unit: '個' },
+      { sku: 'B-ABL',      name: 'アームサポーター L',                         unitPrice: 300,  unit: '個' },
+      { sku: 'B-ABM',      name: 'アームサポーター M',                         unitPrice: 300,  unit: '個' },
+      { sku: 'BM-ABHm',    name: 'ソフトアームバンドホルダー M',               unitPrice: 550,  unit: '個' },
+      { sku: 'BM-ABHl',    name: 'ソフトアームバンドホルダー L',               unitPrice: 550,  unit: '個' },
+      { sku: 'B-CPM01ms',  name: 'ボイスナイパー風防',                         unitPrice: 250,  unit: '個' },
     ]
   }
 ];
