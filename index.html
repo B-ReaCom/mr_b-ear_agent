@@ -94,7 +94,39 @@ body { font-family: 'Noto Sans JP', sans-serif; height: 100%; height: 100dvh; di
   .status-text { display: none; }
   #langSelect { font-size: 10px; padding: 3px 5px; max-width: 80px; }
   #apiKeyBtn { font-size: 10px; padding: 3px 6px; }
+  #menuBtn { font-size: 16px; padding: 3px 8px; }
+  .history-panel { width: 100% !important; }
 }
+/* ハンバーガーメニュー */
+#menuBtn { background: rgba(255,255,255,0.15); border: 1px solid rgba(255,255,255,0.2); color: #fff; padding: 4px 10px; border-radius: 8px; cursor: pointer; font-size: 18px; line-height: 1; display: flex; align-items: center; justify-content: center; }
+#menuBtn:hover { background: rgba(255,255,255,0.25); }
+.menu-dropdown { position: absolute; top: 56px; right: 8px; background: #1a1a1a; border: 1px solid #333; border-radius: 8px; box-shadow: 0 4px 16px rgba(0,0,0,0.4); min-width: 180px; z-index: 1500; display: none; overflow: hidden; }
+.menu-dropdown.open { display: block; }
+.menu-item { display: flex; align-items: center; gap: 8px; padding: 12px 16px; color: #fff; cursor: pointer; font-size: 14px; border: none; background: transparent; width: 100%; text-align: left; font-family: 'Noto Sans JP', sans-serif; }
+.menu-item:hover { background: #2a2a2a; color: #E8A020; }
+/* 履歴パネル（右からスライドイン） */
+.history-overlay { position: fixed; top: 0; left: 0; right: 0; bottom: 0; background: rgba(0,0,0,0.5); z-index: 1900; display: none; }
+.history-overlay.open { display: block; }
+.history-panel { position: fixed; top: 0; right: 0; bottom: 0; width: 380px; max-width: 100%; background: #fff; box-shadow: -4px 0 16px rgba(0,0,0,0.15); z-index: 2000; transform: translateX(100%); transition: transform 0.28s ease; display: flex; flex-direction: column; }
+.history-panel.open { transform: translateX(0); }
+.history-header { background: #1a1a1a; color: #fff; padding: 14px 16px; display: flex; align-items: center; justify-content: space-between; border-bottom: 2px solid #E8A020; }
+.history-header h2 { font-size: 16px; font-weight: 700; margin: 0; font-family: 'Barlow', 'Noto Sans JP', sans-serif; }
+.history-close { background: transparent; border: none; color: #fff; font-size: 22px; cursor: pointer; padding: 0 4px; line-height: 1; }
+.history-body { flex: 1; overflow-y: auto; padding: 12px; background: #f9fafb; }
+.history-item { background: #fff; border: 1px solid #e5e7eb; border-radius: 10px; padding: 12px; margin-bottom: 8px; cursor: pointer; transition: all 0.15s; position: relative; }
+.history-item:hover { border-color: #E8A020; box-shadow: 0 2px 6px rgba(0,0,0,0.06); }
+.history-item-title { font-size: 14px; color: #1f2937; font-weight: 500; margin-bottom: 4px; word-break: break-word; overflow: hidden; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; }
+.history-item-date { font-size: 11px; color: #6b7280; margin-bottom: 8px; }
+.history-item-actions { display: flex; gap: 6px; justify-content: flex-end; }
+.history-btn-restore, .history-btn-delete { font-size: 11px; padding: 4px 10px; border-radius: 6px; border: 1px solid #d1d5db; background: #fff; color: #4b5563; cursor: pointer; transition: all 0.15s; }
+.history-btn-restore:hover { background: #E8A020; color: #1a1a1a; border-color: #E8A020; }
+.history-btn-delete:hover { background: #ef4444; color: #fff; border-color: #ef4444; }
+.history-empty { text-align: center; color: #9ca3af; font-size: 13px; padding: 40px 16px; }
+.history-footer { padding: 12px 16px; border-top: 1px solid #e5e7eb; background: #fff; display: flex; flex-direction: column; gap: 8px; }
+.history-delete-all { width: 100%; padding: 10px; background: #fff; color: #ef4444; border: 1px solid #ef4444; border-radius: 8px; cursor: pointer; font-size: 13px; font-weight: 500; transition: all 0.15s; font-family: 'Noto Sans JP', sans-serif; }
+.history-delete-all:hover:not(:disabled) { background: #ef4444; color: #fff; }
+.history-delete-all:disabled { opacity: 0.4; cursor: not-allowed; }
+.history-privacy-note { font-size: 10px; color: #9ca3af; line-height: 1.5; text-align: center; }
 </style>
 </head>
 <body>
@@ -126,8 +158,26 @@ body { font-family: 'Noto Sans JP', sans-serif; height: 100%; height: 100dvh; di
     </div>
     <!-- 初期は非表示。USE_SERVER_PROXY=false の場合のみ load 時に表示する（一瞬のフラッシュ防止） -->
     <button id="apiKeyBtn" onclick="toggleApiKeyPanel()" style="display:none;background:rgba(255,255,255,0.15);border:none;color:#fff;padding:4px 10px;border-radius:8px;cursor:pointer;font-size:12px;">⚙ APIキー</button>
+    <button id="menuBtn" onclick="toggleMenu(event)" aria-label="メニュー" aria-haspopup="true" aria-expanded="false">☰</button>
   </div>
 </div>
+<div id="menuDropdown" class="menu-dropdown" role="menu" aria-hidden="true">
+  <button type="button" class="menu-item" role="menuitem" onclick="openHistoryPanel()" id="menuItemHistory">
+    <span aria-hidden="true">🕒</span><span id="menuItemHistoryLabel">履歴</span>
+  </button>
+</div>
+<div id="historyOverlay" class="history-overlay" onclick="closeHistoryPanel()" aria-hidden="true"></div>
+<aside id="historyPanel" class="history-panel" role="dialog" aria-modal="true" aria-labelledby="historyPanelTitle" aria-hidden="true">
+  <div class="history-header">
+    <h2 id="historyPanelTitle">会話履歴</h2>
+    <button class="history-close" onclick="closeHistoryPanel()" aria-label="閉じる">×</button>
+  </div>
+  <div class="history-body" id="historyList"></div>
+  <div class="history-footer">
+    <button type="button" class="history-delete-all" id="historyDeleteAllBtn" onclick="confirmDeleteAllHistory()">すべて削除</button>
+    <div class="history-privacy-note" id="historyPrivacyNote">※ 履歴はお使いのブラウザ内にのみ保存されます。サーバーには送信されません。30日後に自動削除されます。</div>
+  </div>
+</aside>
 <div id="apiKeyPanel" style="display:none;background:#1e293b;padding:12px 16px;border-bottom:1px solid rgba(255,255,255,0.1);">
   <div style="display:flex;align-items:center;gap:8px;max-width:600px;margin:0 auto;">
     <input id="apiKeyInput" type="password" placeholder="Anthropic APIキーを入力 (sk-ant-...)" style="flex:1;padding:8px 12px;border-radius:8px;border:1px solid rgba(255,255,255,0.2);background:rgba(255,255,255,0.1);color:#fff;font-size:13px;outline:none;" />
@@ -1143,7 +1193,16 @@ const translations = {
     suggestions: ["通話範囲を教えて","製品の特長はナニ？","防水・防塵性能はどれくらい？","同時通話は何人できるの？","ノイキャンはどれだけスゴいの？","価格が知りたい","年間の投資効果はどれくらい？","デモ機を試したい"],
     loadingText: "考え中...",
     tooLong: "質問は2000文字以内で入力してください。",
-    langInstruction: "必ず日本語で回答してください。"
+    langInstruction: "必ず日本語で回答してください。",
+    historyMenuLabel: "履歴",
+    historyPanelTitle: "会話履歴",
+    historyEmpty: "保存された会話履歴はありません",
+    historyRestoreBtn: "復元",
+    historyDeleteBtn: "削除",
+    historyDeleteAllBtn: "すべて削除",
+    historyDeleteAllConfirm: "すべての履歴を削除してもよろしいですか？",
+    historyPrivacyNote: "※ 履歴はお使いのブラウザ内にのみ保存されます。サーバーには送信されません。30日後に自動削除されます。",
+    historyDateFormat: "YYYY年M月D日 HH:MM"
   },
   en: {
     welcomeTitle: "Tell us about your on-site communication challenges",
@@ -1156,7 +1215,16 @@ const translations = {
     suggestions: ["What's the talk range?","What are the product features?","How is the IP rating?","How many can talk at once?","How good is the noise canceling?","I'd like to know the price","What's the annual ROI?","I'd like to try a demo"],
     loadingText: "Thinking...",
     tooLong: "Please keep your question under 2000 characters.",
-    langInstruction: "Please respond in English only."
+    langInstruction: "Please respond in English only.",
+    historyMenuLabel: "History",
+    historyPanelTitle: "Conversation History",
+    historyEmpty: "No saved conversations",
+    historyRestoreBtn: "Restore",
+    historyDeleteBtn: "Delete",
+    historyDeleteAllBtn: "Delete All",
+    historyDeleteAllConfirm: "Are you sure you want to delete all history?",
+    historyPrivacyNote: "* History is saved only in your browser. It is not sent to any server. Sessions are auto-deleted after 30 days.",
+    historyDateFormat: "MMM D, YYYY HH:MM"
   },
   zh: {
     welcomeTitle: "请咨询现场通讯方面的烦恼",
@@ -1169,7 +1237,16 @@ const translations = {
     suggestions: ["请告诉我通话范围","产品的特点是什么？","防水防尘性能如何？","可以多少人同时通话？","降噪效果有多好？","想知道价格","年度投资效益如何？","想试用演示机"],
     loadingText: "思考中...",
     tooLong: "请将问题控制在2000字以内。",
-    langInstruction: "请务必用简体中文（普通话）回答。"
+    langInstruction: "请务必用简体中文（普通话）回答。",
+    historyMenuLabel: "历史记录",
+    historyPanelTitle: "对话历史",
+    historyEmpty: "没有保存的对话记录",
+    historyRestoreBtn: "恢复",
+    historyDeleteBtn: "删除",
+    historyDeleteAllBtn: "全部删除",
+    historyDeleteAllConfirm: "确定要删除所有历史记录吗？",
+    historyPrivacyNote: "※ 历史记录仅保存在您的浏览器中，不会发送到服务器。30天后自动删除。",
+    historyDateFormat: "YYYY年M月D日 HH:MM"
   },
   yue: {
     welcomeTitle: "請咨詢現場通訊嘅煩惱",
@@ -1182,7 +1259,16 @@ const translations = {
     suggestions: ["請話我知通話範圍","產品有咩特點？","防水防塵性能點樣？","可以幾多人同時通話？","降噪效果有幾好？","想知道價格","年度投資效益點樣？","想試用演示機"],
     loadingText: "諗緊...",
     tooLong: "請將問題控制喺2000字以內。",
-    langInstruction: "請務必用廣東話（繁體字）回答。"
+    langInstruction: "請務必用廣東話（繁體字）回答。",
+    historyMenuLabel: "歷史記錄",
+    historyPanelTitle: "對話歷史",
+    historyEmpty: "冇保存嘅對話記錄",
+    historyRestoreBtn: "還原",
+    historyDeleteBtn: "刪除",
+    historyDeleteAllBtn: "全部刪除",
+    historyDeleteAllConfirm: "確定要刪除所有歷史記錄嗎？",
+    historyPrivacyNote: "※ 歷史記錄只保存喺您嘅瀏覽器內，唔會發送到伺服器。30日後自動刪除。",
+    historyDateFormat: "YYYY年M月D日 HH:MM"
   },
   ko: {
     welcomeTitle: "현장 통화 고민, 상담해 주세요",
@@ -1195,7 +1281,16 @@ const translations = {
     suggestions: ["통화 범위를 알려 주세요","제품의 특징은 무엇인가요?","방수·방진 성능은 어떤가요?","동시 통화는 몇 명 가능한가요?","노이즈 캔슬링은 얼마나 좋은가요?","가격이 궁금합니다","연간 투자 효과는 어떤가요?","데모 기기를 사용해 볼 수 있나요?"],
     loadingText: "생각 중...",
     tooLong: "질문은 2000자 이내로 입력해 주세요.",
-    langInstruction: "반드시 한국어로 답변해 주세요."
+    langInstruction: "반드시 한국어로 답변해 주세요.",
+    historyMenuLabel: "기록",
+    historyPanelTitle: "대화 기록",
+    historyEmpty: "저장된 대화 기록이 없습니다",
+    historyRestoreBtn: "복원",
+    historyDeleteBtn: "삭제",
+    historyDeleteAllBtn: "모두 삭제",
+    historyDeleteAllConfirm: "모든 기록을 삭제하시겠습니까?",
+    historyPrivacyNote: "※ 기록은 사용 중인 브라우저에만 저장됩니다. 서버로 전송되지 않으며 30일 후 자동 삭제됩니다.",
+    historyDateFormat: "YYYY년 M월 D일 HH:MM"
   },
   vi: {
     welcomeTitle: "Hãy hỏi chúng tôi về vấn đề liên lạc tại công trường",
@@ -1208,7 +1303,16 @@ const translations = {
     suggestions: ["Phạm vi liên lạc là bao xa?","Đặc điểm sản phẩm là gì?","Khả năng chống nước, bụi thế nào?","Bao nhiêu người có thể nói cùng lúc?","Chống ồn tốt đến đâu?","Tôi muốn biết giá","Hiệu quả đầu tư hàng năm là bao nhiêu?","Tôi muốn thử máy demo"],
     loadingText: "Đang suy nghĩ...",
     tooLong: "Vui lòng nhập câu hỏi dưới 2000 ký tự.",
-    langInstruction: "Vui lòng chỉ trả lời bằng tiếng Việt."
+    langInstruction: "Vui lòng chỉ trả lời bằng tiếng Việt.",
+    historyMenuLabel: "Lịch sử",
+    historyPanelTitle: "Lịch sử trò chuyện",
+    historyEmpty: "Không có cuộc trò chuyện nào được lưu",
+    historyRestoreBtn: "Khôi phục",
+    historyDeleteBtn: "Xóa",
+    historyDeleteAllBtn: "Xóa tất cả",
+    historyDeleteAllConfirm: "Bạn có chắc chắn muốn xóa tất cả lịch sử?",
+    historyPrivacyNote: "* Lịch sử chỉ được lưu trong trình duyệt của bạn. Không được gửi đến máy chủ. Tự động xóa sau 30 ngày.",
+    historyDateFormat: "D/M/YYYY HH:MM"
   },
   pt: {
     welcomeTitle: "Conte-nos sobre seus desafios de comunicação no local",
@@ -1221,7 +1325,16 @@ const translations = {
     suggestions: ["Qual é o alcance de comunicação?","Quais são as características do produto?","Como é a proteção contra água e poeira?","Quantas pessoas podem falar ao mesmo tempo?","Quão bom é o cancelamento de ruído?","Quero saber o preço","Qual é o ROI anual?","Quero testar uma demonstração"],
     loadingText: "Pensando...",
     tooLong: "Por favor, mantenha sua pergunta com menos de 2000 caracteres.",
-    langInstruction: "Por favor, responda apenas em português."
+    langInstruction: "Por favor, responda apenas em português.",
+    historyMenuLabel: "Histórico",
+    historyPanelTitle: "Histórico de Conversas",
+    historyEmpty: "Nenhuma conversa salva",
+    historyRestoreBtn: "Restaurar",
+    historyDeleteBtn: "Excluir",
+    historyDeleteAllBtn: "Excluir Tudo",
+    historyDeleteAllConfirm: "Tem certeza de que deseja excluir todo o histórico?",
+    historyPrivacyNote: "* O histórico é salvo apenas no seu navegador. Não é enviado a nenhum servidor. Excluído automaticamente após 30 dias.",
+    historyDateFormat: "D/M/YYYY HH:MM"
   },
   tl: {
     welcomeTitle: "Magtanong sa amin tungkol sa komunikasyon sa site",
@@ -1234,7 +1347,16 @@ const translations = {
     suggestions: ["Ano ang saklaw ng komunikasyon?","Ano ang mga tampok ng produkto?","Gaano kahusay ang waterproof at dustproof?","Ilan ang pwedeng mag-usap nang sabay?","Gaano kahusay ang noise canceling?","Gusto kong malaman ang presyo","Ano ang annual ROI?","Gusto kong subukan ang demo"],
     loadingText: "Nag-iisip...",
     tooLong: "Mangyaring panatilihin ang iyong tanong sa loob ng 2000 character.",
-    langInstruction: "Mangyaring sumagot lamang sa Tagalog."
+    langInstruction: "Mangyaring sumagot lamang sa Tagalog.",
+    historyMenuLabel: "Kasaysayan",
+    historyPanelTitle: "Kasaysayan ng Pag-uusap",
+    historyEmpty: "Walang naka-save na pag-uusap",
+    historyRestoreBtn: "Ibalik",
+    historyDeleteBtn: "Burahin",
+    historyDeleteAllBtn: "Burahin Lahat",
+    historyDeleteAllConfirm: "Sigurado ka bang gusto mong burahin ang lahat ng kasaysayan?",
+    historyPrivacyNote: "* Ang kasaysayan ay nai-save lamang sa iyong browser. Hindi ipinapadala sa anumang server. Awtomatikong binubura pagkatapos ng 30 araw.",
+    historyDateFormat: "MMM D, YYYY HH:MM"
   },
   ne: {
     welcomeTitle: "साइटको सञ्चार समस्याबारे सोध्नुहोस्",
@@ -1247,7 +1369,16 @@ const translations = {
     suggestions: ["सञ्चार दायरा कति छ?","उत्पादनका विशेषताहरू के हुन्?","जलरोधी र धूलोप्रतिरोधी क्षमता कस्तो छ?","एकैसाथ कति जना कुरा गर्न सक्छन्?","नोइज क्यान्सलिङ कत्तिको राम्रो छ?","मूल्य जान्न चाहन्छु","वार्षिक लगानी प्रतिफल कति छ?","डेमो प्रयास गर्न चाहन्छु"],
     loadingText: "सोच्दै...",
     tooLong: "कृपया तपाईंको प्रश्न 2000 अक्षर भित्र राख्नुहोस्।",
-    langInstruction: "कृपया केवल नेपाली भाषामा जवाफ दिनुहोस्।"
+    langInstruction: "कृपया केवल नेपाली भाषामा जवाफ दिनुहोस्।",
+    historyMenuLabel: "इतिहास",
+    historyPanelTitle: "वार्तालाप इतिहास",
+    historyEmpty: "सुरक्षित गरिएको वार्तालाप छैन",
+    historyRestoreBtn: "पुनर्स्थापना",
+    historyDeleteBtn: "मेटाउनुहोस्",
+    historyDeleteAllBtn: "सबै मेटाउनुहोस्",
+    historyDeleteAllConfirm: "के तपाईं सबै इतिहास मेटाउन निश्चित हुनुहुन्छ?",
+    historyPrivacyNote: "* इतिहास तपाईंको ब्राउजरमा मात्र सुरक्षित गरिन्छ। सर्भरमा पठाइँदैन। 30 दिन पछि स्वचालित रूपमा मेटिन्छ।",
+    historyDateFormat: "YYYY/M/D HH:MM"
   },
   id: {
     welcomeTitle: "Konsultasikan masalah komunikasi di lokasi kerja",
@@ -1260,7 +1391,16 @@ const translations = {
     suggestions: ["Berapa jangkauan komunikasi?","Apa fitur produk?","Bagaimana ketahanan air dan debu?","Berapa orang bisa bicara bersamaan?","Seberapa baik noise canceling?","Saya ingin tahu harganya","Berapa ROI tahunan?","Saya ingin mencoba unit demo"],
     loadingText: "Berpikir...",
     tooLong: "Mohon batasi pertanyaan Anda hingga 2000 karakter.",
-    langInstruction: "Mohon jawab hanya dalam bahasa Indonesia."
+    langInstruction: "Mohon jawab hanya dalam bahasa Indonesia.",
+    historyMenuLabel: "Riwayat",
+    historyPanelTitle: "Riwayat Percakapan",
+    historyEmpty: "Tidak ada percakapan tersimpan",
+    historyRestoreBtn: "Pulihkan",
+    historyDeleteBtn: "Hapus",
+    historyDeleteAllBtn: "Hapus Semua",
+    historyDeleteAllConfirm: "Apakah Anda yakin ingin menghapus semua riwayat?",
+    historyPrivacyNote: "* Riwayat hanya disimpan di browser Anda. Tidak dikirim ke server mana pun. Otomatis dihapus setelah 30 hari.",
+    historyDateFormat: "D/M/YYYY HH:MM"
   },
   es: {
     welcomeTitle: "Consúltenos sobre desafíos de comunicación en obra",
@@ -1273,7 +1413,16 @@ const translations = {
     suggestions: ["¿Cuál es el alcance de comunicación?","¿Cuáles son las características?","¿Cómo es la resistencia al agua y polvo?","¿Cuántos pueden hablar a la vez?","¿Qué tan bueno es el noise canceling?","Quiero saber el precio","¿Cuál es el ROI anual?","Quiero probar una demo"],
     loadingText: "Pensando...",
     tooLong: "Por favor mantenga su pregunta dentro de 2000 caracteres.",
-    langInstruction: "Por favor responda solo en español."
+    langInstruction: "Por favor responda solo en español.",
+    historyMenuLabel: "Historial",
+    historyPanelTitle: "Historial de Conversaciones",
+    historyEmpty: "No hay conversaciones guardadas",
+    historyRestoreBtn: "Restaurar",
+    historyDeleteBtn: "Eliminar",
+    historyDeleteAllBtn: "Eliminar Todo",
+    historyDeleteAllConfirm: "¿Está seguro de que desea eliminar todo el historial?",
+    historyPrivacyNote: "* El historial se guarda solo en su navegador. No se envía a ningún servidor. Se elimina automáticamente después de 30 días.",
+    historyDateFormat: "D/M/YYYY HH:MM"
   },
   th: {
     welcomeTitle: "ปรึกษาเราเกี่ยวกับปัญหาการสื่อสารที่หน้างาน",
@@ -1286,7 +1435,16 @@ const translations = {
     suggestions: ["ระยะการสื่อสารเท่าไหร่?","คุณสมบัติของผลิตภัณฑ์คืออะไร?","การกันน้ำกันฝุ่นเป็นอย่างไร?","พูดพร้อมกันได้กี่คน?","การตัดเสียงรบกวนดีแค่ไหน?","อยากทราบราคา","ROI ต่อปีเท่าไหร่?","อยากลองเครื่องเดโม่"],
     loadingText: "กำลังคิด...",
     tooLong: "กรุณาพิมพ์คำถามไม่เกิน 2000 ตัวอักษร",
-    langInstruction: "กรุณาตอบเป็นภาษาไทยเท่านั้น"
+    langInstruction: "กรุณาตอบเป็นภาษาไทยเท่านั้น",
+    historyMenuLabel: "ประวัติ",
+    historyPanelTitle: "ประวัติการสนทนา",
+    historyEmpty: "ไม่มีการสนทนาที่บันทึกไว้",
+    historyRestoreBtn: "คืนค่า",
+    historyDeleteBtn: "ลบ",
+    historyDeleteAllBtn: "ลบทั้งหมด",
+    historyDeleteAllConfirm: "คุณแน่ใจหรือไม่ว่าต้องการลบประวัติทั้งหมด?",
+    historyPrivacyNote: "* ประวัติจะถูกบันทึกเฉพาะในเบราว์เซอร์ของคุณเท่านั้น ไม่ส่งไปยังเซิร์ฟเวอร์ และจะถูกลบอัตโนมัติหลัง 30 วัน",
+    historyDateFormat: "D/M/YYYY HH:MM"
   }
 };
 
@@ -1327,6 +1485,20 @@ function applyTranslations() {
   if (disclaimerEl) disclaimerEl.textContent = t.disclaimer;
   const langSel = document.getElementById('langSelect');
   if (langSel) langSel.value = currentLang;
+  // 履歴メニュー・パネル
+  const menuHistoryLabel = document.getElementById('menuItemHistoryLabel');
+  if (menuHistoryLabel) menuHistoryLabel.textContent = t.historyMenuLabel || '履歴';
+  const historyTitleEl = document.getElementById('historyPanelTitle');
+  if (historyTitleEl) historyTitleEl.textContent = t.historyPanelTitle || '会話履歴';
+  const historyDeleteAllEl = document.getElementById('historyDeleteAllBtn');
+  if (historyDeleteAllEl) historyDeleteAllEl.textContent = t.historyDeleteAllBtn || 'すべて削除';
+  const historyPrivacyEl = document.getElementById('historyPrivacyNote');
+  if (historyPrivacyEl) historyPrivacyEl.textContent = t.historyPrivacyNote || '※ 履歴はお使いのブラウザ内にのみ保存されます。サーバーには送信されません。30日後に自動削除されます。';
+  // パネル開いている場合はリスト再描画（翻訳更新のため）
+  const histPanel = document.getElementById('historyPanel');
+  if (histPanel && histPanel.classList.contains('open') && typeof renderHistoryList === 'function') {
+    renderHistoryList();
+  }
   // サジェスチョン質問を再構築
   const sugEl = document.getElementById('suggestions');
   if (sugEl) {
@@ -1563,6 +1735,8 @@ async function sendMessage(text) {
 
   messages.push({ role: 'user', content: userText });
   renderMessages();
+  // 履歴保存：ユーザーメッセージ送信時（非同期・失敗してもアプリ継続）
+  persistCurrentSession().catch(err => console.warn('[history] persist (user) failed:', err));
   loading = true;
   sendBtn.disabled = true;
   showLoading();
@@ -1630,6 +1804,8 @@ async function sendMessage(text) {
     sendBtn.disabled = false;
     renderMessages();
     inputEl.focus();
+    // 履歴更新：AI 応答完了時（成功・失敗共に）
+    persistCurrentSession().catch(err => console.warn('[history] persist (assistant) failed:', err));
   }
 }
 
@@ -1797,14 +1973,316 @@ window.addEventListener('load', () => {
     const apiKeyPanel = document.getElementById('apiKeyPanel');
     if (apiKeyBtn) apiKeyBtn.style.display = 'none';
     if (apiKeyPanel) apiKeyPanel.style.display = 'none';
+  } else {
+    // 直接Anthropic API呼び出し時のみ、APIキー未設定なら自動表示
+    if (!localStorage.getItem('anthropic_api_key')) {
+      document.getElementById('apiKeyPanel').style.display = 'block';
+      document.getElementById('apiKeyStatus').textContent = '⚠ APIキーを入力して保存してください';
+    }
+  }
+  // 履歴：古いセッションのバックグラウンド削除
+  pruneOldSessions().catch(err => console.warn('[history] prune failed:', err));
+});
+
+// ===========================================================
+// 会話履歴永続化（IndexedDB / クライアント側のみ）
+// ===========================================================
+const HISTORY_DB_NAME = 'mr_bear_history';
+const HISTORY_STORE = 'conversations';
+const HISTORY_DB_VERSION = 1;
+const HISTORY_RETENTION_MS = 30 * 24 * 60 * 60 * 1000; // 30日
+
+// UUID v4 生成（crypto.randomUUID フォールバック付き）
+const uuid = () => (typeof crypto !== 'undefined' && crypto.randomUUID)
+  ? crypto.randomUUID()
+  : 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, c => {
+      const r = Math.random() * 16 | 0;
+      return (c === 'x' ? r : (r & 0x3 | 0x8)).toString(16);
+    });
+
+// 現在のセッションID（メッセージ送信時に未設定なら自動生成）
+let currentSessionId = null;
+let currentSessionCreatedAt = null;
+
+// IndexedDB が使えるか
+function isIDBAvailable() {
+  try { return typeof indexedDB !== 'undefined' && indexedDB !== null; } catch { return false; }
+}
+
+// DB オープン（毎呼び出し時に開く・閉じるのが安全）
+function openHistoryDB() {
+  return new Promise((resolve, reject) => {
+    if (!isIDBAvailable()) { reject(new Error('IndexedDB unavailable')); return; }
+    let req;
+    try { req = indexedDB.open(HISTORY_DB_NAME, HISTORY_DB_VERSION); }
+    catch (e) { reject(e); return; }
+    req.onupgradeneeded = (ev) => {
+      const db = ev.target.result;
+      if (!db.objectStoreNames.contains(HISTORY_STORE)) {
+        const store = db.createObjectStore(HISTORY_STORE, { keyPath: 'id' });
+        store.createIndex('lastModifiedAt', 'lastModifiedAt', { unique: false });
+      }
+    };
+    req.onsuccess = (ev) => resolve(ev.target.result);
+    req.onerror = (ev) => reject(ev.target.error);
+    req.onblocked = () => reject(new Error('IndexedDB blocked'));
+  });
+}
+
+async function withStore(mode, fn) {
+  let db;
+  try { db = await openHistoryDB(); } catch (e) { throw e; }
+  return new Promise((resolve, reject) => {
+    let tx;
+    try { tx = db.transaction(HISTORY_STORE, mode); }
+    catch (e) { db.close(); reject(e); return; }
+    const store = tx.objectStore(HISTORY_STORE);
+    let result;
+    Promise.resolve(fn(store)).then(r => { result = r; }).catch(reject);
+    tx.oncomplete = () => { db.close(); resolve(result); };
+    tx.onerror = () => { db.close(); reject(tx.error); };
+    tx.onabort = () => { db.close(); reject(tx.error || new Error('tx aborted')); };
+  });
+}
+
+async function saveSession(session) {
+  try {
+    await withStore('readwrite', (store) => new Promise((resolve, reject) => {
+      const req = store.put(session);
+      req.onsuccess = () => resolve();
+      req.onerror = () => reject(req.error);
+    }));
+  } catch (e) {
+    console.warn('[history] saveSession failed:', e);
+  }
+}
+
+async function getAllSessions() {
+  try {
+    return await withStore('readonly', (store) => new Promise((resolve, reject) => {
+      const req = store.getAll();
+      req.onsuccess = () => resolve(req.result || []);
+      req.onerror = () => reject(req.error);
+    }));
+  } catch (e) {
+    console.warn('[history] getAllSessions failed:', e);
+    return [];
+  }
+}
+
+async function deleteSession(id) {
+  try {
+    await withStore('readwrite', (store) => new Promise((resolve, reject) => {
+      const req = store.delete(id);
+      req.onsuccess = () => resolve();
+      req.onerror = () => reject(req.error);
+    }));
+  } catch (e) {
+    console.warn('[history] deleteSession failed:', e);
+  }
+}
+
+async function deleteAllSessions() {
+  try {
+    await withStore('readwrite', (store) => new Promise((resolve, reject) => {
+      const req = store.clear();
+      req.onsuccess = () => resolve();
+      req.onerror = () => reject(req.error);
+    }));
+  } catch (e) {
+    console.warn('[history] deleteAllSessions failed:', e);
+  }
+}
+
+// 30日以上前のセッションを削除
+async function pruneOldSessions() {
+  if (!isIDBAvailable()) return;
+  const cutoff = Date.now() - HISTORY_RETENTION_MS;
+  try {
+    const all = await getAllSessions();
+    const toDelete = all.filter(s => (s.lastModifiedAt || 0) < cutoff);
+    for (const s of toDelete) {
+      await deleteSession(s.id);
+    }
+  } catch (e) {
+    console.warn('[history] pruneOldSessions failed:', e);
+  }
+}
+
+// セッション保存処理（メッセージ送信時・AI応答完了時に呼ぶ）
+async function persistCurrentSession() {
+  // 表示専用メッセージは保存しない
+  const persistable = messages.filter(m => !m._display_only && !m._system);
+  if (persistable.length === 0) return;
+  if (!currentSessionId) {
+    currentSessionId = uuid();
+    currentSessionCreatedAt = Date.now();
+  }
+  // タイトル生成：最初のユーザー質問の最初の40文字
+  const firstUser = persistable.find(m => m.role === 'user');
+  const rawTitle = firstUser ? String(firstUser.content || '').trim() : '';
+  const title = rawTitle.length > 40 ? rawTitle.slice(0, 40) + '…' : (rawTitle || '(untitled)');
+  const session = {
+    id: currentSessionId,
+    title,
+    createdAt: currentSessionCreatedAt || Date.now(),
+    lastModifiedAt: Date.now(),
+    language: currentLang,
+    messages: persistable.map(m => ({ role: m.role, content: m.content }))
+  };
+  await saveSession(session);
+}
+
+// 日付フォーマット（言語別書式に対応）
+function formatHistoryDate(ts, lang) {
+  const t = translations[lang] || translations.ja;
+  const fmt = t.historyDateFormat || 'YYYY/M/D HH:MM';
+  const d = new Date(ts);
+  const pad = (n) => String(n).padStart(2, '0');
+  const monthNames = {
+    ja: ['1月','2月','3月','4月','5月','6月','7月','8月','9月','10月','11月','12月'],
+    en: ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'],
+    tl: ['Ene','Peb','Mar','Abr','May','Hun','Hul','Ago','Set','Okt','Nob','Dis']
+  };
+  return fmt
+    .replace('YYYY', d.getFullYear())
+    .replace('MMM', (monthNames[lang] || monthNames.en)[d.getMonth()])
+    .replace(/M(?!M)/, d.getMonth() + 1)
+    .replace(/D/, d.getDate())
+    .replace('HH', pad(d.getHours()))
+    .replace('MM', pad(d.getMinutes()));
+}
+
+// ===== UI：ハンバーガーメニュー =====
+function toggleMenu(evt) {
+  if (evt) evt.stopPropagation();
+  const dd = document.getElementById('menuDropdown');
+  const btn = document.getElementById('menuBtn');
+  if (!dd) return;
+  const isOpen = dd.classList.toggle('open');
+  if (btn) btn.setAttribute('aria-expanded', isOpen ? 'true' : 'false');
+  dd.setAttribute('aria-hidden', isOpen ? 'false' : 'true');
+}
+function closeMenu() {
+  const dd = document.getElementById('menuDropdown');
+  const btn = document.getElementById('menuBtn');
+  if (dd) { dd.classList.remove('open'); dd.setAttribute('aria-hidden', 'true'); }
+  if (btn) btn.setAttribute('aria-expanded', 'false');
+}
+document.addEventListener('click', (e) => {
+  const dd = document.getElementById('menuDropdown');
+  const btn = document.getElementById('menuBtn');
+  if (!dd || !dd.classList.contains('open')) return;
+  if (dd.contains(e.target) || (btn && btn.contains(e.target))) return;
+  closeMenu();
+});
+
+// ===== UI：履歴パネル =====
+async function openHistoryPanel() {
+  closeMenu();
+  const overlay = document.getElementById('historyOverlay');
+  const panel = document.getElementById('historyPanel');
+  if (!overlay || !panel) return;
+  overlay.classList.add('open');
+  overlay.setAttribute('aria-hidden', 'false');
+  // 描画してから transform を切り替えるためタイマー
+  requestAnimationFrame(() => {
+    panel.classList.add('open');
+    panel.setAttribute('aria-hidden', 'false');
+  });
+  await renderHistoryList();
+}
+
+function closeHistoryPanel() {
+  const overlay = document.getElementById('historyOverlay');
+  const panel = document.getElementById('historyPanel');
+  if (panel) { panel.classList.remove('open'); panel.setAttribute('aria-hidden', 'true'); }
+  if (overlay) { overlay.classList.remove('open'); overlay.setAttribute('aria-hidden', 'true'); }
+}
+
+async function renderHistoryList() {
+  const listEl = document.getElementById('historyList');
+  if (!listEl) return;
+  const t = translations[currentLang] || translations.ja;
+  const sessions = await getAllSessions();
+  sessions.sort((a, b) => (b.lastModifiedAt || 0) - (a.lastModifiedAt || 0));
+  if (sessions.length === 0) {
+    listEl.innerHTML = `<div class="history-empty">${escapeHtml(t.historyEmpty || '保存された会話履歴はありません')}</div>`;
+    const delAll = document.getElementById('historyDeleteAllBtn');
+    if (delAll) delAll.disabled = true;
     return;
   }
-  // 直接Anthropic API呼び出し時のみ、APIキー未設定なら自動表示
-  if (!localStorage.getItem('anthropic_api_key')) {
-    document.getElementById('apiKeyPanel').style.display = 'block';
-    document.getElementById('apiKeyStatus').textContent = '⚠ APIキーを入力して保存してください';
+  const delAll = document.getElementById('historyDeleteAllBtn');
+  if (delAll) delAll.disabled = false;
+  listEl.innerHTML = sessions.map(s => {
+    const dateStr = formatHistoryDate(s.lastModifiedAt || s.createdAt || Date.now(), currentLang);
+    const titleStr = s.title || '(untitled)';
+    return `<div class="history-item" data-id="${escapeHtml(s.id)}">
+      <div class="history-item-title">📝 ${escapeHtml(titleStr)}</div>
+      <div class="history-item-date">${escapeHtml(dateStr)}</div>
+      <div class="history-item-actions">
+        <button type="button" class="history-btn-restore" data-action="restore">${escapeHtml(t.historyRestoreBtn || '復元')}</button>
+        <button type="button" class="history-btn-delete" data-action="delete">${escapeHtml(t.historyDeleteBtn || '削除')}</button>
+      </div>
+    </div>`;
+  }).join('');
+  // イベントバインド（XSS 対策のため inline onclick は使わずに addEventListener で）
+  Array.from(listEl.querySelectorAll('.history-item')).forEach(itemEl => {
+    const id = itemEl.dataset.id;
+    const restoreBtn = itemEl.querySelector('[data-action="restore"]');
+    const deleteBtn = itemEl.querySelector('[data-action="delete"]');
+    if (restoreBtn) restoreBtn.addEventListener('click', (e) => { e.stopPropagation(); restoreSession(id); });
+    if (deleteBtn) deleteBtn.addEventListener('click', (e) => { e.stopPropagation(); deleteHistoryItem(id); });
+    // アイテム全体タップで復元
+    itemEl.addEventListener('click', () => restoreSession(id));
+  });
+}
+
+async function restoreSession(id) {
+  const all = await getAllSessions();
+  const session = all.find(s => s.id === id);
+  if (!session) return;
+  // セッション復元
+  currentSessionId = session.id;
+  currentSessionCreatedAt = session.createdAt;
+  // 言語を復元（必要なら）
+  if (session.language && session.language !== currentLang && translations[session.language]) {
+    const langSel = document.getElementById('langSelect');
+    if (langSel) langSel.value = session.language;
+    currentLang = session.language;
+    localStorage.setItem('mr_bear_lang', currentLang);
+    document.documentElement.lang = currentLang;
+    applyTranslations();
   }
-});
+  // メッセージロード
+  messages = (session.messages || []).map(m => ({ role: m.role, content: m.content }));
+  // 既存メッセージ要素をクリア（welcome要素は既に削除されている可能性あり）
+  const msgEls = messagesEl.querySelectorAll('.message');
+  msgEls.forEach(el => el.remove());
+  const welcome = document.querySelector('.welcome');
+  if (welcome && messages.length > 0) welcome.remove();
+  renderMessages();
+  closeHistoryPanel();
+}
+
+async function deleteHistoryItem(id) {
+  await deleteSession(id);
+  // 現在表示中のセッションが消えたら ID をリセット（新しい会話開始扱い）
+  if (currentSessionId === id) {
+    currentSessionId = null;
+    currentSessionCreatedAt = null;
+  }
+  await renderHistoryList();
+}
+
+async function confirmDeleteAllHistory() {
+  const t = translations[currentLang] || translations.ja;
+  if (!window.confirm(t.historyDeleteAllConfirm || 'すべての履歴を削除してもよろしいですか？')) return;
+  await deleteAllSessions();
+  currentSessionId = null;
+  currentSessionCreatedAt = null;
+  await renderHistoryList();
+}
 </script>
 
 </body>
