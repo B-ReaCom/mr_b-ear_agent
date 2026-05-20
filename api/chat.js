@@ -419,7 +419,7 @@ export default async function handler(req) {
       // ストリームを2分岐：1つはクライアントへ、もう1つは使用量ログ収集用
       const [streamForClient, streamForLog] = upstream.body.tee();
 
-      // バックグラウンドで使用量を集計
+      // バックグラウンドで使用量を集計 + リード検出通知
       (async () => {
         const reader = streamForLog.getReader();
         const decoder = new TextDecoder();
@@ -458,6 +458,17 @@ export default async function handler(req) {
             timestamp: new Date().toISOString()
           });
         }
+        // ===== リード検出・通知（ストリーム完了後） =====
+        try {
+          const sid = body.session_id || body.sessionId || '';
+          const leadInfo = detectLead(body.messages || []);
+          if (leadInfo.isHighPriority) {
+            const messageText = formatLeadMessage(leadInfo, body.messages || [], sid);
+            await sendLineWorksDirectNotification(messageText);
+          }
+        } catch (err) {
+          console.error('[chat.js] lead notification error:', err?.message || err);
+        }
       })();
 
       return new Response(streamForClient, {
@@ -486,20 +497,6 @@ export default async function handler(req) {
         cost_usd: cost,
         timestamp: new Date().toISOString()
       });
-    }
-
-    // ===== リード自動通知（stream=true のメイン応答のみ、重複防止） =====
-    const sid = body.session_id || body.sessionId || '';
-    if (isStream) {
-      try {
-        const leadInfo = detectLead(body.messages || []);
-        if (leadInfo.isHighPriority) {
-          const messageText = formatLeadMessage(leadInfo, body.messages || [], sid);
-          await sendLineWorksDirectNotification(messageText);
-        }
-      } catch (err) {
-        console.error('[chat.js] lead notification error:', err?.message || err);
-      }
     }
 
     return new Response(JSON.stringify(data), {
