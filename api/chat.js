@@ -424,17 +424,12 @@ export default async function handler(req) {
           console.log(`[chat.js:${sid}] Base URL: ${baseUrl}`);
           const notifyUrl = `${baseUrl}/api/lineworks-notify`;
           console.log(`[chat.js:${sid}] Calling fetch to ${notifyUrl}`);
-          fetch(notifyUrl, {
+          const notifyRes = await fetch(notifyUrl, {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({ messageText }),
-          })
-            .then(r => {
-              console.log(`[chat.js:${sid}] Fetch response: ${r.status}`);
-              if (!r.ok) console.error(`[chat.js:${sid}] Error: status ${r.status}`);
-            })
-            .catch(err => console.error(`[chat.js:${sid}] Fetch error:`, err?.message || err));
-          console.log(`[chat.js:${sid}] Fetch initiated (fire-and-forget)`);
+          });
+          console.log(`[chat.js:${sid}] Fetch response: ${notifyRes.status}`);
         } catch (notifyErr) {
           console.error(`[chat.js:${sid}] Notification error:`, notifyErr?.message || notifyErr);
         }
