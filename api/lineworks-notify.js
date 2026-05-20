@@ -119,11 +119,11 @@ async function getAccessToken() {
   return data.access_token;
 }
 
-// ===== LINE WORKS のトークルームへメッセージ送信 =====
+// ===== LINE WORKS ユーザーへ DM 送信 =====
 async function sendLineWorksMessage(accessToken, messageText) {
   const botId = process.env.LINE_WORKS_BOT_ID;
-  const channelId = process.env.LINE_WORKS_CHANNEL_ID;
-  const url = `https://www.worksapis.com/v1.0/bots/${botId}/channels/${channelId}/messages`;
+  const userId = process.env.LINE_WORKS_NOTIFY_USER_ID || 'ef2f74e8-c248-4d15-183a-044dbb488df9';
+  const url = `https://www.worksapis.com/v1.0/bots/${botId}/users/${userId}/messages`;
 
   const response = await fetch(url, {
     method: 'POST',
@@ -187,7 +187,6 @@ export default async function handler(req, res) {
     'LINE_WORKS_SERVICE_ACCOUNT',
     'LINE_WORKS_PRIVATE_KEY',
     'LINE_WORKS_BOT_ID',
-    'LINE_WORKS_CHANNEL_ID',
   ];
   const missing = requiredEnvs.filter(k => !process.env[k]);
   if (missing.length > 0) {
