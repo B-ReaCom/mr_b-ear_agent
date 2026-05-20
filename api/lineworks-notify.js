@@ -68,55 +68,65 @@ function isAllowedOrigin(req) {
 
 // ===== JWT 作成 + Token 取得 =====
 async function getAccessToken() {
-  const now = Math.floor(Date.now() / 1000);
-  const header = { alg: 'RS256', typ: 'JWT' };
-  const payload = {
-    iss: process.env.LINE_WORKS_CLIENT_ID,
-    sub: process.env.LINE_WORKS_SERVICE_ACCOUNT,
-    iat: now,
-    exp: now + 3600,
-  };
+  try {
+    const now = Math.floor(Date.now() / 1000);
+    const header = { alg: 'RS256', typ: 'JWT' };
+    const payload = {
+      iss: process.env.LINE_WORKS_CLIENT_ID,
+      sub: process.env.LINE_WORKS_SERVICE_ACCOUNT,
+      iat: now,
+      exp: now + 3600,
+    };
 
-  const headerB64 = Buffer.from(JSON.stringify(header)).toString('base64url');
-  const payloadB64 = Buffer.from(JSON.stringify(payload)).toString('base64url');
-  const signingInput = `${headerB64}.${payloadB64}`;
+    const headerB64 = Buffer.from(JSON.stringify(header)).toString('base64url');
+    const payloadB64 = Buffer.from(JSON.stringify(payload)).toString('base64url');
+    const signingInput = `${headerB64}.${payloadB64}`;
 
-  // PEM 形式の Private Key（環境変数で \n をリテラルで保存している場合に対応）
-  const privateKey = (process.env.LINE_WORKS_PRIVATE_KEY || '').replace(/\\n/g, '\n');
-  if (!privateKey || !/-----BEGIN [A-Z ]*PRIVATE KEY-----/.test(privateKey)) {
-    throw new Error('LINE_WORKS_PRIVATE_KEY is not a valid PEM');
+    // PEM 形式の Private Key（環境変数で \n をリテラルで保存している場合に対応）
+    const privateKey = (process.env.LINE_WORKS_PRIVATE_KEY || '').replace(/\\n/g, '\n');
+    if (!privateKey || !/-----BEGIN [A-Z ]*PRIVATE KEY-----/.test(privateKey)) {
+      throw new Error('LINE_WORKS_PRIVATE_KEY is not a valid PEM');
+    }
+
+    const signer = crypto.createSign('RSA-SHA256');
+    signer.update(signingInput);
+    const signature = signer.sign(privateKey, 'base64url');
+
+    const jwt = `${signingInput}.${signature}`;
+
+    console.log('[getAccessToken] JWT created, requesting token...');
+
+    const params = new URLSearchParams({
+      assertion: jwt,
+      grant_type: 'urn:ietf:params:oauth:grant-type:jwt-bearer',
+      client_id: process.env.LINE_WORKS_CLIENT_ID,
+      client_secret: process.env.LINE_WORKS_CLIENT_SECRET,
+      scope: 'bot bot.message',
+    });
+
+    const response = await fetch(LINE_WORKS_TOKEN_URL, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+      body: params.toString(),
+    });
+
+    if (!response.ok) {
+      const errorText = await response.text();
+      console.error('[getAccessToken] Token request failed:', response.status, errorText);
+      throw new Error(`Token request failed: ${response.status} ${errorText}`);
+    }
+
+    const data = await response.json();
+    if (!data.access_token) {
+      console.error('[getAccessToken] No access_token in response');
+      throw new Error('Token response missing access_token');
+    }
+    console.log('[getAccessToken] Token acquired successfully');
+    return data.access_token;
+  } catch (err) {
+    console.error('[getAccessToken] Error:', err && err.message ? err.message : err);
+    throw err;
   }
-
-  const signer = crypto.createSign('RSA-SHA256');
-  signer.update(signingInput);
-  const signature = signer.sign(privateKey, 'base64url');
-
-  const jwt = `${signingInput}.${signature}`;
-
-  const params = new URLSearchParams({
-    assertion: jwt,
-    grant_type: 'urn:ietf:params:oauth:grant-type:jwt-bearer',
-    client_id: process.env.LINE_WORKS_CLIENT_ID,
-    client_secret: process.env.LINE_WORKS_CLIENT_SECRET,
-    scope: 'bot bot.message',
-  });
-
-  const response = await fetch(LINE_WORKS_TOKEN_URL, {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
-    body: params.toString(),
-  });
-
-  if (!response.ok) {
-    const errorText = await response.text();
-    throw new Error(`Token request failed: ${response.status} ${errorText}`);
-  }
-
-  const data = await response.json();
-  if (!data.access_token) {
-    throw new Error('Token response missing access_token');
-  }
-  return data.access_token;
 }
 
 // ===== LINE WORKS のトークルームへメッセージ送信 =====
@@ -124,6 +134,9 @@ async function sendLineWorksMessage(accessToken, messageText) {
   const botId = process.env.LINE_WORKS_BOT_ID;
   const channelId = process.env.LINE_WORKS_CHANNEL_ID;
   const url = `https://www.worksapis.com/v1.0/bots/${botId}/channels/${channelId}/messages`;
+
+  console.log('[sendLineWorksMessage] URL:', url);
+  console.log('[sendLineWorksMessage] Message length:', messageText.length);
 
   const response = await fetch(url, {
     method: 'POST',
@@ -139,8 +152,11 @@ async function sendLineWorksMessage(accessToken, messageText) {
     }),
   });
 
+  console.log('[sendLineWorksMessage] Response status:', response.status);
+
   if (!response.ok) {
     const errorText = await response.text();
+    console.error('[sendLineWorksMessage] Error response:', errorText);
     throw new Error(`Message send failed: ${response.status} ${errorText}`);
   }
 
@@ -148,6 +164,7 @@ async function sendLineWorksMessage(accessToken, messageText) {
   try {
     return await response.json();
   } catch {
+    console.log('[sendLineWorksMessage] No JSON response (204 No Content expected)');
     return { ok: true };
   }
 }
@@ -171,12 +188,15 @@ async function readJsonBody(req) {
 }
 
 export default async function handler(req, res) {
+  console.log('[lineworks-notify] Handler called:', req.method);
+
   if (req.method !== 'POST') {
     return res.status(405).json({ error: 'method_not_allowed' });
   }
 
   // Origin 検証（外部からの直接叩き防止）
   if (!isAllowedOrigin(req)) {
+    console.log('[lineworks-notify] Origin check failed');
     return res.status(403).json({ error: 'forbidden_origin' });
   }
 
@@ -197,16 +217,25 @@ export default async function handler(req, res) {
 
   try {
     const body = await readJsonBody(req);
+    console.log('[lineworks-notify] Body received:', body ? 'yes' : 'no');
+
     const messageText = body && body.messageText;
     if (!messageText || typeof messageText !== 'string') {
+      console.log('[lineworks-notify] No messageText found');
       return res.status(400).json({ error: 'missing_messageText' });
     }
+
+    console.log('[lineworks-notify] Message text length:', messageText.length);
 
     // 文字数の上限（暴走防止・LINE WORKS の制限対応）
     const safeText = messageText.length > 2000 ? messageText.substring(0, 2000) + '...' : messageText;
 
+    console.log('[lineworks-notify] Getting access token...');
     const accessToken = await getAccessToken();
+    console.log('[lineworks-notify] Token acquired, sending message...');
+
     await sendLineWorksMessage(accessToken, safeText);
+    console.log('[lineworks-notify] Message sent successfully');
 
     return res.status(200).json({ ok: true });
   } catch (error) {
