@@ -134,6 +134,86 @@ function estimateCost(usage, model) {
   return costUSD;
 }
 
+// ===== LINE WORKS 直接通知（Edge Function 内で完結） =====
+async function sendLineWorksDirectNotification(messageText) {
+  const clientId = process.env.LINE_WORKS_CLIENT_ID;
+  const clientSecret = process.env.LINE_WORKS_CLIENT_SECRET;
+  const serviceAccount = process.env.LINE_WORKS_SERVICE_ACCOUNT;
+  const privateKeyPem = (process.env.LINE_WORKS_PRIVATE_KEY || '').replace(/\\n/g, '\n');
+  const botId = process.env.LINE_WORKS_BOT_ID;
+  const userId = process.env.LINE_WORKS_NOTIFY_USER_ID;
+
+  if (!clientId || !clientSecret || !serviceAccount || !privateKeyPem || !botId || !userId) {
+    console.error('[lineworks-direct] Missing env vars');
+    return;
+  }
+
+  try {
+    // JWT 生成（Web Crypto API - Edge Function対応）
+    const now = Math.floor(Date.now() / 1000);
+    const header = { alg: 'RS256', typ: 'JWT' };
+    const payload = { iss: clientId, sub: serviceAccount, iat: now, exp: now + 3600 };
+
+    const b64url = (obj) => btoa(JSON.stringify(obj)).replace(/\+/g, '-').replace(/\//g, '_').replace(/=/g, '');
+    const signingInput = `${b64url(header)}.${b64url(payload)}`;
+
+    // PEM → PKCS8 バイナリ
+    const pemBody = privateKeyPem
+      .replace(/-----BEGIN [A-Z ]*PRIVATE KEY-----/, '')
+      .replace(/-----END [A-Z ]*PRIVATE KEY-----/, '')
+      .replace(/\s/g, '');
+    const derBuffer = Uint8Array.from(atob(pemBody), c => c.charCodeAt(0)).buffer;
+
+    const cryptoKey = await crypto.subtle.importKey(
+      'pkcs8', derBuffer,
+      { name: 'RSASSA-PKCS1-v1_5', hash: 'SHA-256' },
+      false, ['sign']
+    );
+    const sigBuffer = await crypto.subtle.sign(
+      'RSASSA-PKCS1-v1_5', cryptoKey,
+      new TextEncoder().encode(signingInput)
+    );
+    const sig = btoa(String.fromCharCode(...new Uint8Array(sigBuffer)))
+      .replace(/\+/g, '-').replace(/\//g, '_').replace(/=/g, '');
+    const jwt = `${signingInput}.${sig}`;
+
+    // アクセストークン取得
+    const tokenRes = await fetch('https://auth.worksmobile.com/oauth2/v2.0/token', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+      body: new URLSearchParams({
+        assertion: jwt,
+        grant_type: 'urn:ietf:params:oauth:grant-type:jwt-bearer',
+        client_id: clientId,
+        client_secret: clientSecret,
+        scope: 'bot bot.message',
+      }).toString(),
+    });
+    const tokenData = await tokenRes.json();
+    if (!tokenData.access_token) {
+      console.error('[lineworks-direct] Token failed:', tokenRes.status);
+      return;
+    }
+    console.log('[lineworks-direct] Token acquired');
+
+    // メッセージ送信
+    const msgRes = await fetch(
+      `https://www.worksapis.com/v1.0/bots/${botId}/users/${userId}/messages`,
+      {
+        method: 'POST',
+        headers: {
+          'Authorization': `Bearer ${tokenData.access_token}`,
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ content: { type: 'text', text: messageText } }),
+      }
+    );
+    console.log('[lineworks-direct] Message sent, status:', msgRes.status);
+  } catch (err) {
+    console.error('[lineworks-direct] Error:', err?.message || err);
+  }
+}
+
 // ===== リード判定（高優先度のみ通知） =====
 // スコア >= 8 を通知発火条件とする
 function detectLead(messages) {
@@ -419,17 +499,9 @@ export default async function handler(req) {
         console.log(`[chat.js:${sid}] HIGH PRIORITY LEAD - starting notification...`);
         try {
           const messageText = formatLeadMessage(leadInfo, body.messages || [], sid);
-          console.log(`[chat.js:${sid}] Message formatted (${messageText.length} chars)`);
-          const baseUrl = getBaseUrl(req);
-          console.log(`[chat.js:${sid}] Base URL: ${baseUrl}`);
-          const notifyUrl = `${baseUrl}/api/lineworks-notify`;
-          console.log(`[chat.js:${sid}] Calling fetch to ${notifyUrl}`);
-          const notifyRes = await fetch(notifyUrl, {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ messageText }),
-          });
-          console.log(`[chat.js:${sid}] Fetch response: ${notifyRes.status}`);
+          console.log(`[chat.js:${sid}] Message formatted (${messageText.length} chars), sending directly...`);
+          await sendLineWorksDirectNotification(messageText);
+          console.log(`[chat.js:${sid}] Notification complete`);
         } catch (notifyErr) {
           console.error(`[chat.js:${sid}] Notification error:`, notifyErr?.message || notifyErr);
         }
