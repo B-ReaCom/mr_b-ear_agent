@@ -400,7 +400,6 @@ export default async function handler(req) {
 
   try {
     const body = await req.json();
-    console.log('[chat.js] Request body received - messages:', body.messages ? `${body.messages.length} messages` : 'undefined', 'model:', body.model);
     const isStream = body.stream === true;
 
     // Anthropic API へ転送
@@ -489,25 +488,15 @@ export default async function handler(req) {
     }
 
     // ===== リード自動通知（高優先度のみ） =====
-    const sid = body.session_id || body.sessionId || 'unknown';
+    const sid = body.session_id || body.sessionId || '';
     try {
-      const messages = body.messages || [];
-      console.log(`[chat.js:${sid}] Messages array: count=${messages.length}`);
-      const leadInfo = detectLead(messages);
-      console.log(`[chat.js:${sid}] Lead detection: score=${leadInfo.score}, isHighPriority=${leadInfo.isHighPriority}`);
+      const leadInfo = detectLead(body.messages || []);
       if (leadInfo.isHighPriority) {
-        console.log(`[chat.js:${sid}] HIGH PRIORITY LEAD - starting notification...`);
-        try {
-          const messageText = formatLeadMessage(leadInfo, body.messages || [], sid);
-          console.log(`[chat.js:${sid}] Message formatted (${messageText.length} chars), sending directly...`);
-          await sendLineWorksDirectNotification(messageText);
-          console.log(`[chat.js:${sid}] Notification complete`);
-        } catch (notifyErr) {
-          console.error(`[chat.js:${sid}] Notification error:`, notifyErr?.message || notifyErr);
-        }
+        const messageText = formatLeadMessage(leadInfo, body.messages || [], sid);
+        await sendLineWorksDirectNotification(messageText);
       }
     } catch (err) {
-      console.error('[chat.js] lead detection error:', err && err.message ? err.message : err);
+      console.error('[chat.js] lead notification error:', err?.message || err);
     }
 
     return new Response(JSON.stringify(data), {

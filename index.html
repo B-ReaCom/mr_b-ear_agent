@@ -1529,6 +1529,12 @@ const suggestedQuestions = translations.ja.suggestions;
 
 let messages = [];
 let loading = false;
+const SESSION_ID = (() => {
+  const key = 'mr_bear_session_id';
+  let id = sessionStorage.getItem(key);
+  if (!id) { id = Date.now().toString(36) + Math.random().toString(36).slice(2, 7); sessionStorage.setItem(key, id); }
+  return id;
+})();
 
 const messagesEl = document.getElementById('messages');
 const inputEl = document.getElementById('input');
@@ -1786,6 +1792,7 @@ async function sendMessage(text) {
         model: 'claude-sonnet-4-6',
         max_tokens: 2500,
         stream: true,
+        session_id: SESSION_ID,
         system: [
           { type: "text", text: SYSTEM_PROMPT, cache_control: { type: "ephemeral" } },
           { type: "text", text: '【重要：回答言語】\n' + (translations[currentLang] || translations.ja).langInstruction }
