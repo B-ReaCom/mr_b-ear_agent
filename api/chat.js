@@ -409,37 +409,34 @@ export default async function handler(req) {
     }
 
     // ===== リード自動通知（高優先度のみ） =====
+    const sid = body.session_id || body.sessionId || 'unknown';
     try {
       const messages = body.messages || [];
-      console.log('[chat.js] Messages array:', { count: messages.length, isEmpty: messages.length === 0 });
-      if (messages.length > 0) {
-        console.log('[chat.js] First message:', { role: messages[0]?.role, contentType: typeof messages[0]?.content, contentLength: messages[0]?.content ? String(messages[0].content).length : 0 });
-      }
+      console.log(`[chat.js:${sid}] Messages array: count=${messages.length}`);
       const leadInfo = detectLead(messages);
-      console.log('[chat.js] Lead detection:', { score: leadInfo.score, isHighPriority: leadInfo.isHighPriority, keywords: leadInfo.detectedKeywords });
+      console.log(`[chat.js:${sid}] Lead detection: score=${leadInfo.score}, isHighPriority=${leadInfo.isHighPriority}`);
       if (leadInfo.isHighPriority) {
-        console.log('[chat.js] isHighPriority=true, preparing notification...');
+        console.log(`[chat.js:${sid}] HIGH PRIORITY LEAD - starting notification...`);
         try {
-          const messageText = formatLeadMessage(leadInfo, body.messages || [], body.session_id || body.sessionId);
-          console.log('[chat.js] formatLeadMessage done, length:', messageText.length);
+          const messageText = formatLeadMessage(leadInfo, body.messages || [], sid);
+          console.log(`[chat.js:${sid}] Message formatted (${messageText.length} chars)`);
           const baseUrl = getBaseUrl(req);
-          console.log('[chat.js] getBaseUrl done:', baseUrl);
+          console.log(`[chat.js:${sid}] Base URL: ${baseUrl}`);
           const notifyUrl = `${baseUrl}/api/lineworks-notify`;
-          console.log('[chat.js] Sending LINE WORKS notification to:', notifyUrl);
-          console.log('[chat.js] Starting fetch to lineworks-notify...');
+          console.log(`[chat.js:${sid}] Calling fetch to ${notifyUrl}`);
           fetch(notifyUrl, {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({ messageText }),
           })
             .then(r => {
-              console.log('[chat.js] Fetch completed, status:', r.status);
-              if (!r.ok) console.error('[chat.js] lineworks notify non-ok:', r.status);
+              console.log(`[chat.js:${sid}] Fetch response: ${r.status}`);
+              if (!r.ok) console.error(`[chat.js:${sid}] Error: status ${r.status}`);
             })
-            .catch(err => console.error('[chat.js] lineworks notify failed:', err && err.message ? err.message : err));
-          console.log('[chat.js] Fetch called (non-blocking)');
+            .catch(err => console.error(`[chat.js:${sid}] Fetch error:`, err?.message || err));
+          console.log(`[chat.js:${sid}] Fetch initiated (fire-and-forget)`);
         } catch (notifyErr) {
-          console.error('[chat.js] Notification error:', notifyErr && notifyErr.message ? notifyErr.message : notifyErr);
+          console.error(`[chat.js:${sid}] Notification error:`, notifyErr?.message || notifyErr);
         }
       }
     } catch (err) {
