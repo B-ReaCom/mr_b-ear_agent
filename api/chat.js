@@ -134,6 +134,121 @@ function estimateCost(usage, model) {
   return costUSD;
 }
 
+// ===== リード判定（高優先度のみ通知） =====
+// スコア >= 8 を通知発火条件とする
+function detectLead(messages) {
+  if (!Array.isArray(messages) || messages.length === 0) {
+    return { score: 0, isHighPriority: false, detectedKeywords: [], detectedInfo: {} };
+  }
+
+  const userMessages = messages
+    .filter(m => m && m.role === 'user')
+    .map(m => (typeof m.content === 'string' ? m.content : JSON.stringify(m.content || '')))
+    .join('\n');
+
+  if (!userMessages.trim()) {
+    return { score: 0, isHighPriority: false, detectedKeywords: [], detectedInfo: {} };
+  }
+
+  let score = 0;
+  const detectedKeywords = [];
+  const detectedInfo = {};
+
+  const highPriorityKeywords = [
+    '見積', '見積もり', 'お見積り', 'quote', 'quotation', 'estimate',
+    '導入', '採用', '購入', '買いたい', 'ほしい', 'purchase', 'buy', 'order',
+    '電話', '連絡先', 'contact', 'call', '電話番号',
+    '商談', '打ち合わせ', 'meeting', 'appointment',
+    'いつから', '来月', '年内', '今月', 'すぐ', 'asap',
+    '予算', 'budget',
+  ];
+
+  const lowerText = userMessages.toLowerCase();
+  for (const kw of highPriorityKeywords) {
+    if (lowerText.includes(kw.toLowerCase())) {
+      score += 3;
+      detectedKeywords.push(kw);
+    }
+  }
+
+  const emailMatch = userMessages.match(/[\w._%+-]+@[\w.-]+\.[a-zA-Z]{2,}/);
+  if (emailMatch) {
+    score += 5;
+    detectedInfo.email = emailMatch[0];
+  }
+
+  const phoneMatch = userMessages.match(/0\d{1,4}[-(]\d{1,4}[-)]\d{4}/);
+  if (phoneMatch) {
+    score += 5;
+    detectedInfo.phone = phoneMatch[0];
+  }
+
+  if (/株式会社|有限会社|合同会社|co\.,\s*ltd|inc\.|corp\./i.test(userMessages)) {
+    score += 3;
+    detectedInfo.companyDetected = true;
+  }
+
+  const numUnitMatch = userMessages.match(/(\d+)\s*[人台名個]/);
+  if (numUnitMatch) {
+    score += 2;
+    detectedInfo.scale = numUnitMatch[0];
+  }
+
+  return {
+    score,
+    isHighPriority: score >= 8,
+    detectedKeywords,
+    detectedInfo,
+  };
+}
+
+function formatLeadMessage(leadInfo, messages, sessionId) {
+  const now = new Date();
+  const timestamp = now.toISOString().replace('T', ' ').substring(0, 16);
+
+  const lastUserMsg = (() => {
+    for (let i = messages.length - 1; i >= 0; i--) {
+      const m = messages[i];
+      if (m && m.role === 'user') {
+        const c = typeof m.content === 'string' ? m.content : JSON.stringify(m.content || '');
+        return c.substring(0, 300);
+      }
+    }
+    return '';
+  })();
+
+  let msg = `🔥 新規リード発生 (${timestamp})\n\n`;
+  msg += `【顧客の発言】\n${lastUserMsg}\n\n`;
+  msg += `【検出情報】\n`;
+
+  if (leadInfo.detectedInfo.email) msg += `- メールアドレス: ${leadInfo.detectedInfo.email}\n`;
+  if (leadInfo.detectedInfo.phone) msg += `- 電話番号: ${leadInfo.detectedInfo.phone}\n`;
+  if (leadInfo.detectedInfo.companyDetected) msg += `- 会社名: 検出されました\n`;
+  if (leadInfo.detectedInfo.scale) msg += `- 規模: ${leadInfo.detectedInfo.scale}\n`;
+  if (leadInfo.detectedKeywords && leadInfo.detectedKeywords.length > 0) {
+    msg += `- 検出キーワード: ${leadInfo.detectedKeywords.slice(0, 8).join(', ')}\n`;
+  }
+
+  msg += `\n【スコア】${leadInfo.score} (高優先度)\n`;
+
+  if (sessionId) {
+    msg += `\n【会話 URL】\nhttps://mr-b-ear-agent.vercel.app/?session=${encodeURIComponent(sessionId)}\n`;
+  }
+
+  return msg;
+}
+
+function getBaseUrl(req) {
+  const vercelUrl = process.env.VERCEL_URL;
+  if (vercelUrl) return `https://${vercelUrl}`;
+  const host = req.headers.get('host');
+  if (host) {
+    const proto = host.startsWith('localhost') || host.startsWith('127.0.0.1') ? 'http' : 'https';
+    return `${proto}://${host}`;
+  }
+  return 'https://mr-b-ear-agent.vercel.app';
+}
+
 // CORS ヘッダーを動的に決定（Originが許可リストにあればその値、なければ拒否）
 function buildCorsHeaders(req) {
   const origin = req.headers.get('origin') || '';
@@ -290,6 +405,26 @@ export default async function handler(req) {
         cost_usd: cost,
         timestamp: new Date().toISOString()
       });
+    }
+
+    // ===== リード自動通知（高優先度のみ） =====
+    try {
+      const leadInfo = detectLead(body.messages || []);
+      if (leadInfo.isHighPriority) {
+        const messageText = formatLeadMessage(leadInfo, body.messages || [], body.session_id || body.sessionId);
+        const notifyUrl = `${getBaseUrl(req)}/api/lineworks-notify`;
+        fetch(notifyUrl, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ messageText }),
+        })
+          .then(r => {
+            if (!r.ok) console.error('[chat.js] lineworks notify non-ok:', r.status);
+          })
+          .catch(err => console.error('[chat.js] lineworks notify failed:', err && err.message ? err.message : err));
+      }
+    } catch (err) {
+      console.error('[chat.js] lead detection error:', err && err.message ? err.message : err);
     }
 
     return new Response(JSON.stringify(data), {
