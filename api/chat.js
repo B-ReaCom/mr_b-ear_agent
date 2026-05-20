@@ -284,7 +284,8 @@ function detectLead(messages) {
 
 function formatLeadMessage(leadInfo, messages, sessionId) {
   const now = new Date();
-  const timestamp = now.toISOString().replace('T', ' ').substring(0, 16);
+  const jst = new Date(now.getTime() + 9 * 60 * 60 * 1000);
+  const timestamp = jst.toISOString().replace('T', ' ').substring(0, 16);
 
   const lastUserMsg = (() => {
     for (let i = messages.length - 1; i >= 0; i--) {
@@ -487,16 +488,18 @@ export default async function handler(req) {
       });
     }
 
-    // ===== リード自動通知（高優先度のみ） =====
+    // ===== リード自動通知（stream=true のメイン応答のみ、重複防止） =====
     const sid = body.session_id || body.sessionId || '';
-    try {
-      const leadInfo = detectLead(body.messages || []);
-      if (leadInfo.isHighPriority) {
-        const messageText = formatLeadMessage(leadInfo, body.messages || [], sid);
-        await sendLineWorksDirectNotification(messageText);
+    if (isStream) {
+      try {
+        const leadInfo = detectLead(body.messages || []);
+        if (leadInfo.isHighPriority) {
+          const messageText = formatLeadMessage(leadInfo, body.messages || [], sid);
+          await sendLineWorksDirectNotification(messageText);
+        }
+      } catch (err) {
+        console.error('[chat.js] lead notification error:', err?.message || err);
       }
-    } catch (err) {
-      console.error('[chat.js] lead notification error:', err?.message || err);
     }
 
     return new Response(JSON.stringify(data), {
