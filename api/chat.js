@@ -320,6 +320,7 @@ export default async function handler(req) {
 
   try {
     const body = await req.json();
+    console.log('[chat.js] Request body received - messages:', body.messages ? `${body.messages.length} messages` : 'undefined', 'model:', body.model);
     const isStream = body.stream === true;
 
     // Anthropic API へ転送
