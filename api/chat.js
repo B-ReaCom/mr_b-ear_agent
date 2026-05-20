@@ -410,9 +410,11 @@ export default async function handler(req) {
     // ===== リード自動通知（高優先度のみ） =====
     try {
       const leadInfo = detectLead(body.messages || []);
+      console.log('[chat.js] Lead detection:', { score: leadInfo.score, isHighPriority: leadInfo.isHighPriority, keywords: leadInfo.detectedKeywords });
       if (leadInfo.isHighPriority) {
         const messageText = formatLeadMessage(leadInfo, body.messages || [], body.session_id || body.sessionId);
         const notifyUrl = `${getBaseUrl(req)}/api/lineworks-notify`;
+        console.log('[chat.js] Sending LINE WORKS notification to:', notifyUrl);
         fetch(notifyUrl, {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
