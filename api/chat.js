@@ -177,7 +177,7 @@ function detectLead(messages) {
     detectedInfo.email = emailMatch[0];
   }
 
-  const phoneMatch = userMessages.match(/0\d{1,4}[-(]\d{1,4}[-)]\d{4}/);
+  const phoneMatch = userMessages.match(/0\d{9,10}|0\d{1,4}[-()]\d{1,4}[-()]\d{3,4}/);
   if (phoneMatch) {
     score += 5;
     detectedInfo.phone = phoneMatch[0];

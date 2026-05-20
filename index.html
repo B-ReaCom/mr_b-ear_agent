@@ -1768,7 +1768,7 @@ async function sendMessage(text) {
   if (!isRelevant) {
     // 直前にpushしたuserメッセージを表示専用に変更（次回API送信時に除外）
     messages[messages.length - 1]._display_only = true;
-    const rejectMsg = '申し訳ありませんが、私は株式会社ベアリッジ（B-EAR）に関するご質問にお答えする専門アシスタントです。\n\n以下のような内容についてお聞かせください：\n・製品（ReaCom ALVO 1.9、BRIDGECOM X10、X10コンパクト、X10アスリート、X5、R2、LT、VoiSniper など）\n・価格・見積・デモ機・レンタル\n・代理店紹介\n・修理・サポート・保証\n・会社情報・勤務地\n・採用・求人・キャリア';
+    const rejectMsg = '申し訳ありませんが、私は主にB-EAR、通信機器に関するご質問にお答えする専門アシスタントです。\n\n以下のような内容についてお聞かせください：\n・製品（ReaCom ALVO 1.9、BRIDGECOM X10、X10コンパクト、X10アスリート、X5、R2、LT、VoiSniper など）\n・価格・見積・デモ機・レンタル\n・代理店紹介\n・修理・サポート・保証\n・会社情報・勤務地\n・採用・求人・キャリア';
     messages.push({ role: 'assistant', content: rejectMsg, _display_only: true, _system: true });
     loading = false;
     sendBtn.disabled = false;
