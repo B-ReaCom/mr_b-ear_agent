@@ -35,6 +35,12 @@ const SHEET_USAGE_LOG = 'USAGE_LOG';      // API使用量ログ
 const SHEET_ALERT_STATUS = 'ALERT_STATUS'; // アラート送信状態
 const SHEET_QUOTE_LOG = 'QUOTE_LOG';      // 見積もり依頼ログ
 
+// スプレッドシートID（既存のQ&Aログと同じスプレッドシートを使用）
+const SPREADSHEET_ID = '1N6_QebV3Z7Idxuc4UO3xqSSoQFsZ33prstbd5S0BjEo';
+function getSpreadsheet() {
+  return SpreadsheetApp.openById(SPREADSHEET_ID);
+}
+
 // ========== メイン処理 ==========
 function doPost(e) {
   try {
@@ -62,7 +68,7 @@ function doPost(e) {
 
 // ========== Q&Aログ記録（既存機能） ==========
 function handleQALog(data) {
-  const ss = SpreadsheetApp.getActiveSpreadsheet();
+  const ss = getSpreadsheet();
   let sheet = ss.getSheetByName(SHEET_QA_LOG);
   if (!sheet) {
     sheet = ss.insertSheet(SHEET_QA_LOG);
@@ -78,7 +84,7 @@ function handleQALog(data) {
 
 // ========== API使用量ログ記録 ==========
 function handleUsageLog(data) {
-  const ss = SpreadsheetApp.getActiveSpreadsheet();
+  const ss = getSpreadsheet();
   let sheet = ss.getSheetByName(SHEET_USAGE_LOG);
   if (!sheet) {
     sheet = ss.insertSheet(SHEET_USAGE_LOG);
@@ -111,7 +117,7 @@ function handleUsageLog(data) {
 
 // ========== 月次¥20,000超過チェック ==========
 function checkMonthlyThreshold() {
-  const ss = SpreadsheetApp.getActiveSpreadsheet();
+  const ss = getSpreadsheet();
   const usageSheet = ss.getSheetByName(SHEET_USAGE_LOG);
   if (!usageSheet) return;
 
@@ -164,7 +170,7 @@ function sendAlertEmail(monthlyTotalJPY, yearMonth) {
 設定した警告閾値（¥${ALERT_THRESHOLD_JPY.toLocaleString()}）を超過しています。
 
 詳細は以下のスプレッドシートでご確認ください：
-${SpreadsheetApp.getActiveSpreadsheet().getUrl()}
+${getSpreadsheet().getUrl()}
 
 ご対応をお願いいたします。
 
@@ -182,7 +188,7 @@ ${SpreadsheetApp.getActiveSpreadsheet().getUrl()}
 
 // ========== ミッドランドハーツ 見積もり依頼処理 ==========
 function handleQuoteRequest(data) {
-  const ss = SpreadsheetApp.getActiveSpreadsheet();
+  const ss = getSpreadsheet();
   let sheet = ss.getSheetByName(SHEET_QUOTE_LOG);
   if (!sheet) {
     sheet = ss.insertSheet(SHEET_QUOTE_LOG);
@@ -275,7 +281,7 @@ ${data.notes}
 ━━━━━━━━━━━━━━━━━━━━━━━━━━
 このメールは自動見積もりシステムより自動送信されています。
 ログはスプレッドシートでご確認ください：
-${SpreadsheetApp.getActiveSpreadsheet().getUrl()}
+${getSpreadsheet().getUrl()}
 `;
 
   const options = { to: QUOTE_EMAIL_TO, subject, body };
@@ -291,7 +297,7 @@ function testMonthlyCheck() {
 
 function showCurrentMonthlyTotal() {
   // 今月の合計を表示（デバッグ用）
-  const ss = SpreadsheetApp.getActiveSpreadsheet();
+  const ss = getSpreadsheet();
   const sheet = ss.getSheetByName(SHEET_USAGE_LOG);
   if (!sheet) {
     Logger.log('USAGE_LOG シートが存在しません');
@@ -316,7 +322,7 @@ function showCurrentMonthlyTotal() {
 
 function resetAlertForCurrentMonth() {
   // 当月のアラート送信状態をリセット（再テスト用）
-  const ss = SpreadsheetApp.getActiveSpreadsheet();
+  const ss = getSpreadsheet();
   const alertSheet = ss.getSheetByName(SHEET_ALERT_STATUS);
   if (!alertSheet) return;
 
