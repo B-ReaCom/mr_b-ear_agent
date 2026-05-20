@@ -418,18 +418,29 @@ export default async function handler(req) {
       const leadInfo = detectLead(messages);
       console.log('[chat.js] Lead detection:', { score: leadInfo.score, isHighPriority: leadInfo.isHighPriority, keywords: leadInfo.detectedKeywords });
       if (leadInfo.isHighPriority) {
-        const messageText = formatLeadMessage(leadInfo, body.messages || [], body.session_id || body.sessionId);
-        const notifyUrl = `${getBaseUrl(req)}/api/lineworks-notify`;
-        console.log('[chat.js] Sending LINE WORKS notification to:', notifyUrl);
-        fetch(notifyUrl, {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ messageText }),
-        })
-          .then(r => {
-            if (!r.ok) console.error('[chat.js] lineworks notify non-ok:', r.status);
+        console.log('[chat.js] isHighPriority=true, preparing notification...');
+        try {
+          const messageText = formatLeadMessage(leadInfo, body.messages || [], body.session_id || body.sessionId);
+          console.log('[chat.js] formatLeadMessage done, length:', messageText.length);
+          const baseUrl = getBaseUrl(req);
+          console.log('[chat.js] getBaseUrl done:', baseUrl);
+          const notifyUrl = `${baseUrl}/api/lineworks-notify`;
+          console.log('[chat.js] Sending LINE WORKS notification to:', notifyUrl);
+          console.log('[chat.js] Starting fetch to lineworks-notify...');
+          fetch(notifyUrl, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ messageText }),
           })
-          .catch(err => console.error('[chat.js] lineworks notify failed:', err && err.message ? err.message : err));
+            .then(r => {
+              console.log('[chat.js] Fetch completed, status:', r.status);
+              if (!r.ok) console.error('[chat.js] lineworks notify non-ok:', r.status);
+            })
+            .catch(err => console.error('[chat.js] lineworks notify failed:', err && err.message ? err.message : err));
+          console.log('[chat.js] Fetch called (non-blocking)');
+        } catch (notifyErr) {
+          console.error('[chat.js] Notification error:', notifyErr && notifyErr.message ? notifyErr.message : notifyErr);
+        }
       }
     } catch (err) {
       console.error('[chat.js] lead detection error:', err && err.message ? err.message : err);
