@@ -15,7 +15,7 @@ import crypto from 'crypto';
 // LINE_WORKS_PRIVATE_KEY       : Service Account の Private Key（PEM 形式の文字列、改行は \n でもOK）
 // LINE_WORKS_BOT_ID            : Bot ID
 // LINE_WORKS_DOMAIN_ID         : ドメイン ID（ログ用、必須ではない）
-// LINE_WORKS_CHANNEL_ID        : 通知先トークルームの Channel ID
+// LINE_WORKS_NOTIFY_USER_ID    : 通知先ユーザーID（管理者のUserID）
 
 const LINE_WORKS_TOKEN_URL = 'https://auth.worksmobile.com/oauth2/v2.0/token';
 
@@ -129,11 +129,11 @@ async function getAccessToken() {
   }
 }
 
-// ===== LINE WORKS のトークルームへメッセージ送信 =====
+// ===== LINE WORKS の管理者ユーザーへDMメッセージ送信 =====
 async function sendLineWorksMessage(accessToken, messageText) {
   const botId = process.env.LINE_WORKS_BOT_ID;
-  const channelId = process.env.LINE_WORKS_CHANNEL_ID;
-  const url = `https://www.worksapis.com/v1.0/bots/${botId}/channels/${channelId}/messages`;
+  const userId = process.env.LINE_WORKS_NOTIFY_USER_ID;
+  const url = `https://www.worksapis.com/v1.0/bots/${botId}/users/${userId}/messages`;
 
   console.log('[sendLineWorksMessage] URL:', url);
   console.log('[sendLineWorksMessage] Message length:', messageText.length);
@@ -207,7 +207,7 @@ export default async function handler(req, res) {
     'LINE_WORKS_SERVICE_ACCOUNT',
     'LINE_WORKS_PRIVATE_KEY',
     'LINE_WORKS_BOT_ID',
-    'LINE_WORKS_CHANNEL_ID',
+    'LINE_WORKS_NOTIFY_USER_ID',
   ];
   const missing = requiredEnvs.filter(k => !process.env[k]);
   if (missing.length > 0) {
