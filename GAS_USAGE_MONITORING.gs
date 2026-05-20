@@ -25,8 +25,8 @@ const ALERT_THRESHOLD_JPY = 20000;        // ¥20,000超過でアラート
 const ALERT_EMAIL_TO = 'sales@bearidge.jp'; // 通知先メールアドレス
 const USD_TO_JPY_RATE = 150;              // 為替レート（USD→JPY、必要に応じて調整）
 
-// ▼ ミッドランドハーツ 見積もり依頼の通知先（ダミー：実運用前に書き換え）
-const QUOTE_EMAIL_TO = 'example@midland-hearts.example';
+// ▼ ミッドランドハーツ 見積もり依頼の通知先
+const QUOTE_EMAIL_TO = 'info@midhts.com';
 const QUOTE_EMAIL_CC = ''; // 必要ならカンマ区切りで追加
 
 // シート名
