@@ -89,43 +89,28 @@ export default async function handler(req, res) {
   try {
     const accessToken = await getAccessToken();
     const botId = process.env.LINE_WORKS_BOT_ID;
-    const url = `https://www.worksapis.com/v1.0/bots/${botId}/channels`;
 
-    const response = await fetch(url, {
-      method: 'GET',
-      headers: {
-        'Authorization': `Bearer ${accessToken}`,
-      },
-    });
+    // 複数のエンドポイントを試す
+    const endpoints = [
+      `https://www.worksapis.com/v1.0/bots/${botId}/channels`,
+      `https://www.worksapis.com/v1.0/bots/${botId}/joined`,
+      `https://www.worksapis.com/v1.0/bots/${botId}/joinedChannels`,
+      `https://www.worksapis.com/v1.0/channels`,
+    ];
 
-    const text = await response.text();
-    let data;
-    try { data = JSON.parse(text); } catch { data = { raw: text }; }
-
-    if (!response.ok) {
-      return res.status(response.status).json({
-        error: 'list_channels_failed',
-        status: response.status,
-        response: data,
+    const results = {};
+    for (const url of endpoints) {
+      const response = await fetch(url, {
+        method: 'GET',
+        headers: { 'Authorization': `Bearer ${accessToken}` },
       });
+      const text = await response.text();
+      let data;
+      try { data = JSON.parse(text); } catch { data = { raw: text }; }
+      results[url] = { status: response.status, data };
     }
 
-    // 結果を見やすく整形して返す
-    const channels = (data.channels || data.channelList || []).map(ch => ({
-      channelId: ch.channelId || ch.id || ch.channel_id,
-      title: ch.title || ch.name || ch.roomName || '(no title)',
-      type: ch.type || ch.channelType,
-      memberCount: ch.memberCount,
-    }));
-
-    return res.status(200).json({
-      ok: true,
-      botId,
-      count: channels.length,
-      channels,
-      note: '通知先にしたいトークルームの channelId を Vercel の LINE_WORKS_CHANNEL_ID に設定してください',
-      raw: data, // デバッグ用に生データも返す
-    });
+    return res.status(200).json({ ok: true, botId, results });
   } catch (error) {
     console.error('[lineworks-list-channels] Error:', error && error.message ? error.message : error);
     return res.status(500).json({
