@@ -278,6 +278,16 @@
     font-size: 14px;
   }
   .qty-input:focus { outline: none; border-color: var(--primary); }
+  .product-line {
+    font-size: 15px;
+    font-weight: 700;
+    color: var(--primary);
+    margin-top: 24px;
+    margin-bottom: 8px;
+    padding-bottom: 6px;
+    border-bottom: 2px solid var(--primary);
+  }
+  .product-line:first-child { margin-top: 0; }
   .product-category {
     font-size: 12px;
     font-weight: 600;
@@ -287,7 +297,6 @@
     padding-bottom: 4px;
     border-bottom: 1px dashed var(--border);
   }
-  .product-category:first-child { margin-top: 0; }
 
   /* ===== サマリー ===== */
   .summary-box {
@@ -648,69 +657,238 @@
 // ==========================================================================
 const PRODUCTS = [
   {
-    category: '本体・電源',
-    items: [
-      { sku: 'BM-X10AT',  name: 'BRIDGECOM X10 アスリート 本体',           unitPrice: 90500, unit: '台' },
-      { sku: 'B-X10ac',   name: 'X10アスリート専用充電器',                  unitPrice: 40000, unit: '個' },
-      { sku: 'BM-X5bt',   name: 'リチウム電池',                             unitPrice: 3100,  unit: '個' },
-      { sku: 'B-F06',     name: 'USB充電ケーブル Type-C',                   unitPrice: 300,   unit: '本' },
-      { sku: 'BM-60W',    name: '6ポート USB急速充電器（黒）',              unitPrice: 6000,  unit: '個' },
-      { sku: 'BM-60W10',  name: '10ポート USB急速充電器（黒）',             unitPrice: 6300,  unit: '個' },
-      { sku: 'B-A10ac',   name: 'BRIDGECOMスピーカー ACアダプター',         unitPrice: 13000, unit: '個' },
-      { sku: 'B-A10ss',   name: 'BRIDGECOMスピーカー シガーソケット',       unitPrice: 13000, unit: '個' },
-      { sku: 'B-A10usb',  name: 'BRIDGECOMスピーカー USB充電ケーブル',      unitPrice: 13000, unit: '個' },
+    productLine: 'BRIDGECOM X10 アスリート',
+    categories: [
+      {
+        category: '本体・電源',
+        items: [
+          { sku: 'BM-X10AT',  name: 'BRIDGECOM X10 アスリート 本体',           unitPrice: 90500, unit: '台' },
+          { sku: 'B-X10ac',   name: 'X10アスリート専用充電器',                  unitPrice: 40000, unit: '個' },
+          { sku: 'BM-X5bt',   name: 'リチウム電池',                             unitPrice: 3100,  unit: '個' },
+          { sku: 'B-F06',     name: 'USB充電ケーブル Type-C',                   unitPrice: 300,   unit: '本' },
+          { sku: 'BM-60W',    name: '6ポート USB急速充電器（黒）',              unitPrice: 6000,  unit: '個' },
+          { sku: 'BM-60W10',  name: '10ポート USB急速充電器（黒）',             unitPrice: 6300,  unit: '個' },
+          { sku: 'B-A10ac',   name: 'BRIDGECOMスピーカー ACアダプター',         unitPrice: 13000, unit: '個' },
+          { sku: 'B-A10ss',   name: 'BRIDGECOMスピーカー シガーソケット',       unitPrice: 13000, unit: '個' },
+          { sku: 'B-A10usb',  name: 'BRIDGECOMスピーカー USB充電ケーブル',      unitPrice: 13000, unit: '個' },
+        ]
+      },
+      {
+        category: 'ヘッドホン・イヤホン',
+        items: [
+          { sku: 'B-H03',         name: '標準型ヘッドホンマイク',                  unitPrice: 6800, unit: '個' },
+          { sku: 'BM-GSRM2.5F',   name: '耳掛け式イヤホン 2.5mm F',                unitPrice: 1820, unit: '個' },
+          { sku: 'BM-GSRM2.5s',   name: '耳掛け式イヤホン 2.5mm S',                unitPrice: 1820, unit: '個' },
+          { sku: 'BM-SHSE2.5',    name: '小型高遮音性イヤホン 2.5mm',              unitPrice: 3200, unit: '個' },
+          { sku: 'BM-LCOE2.5',    name: 'オープンエアイヤホン 2.5mm',              unitPrice: 1820, unit: '個' },
+        ]
+      },
+      {
+        category: 'マイク',
+        items: [
+          { sku: 'B-RFAD',     name: 'ボイスナイパー アドバンス',                          unitPrice: 15600, unit: '個' },
+          { sku: 'B-RFXM',     name: 'VoiSniper ボイスナイパー RFXM',                      unitPrice: 11400, unit: '個' },
+          { sku: 'B-A05',      name: 'グースネックマイク（強力マグネット付）',             unitPrice: 28200, unit: '個' },
+          { sku: 'B-E10tnt',   name: 'X10用 PTT切替機能付タイピンマイク',                  unitPrice: 7000,  unit: '個' },
+          { sku: 'B-E06tn',    name: 'ピン型マイク 風防付 X10用',                          unitPrice: 12700, unit: '個' },
+          { sku: 'B-E06tnt',   name: 'ピン型マイク 風防付 X10用 通話ボタン付',             unitPrice: 13000, unit: '個' },
+          { sku: 'B-E03wptn',  name: 'ヘルメット取付型 防水マイク X10用',                  unitPrice: 29200, unit: '個' },
+          { sku: 'B-E03wptnt', name: 'ヘルメット取付型 防水マイク X10用 通話ボタン付',     unitPrice: 31000, unit: '個' },
+          { sku: 'B-E03dptn',  name: 'ヘルメット取付型 防滴マイク X10用',                  unitPrice: 23800, unit: '個' },
+          { sku: 'B-E03dptnt', name: 'ヘルメット取付型 防滴マイク X10用 通話ボタン付',     unitPrice: 26400, unit: '個' },
+        ]
+      },
+      {
+        category: '中継ケーブル（防水仕様）',
+        items: [
+          { sku: 'B-RCLwptn',   name: '中継接続ケーブルコネクター X10用 防水仕様',  unitPrice: 36300, unit: '個' },
+          { sku: 'B-RCL005wp',  name: '中継延長接続ケーブル 防水仕様 5m',           unitPrice: 24240, unit: '本' },
+          { sku: 'B-RCL010wp',  name: '中継延長接続ケーブル 防水仕様 10m',          unitPrice: 26280, unit: '本' },
+          { sku: 'B-RCL025wp',  name: '中継延長接続ケーブル 防水仕様 25m',          unitPrice: 35160, unit: '本' },
+          { sku: 'B-RCL050wp',  name: '中継延長接続ケーブル 防水仕様 50m',          unitPrice: 53760, unit: '本' },
+          { sku: 'B-RCL100wp',  name: '中継延長接続ケーブル 防水仕様 100m',         unitPrice: 68160, unit: '本' },
+        ]
+      },
+      {
+        category: 'ケース・装着アクセサリー',
+        items: [
+          { sku: 'B-X10hc',    name: 'X10 アスリート専用ケース',                   unitPrice: 1500, unit: '個' },
+          { sku: 'B-A11',      name: 'ソフトキャリーケース',                       unitPrice: 8500, unit: '個' },
+          { sku: 'B-A11(10)',  name: 'ソフトキャリーケース 10',                    unitPrice: 8500, unit: '個' },
+          { sku: 'B-A11(F)',   name: 'ソフトキャリーケース F',                     unitPrice: 8500, unit: '個' },
+          { sku: 'B-A06',      name: 'オリジナルケース',                           unitPrice: 1200, unit: '個' },
+          { sku: 'B-CPA01',    name: 'アームバンド',                               unitPrice: 2300, unit: '個' },
+          { sku: 'B-ABL',      name: 'アームサポーター L',                         unitPrice: 300,  unit: '個' },
+          { sku: 'B-ABM',      name: 'アームサポーター M',                         unitPrice: 300,  unit: '個' },
+          { sku: 'BM-ABHm',    name: 'ソフトアームバンドホルダー M',               unitPrice: 550,  unit: '個' },
+          { sku: 'BM-ABHl',    name: 'ソフトアームバンドホルダー L',               unitPrice: 550,  unit: '個' },
+          { sku: 'B-CPM01ms',  name: 'ボイスナイパー風防',                         unitPrice: 250,  unit: '個' },
+        ]
+      }
     ]
   },
   {
-    category: 'ヘッドホン・イヤホン',
-    items: [
-      { sku: 'B-H03',         name: '標準型ヘッドホンマイク',                  unitPrice: 6800, unit: '個' },
-      { sku: 'BM-GSRM2.5F',   name: '耳掛け式イヤホン 2.5mm F',                unitPrice: 1820, unit: '個' },
-      { sku: 'BM-GSRM2.5s',   name: '耳掛け式イヤホン 2.5mm S',                unitPrice: 1820, unit: '個' },
-      { sku: 'BM-SHSE2.5',    name: '小型高遮音性イヤホン 2.5mm',              unitPrice: 3200, unit: '個' },
-      { sku: 'BM-LCOE2.5',    name: 'オープンエアイヤホン 2.5mm',              unitPrice: 1820, unit: '個' },
+    productLine: 'BRIDGECOM X10 コンパクト',
+    categories: [
+      {
+        category: '本体',
+        items: [
+          { sku: 'BM-X10CP',   name: 'BRIDGECOM X10 コンパクト本体',              unitPrice: 98000, unit: '台' },
+        ]
+      },
+      {
+        category: 'イヤスピーカーマイク一体型',
+        items: [
+          { sku: 'BM-HPDP3.5M',   name: '防滴イヤスピーカー3.5 ブームマイク一体型',                     unitPrice: 13000, unit: '個' },
+          { sku: 'BM-HPDP3.5MR',  name: '防滴イヤスピーカー3.5 ブームマイク一体型 右耳用',             unitPrice: 13000, unit: '個' },
+          { sku: 'BM-HPDP3.5ML',  name: '防滴イヤスピーカー3.5 ブームマイク一体型 ロングコード',       unitPrice: 13000, unit: '個' },
+          { sku: 'BM-HPDP3.5MRL', name: '防滴イヤスピーカー3.5 ブームマイク一体型 ロングコード右耳用', unitPrice: 13000, unit: '個' },
+        ]
+      },
+      {
+        category: '専用クリップ',
+        items: [
+          { sku: 'B-CPC01',    name: 'X10コンパクト専用クリップ タイプA',          unitPrice: 3100, unit: '個' },
+          { sku: 'B-CPC03h',   name: 'X10コンパクト専用クリップ タイプA03h',       unitPrice: 3100, unit: '個' },
+          { sku: 'B-CPC01ch',  name: 'X10コンパクト専用クリップ タイプB01ch',      unitPrice: 3100, unit: '個' },
+          { sku: 'B-CPC02ch',  name: 'X10コンパクト専用クリップ タイプB02ch',      unitPrice: 3100, unit: '個' },
+          { sku: 'B-CPC03hh',  name: 'X10コンパクト専用クリップ タイプB03hh',      unitPrice: 3100, unit: '個' },
+          { sku: 'B-CPC01cc',  name: 'X10コンパクト専用クリップ タイプC01cc',      unitPrice: 3100, unit: '個' },
+        ]
+      },
+      {
+        category: '専用アクセサリー',
+        items: [
+          { sku: 'B-CPM01',       name: 'X10コンパクト専用 ブームマイク',                    unitPrice: 4500, unit: '個' },
+          { sku: 'BM-HPDP3.5',    name: '防滴イヤスピーカー3.5',                              unitPrice: 9500, unit: '個' },
+          { sku: 'BM-15CP3.5',    name: '15イヤホン 3.5mm',                                   unitPrice: 3700, unit: '個' },
+          { sku: 'BM-SHSE2.5s',   name: '小型高遮音性イヤホン 2.5mm S',                       unitPrice: 3200, unit: '個' },
+          { sku: 'BM-HPDP3.5ep',  name: '防滴イヤスピーカー3.5 イヤーパッド',                 unitPrice: 460,  unit: '個' },
+          { sku: 'BM-HPDP3.5Lep', name: '防滴イヤスピーカー3.5 レザーイヤーパッド',           unitPrice: 700,  unit: '個' },
+        ]
+      }
     ]
   },
   {
-    category: 'マイク',
-    items: [
-      { sku: 'B-RFAD',     name: 'ボイスナイパー アドバンス',                          unitPrice: 15600, unit: '個' },
-      { sku: 'B-RFXM',     name: 'VoiSniper ボイスナイパー RFXM',                      unitPrice: 11400, unit: '個' },
-      { sku: 'B-A05',      name: 'グースネックマイク（強力マグネット付）',             unitPrice: 28200, unit: '個' },
-      { sku: 'B-E10tnt',   name: 'X10用 PTT切替機能付タイピンマイク',                  unitPrice: 7000,  unit: '個' },
-      { sku: 'B-E06tn',    name: 'ピン型マイク 風防付 X10用',                          unitPrice: 12700, unit: '個' },
-      { sku: 'B-E06tnt',   name: 'ピン型マイク 風防付 X10用 通話ボタン付',             unitPrice: 13000, unit: '個' },
-      { sku: 'B-E03wptn',  name: 'ヘルメット取付型 防水マイク X10用',                  unitPrice: 29200, unit: '個' },
-      { sku: 'B-E03wptnt', name: 'ヘルメット取付型 防水マイク X10用 通話ボタン付',     unitPrice: 31000, unit: '個' },
-      { sku: 'B-E03dptn',  name: 'ヘルメット取付型 防滴マイク X10用',                  unitPrice: 23800, unit: '個' },
-      { sku: 'B-E03dptnt', name: 'ヘルメット取付型 防滴マイク X10用 通話ボタン付',     unitPrice: 26400, unit: '個' },
+    productLine: 'BRIDGECOM LT（親機/子機）',
+    categories: [
+      {
+        category: '本体',
+        items: [
+          { sku: 'BM-LTM',   name: 'LT-M 送信機 本体',     unitPrice: 27000, unit: '台' },
+          { sku: 'BM-LTS',   name: 'LT-S 受信機 本体',     unitPrice: 22000, unit: '台' },
+          { sku: 'BM-GSH',   name: '専用ホルダー',         unitPrice: 1150,  unit: '個' },
+        ]
+      },
+      {
+        category: '親機 LTM 用マイク',
+        items: [
+          { sku: 'B-N01nz',    name: 'ネック型ノイズキャンセリングマイク',          unitPrice: 34600, unit: '個' },
+          { sku: 'B-E07',      name: 'ピン型マイク 切替付',                         unitPrice: 6900,  unit: '個' },
+          { sku: 'BM-GSTM',    name: 'I型マイク',                                   unitPrice: 1400,  unit: '個' },
+          { sku: 'BM-GSVS',    name: 'ノイズキャンセリングマイク',                  unitPrice: 25000, unit: '個' },
+          { sku: 'B-E06',      name: 'ピン型マイク 風防付',                         unitPrice: 13000, unit: '個' },
+          { sku: 'B-E03wp',    name: 'ヘルメット取付型 防水マイク',                 unitPrice: 28600, unit: '個' },
+          { sku: 'B-E03dp',    name: 'ヘルメット取付型 防滴マイク',                 unitPrice: 23400, unit: '個' },
+          { sku: 'BM-HPDP2.5', name: '防滴イヤスピーカー',                          unitPrice: 9500,  unit: '個' },
+          { sku: 'B-E03wpnz',  name: 'ヘルメット取付型 ノイズキャンセリングマイク', unitPrice: 46000, unit: '個' },
+        ]
+      },
+      {
+        category: '子機 LTS 用イヤホン',
+        items: [
+          { sku: 'BM-LCOE3.5',   name: 'オープンエアイヤホン 3.5mm',     unitPrice: 1500, unit: '個' },
+          { sku: 'BM-GSRM3.5LC', name: '耳掛け式イヤホン 3.5mm LC',      unitPrice: 2200, unit: '個' },
+        ]
+      },
+      {
+        category: '充電器',
+        items: [
+          { sku: 'BM-LTC20a',     name: '専用充電器 20台用',                              unitPrice: 54000, unit: '個' },
+          { sku: 'B-A11(LTC20)',  name: 'LT 20台専用充電器 ソフトキャリーケース付',       unitPrice: 64000, unit: '個' },
+        ]
+      }
     ]
   },
   {
-    category: '中継ケーブル（防水仕様）',
-    items: [
-      { sku: 'B-RCLwptn',   name: '中継接続ケーブルコネクター X10用 防水仕様',  unitPrice: 36300, unit: '個' },
-      { sku: 'B-RCL005wp',  name: '中継延長接続ケーブル 防水仕様 5m',           unitPrice: 24240, unit: '本' },
-      { sku: 'B-RCL010wp',  name: '中継延長接続ケーブル 防水仕様 10m',          unitPrice: 26280, unit: '本' },
-      { sku: 'B-RCL025wp',  name: '中継延長接続ケーブル 防水仕様 25m',          unitPrice: 35160, unit: '本' },
-      { sku: 'B-RCL050wp',  name: '中継延長接続ケーブル 防水仕様 50m',          unitPrice: 53760, unit: '本' },
-      { sku: 'B-RCL100wp',  name: '中継延長接続ケーブル 防水仕様 100m',         unitPrice: 68160, unit: '本' },
+    productLine: 'BRIDGECOM R2',
+    categories: [
+      {
+        category: '本体',
+        items: [
+          { sku: 'BM-R2',     name: 'BRIDGECOM R2 本体',                              unitPrice: 9000, unit: '台' },
+          { sku: 'FC-ZXPRO',  name: '特定小電力トランシーバー（FRC製）送信機',         unitPrice: 7500, unit: '台' },
+        ]
+      },
+      {
+        category: '充電器',
+        items: [
+          { sku: 'BM-DAC20',     name: '専用充電器 20台用',                            unitPrice: 54000, unit: '個' },
+          { sku: 'B-A11(DAC20)', name: 'R2 20台用充電器 ソフトキャリーケース付',       unitPrice: 64000, unit: '個' },
+        ]
+      },
+      {
+        category: '専用付属品',
+        items: [
+          { sku: 'B-R2C',     name: 'R2 専用ホルダー',           unitPrice: 360, unit: '個' },
+          { sku: 'B-F01R2',   name: 'USB充電ケーブル（R2用）',   unitPrice: 300, unit: '本' },
+          { sku: 'B-R2M',     name: 'R2 用マジックテープ',       unitPrice: 220, unit: '個' },
+          { sku: 'B-F02',     name: 'ストラップ',                unitPrice: 130, unit: '個' },
+        ]
+      }
     ]
   },
   {
-    category: 'ケース・装着アクセサリー',
-    items: [
-      { sku: 'B-X10hc',    name: 'X10 アスリート専用ケース',                   unitPrice: 1500, unit: '個' },
-      { sku: 'B-A11',      name: 'ソフトキャリーケース',                       unitPrice: 8500, unit: '個' },
-      { sku: 'B-A11(10)',  name: 'ソフトキャリーケース 10',                    unitPrice: 8500, unit: '個' },
-      { sku: 'B-A11(F)',   name: 'ソフトキャリーケース F',                     unitPrice: 8500, unit: '個' },
-      { sku: 'B-A06',      name: 'オリジナルケース',                           unitPrice: 1200, unit: '個' },
-      { sku: 'B-CPA01',    name: 'アームバンド',                               unitPrice: 2300, unit: '個' },
-      { sku: 'B-ABL',      name: 'アームサポーター L',                         unitPrice: 300,  unit: '個' },
-      { sku: 'B-ABM',      name: 'アームサポーター M',                         unitPrice: 300,  unit: '個' },
-      { sku: 'BM-ABHm',    name: 'ソフトアームバンドホルダー M',               unitPrice: 550,  unit: '個' },
-      { sku: 'BM-ABHl',    name: 'ソフトアームバンドホルダー L',               unitPrice: 550,  unit: '個' },
-      { sku: 'B-CPM01ms',  name: 'ボイスナイパー風防',                         unitPrice: 250,  unit: '個' },
+    productLine: 'BRIDGECOM X5',
+    categories: [
+      {
+        category: '本体',
+        items: [
+          { sku: 'BM-X5',   name: 'BRIDGECOM X5 本体',     unitPrice: 48000, unit: '台' },
+        ]
+      },
+      {
+        category: 'マイク',
+        items: [
+          { sku: 'B-N01',   name: 'ネック型マイク',     unitPrice: 28800, unit: '個' },
+          { sku: 'B-E05a',  name: '特殊咽喉マイク',     unitPrice: 50400, unit: '個' },
+        ]
+      },
+      {
+        category: 'X5 専用イヤホン・ケース',
+        items: [
+          { sku: 'BM-X5EP3.5', name: 'X5 専用イヤホン 3.5mm',         unitPrice: 1500, unit: '個' },
+          { sku: 'B-A02',      name: 'BRIDGECOM X5 専用ケース',       unitPrice: 2000, unit: '個' },
+        ]
+      },
+      {
+        category: '中継ケーブル',
+        items: [
+          { sku: 'B-RCW',    name: '中継コネクター 防水仕様',           unitPrice: 36000, unit: '個' },
+          { sku: 'B-RCLwp',  name: '中継接続ケーブルコネクター',         unitPrice: 36300, unit: '個' },
+        ]
+      },
+      {
+        category: '専用付属品',
+        items: [
+          { sku: 'B-F01',     name: 'USB充電ケーブル',            unitPrice: 300,   unit: '本' },
+          { sku: 'B-AHH',     name: 'ヘルメット取付クリップ',     unitPrice: 800,   unit: '個' },
+          { sku: 'B-F05',     name: 'ケーブルマジックバンド',     unitPrice: 130,   unit: '個' },
+          { sku: 'B-X5gcr',   name: 'X5 録音用専用ケーブル',      unitPrice: 18000, unit: '本' },
+        ]
+      },
+      {
+        category: 'A10スピーカー周辺',
+        items: [
+          { sku: 'B-F07',      name: 'スピーカー専用 ACアダプター',           unitPrice: 1700, unit: '個' },
+          { sku: 'B-F08',      name: 'スピーカー専用 シガーソケット',         unitPrice: 1700, unit: '個' },
+          { sku: 'B-F09',      name: 'スピーカー専用 USBケーブル',            unitPrice: 1700, unit: '本' },
+          { sku: 'B-F10',      name: 'A10スピーカー専用 マグネット',          unitPrice: 1300, unit: '個' },
+          { sku: 'B-F11',      name: 'A10スピーカー専用 オーディオケーブル',  unitPrice: 1300, unit: '本' },
+          { sku: 'B-A10ac24',  name: 'A10スピーカー 24V変換',                 unitPrice: 2000, unit: '個' },
+          { sku: 'BM-24V2',    name: '24V 2ポート シガーソケット',            unitPrice: 2400, unit: '個' },
+        ]
+      }
     ]
   }
 ];
@@ -751,30 +929,37 @@ function renderProductList() {
   const container = $('product-list');
   container.innerHTML = '';
 
-  PRODUCTS.forEach(group => {
-    const groupHeader = document.createElement('div');
-    groupHeader.className = 'product-category';
-    groupHeader.textContent = group.category;
-    container.appendChild(groupHeader);
+  PRODUCTS.forEach(line => {
+    const lineHeader = document.createElement('div');
+    lineHeader.className = 'product-line';
+    lineHeader.textContent = line.productLine;
+    container.appendChild(lineHeader);
 
-    group.items.forEach(item => {
-      const qty = quantities[item.sku] || 0;
-      const row = document.createElement('div');
-      row.className = 'product-row' + (qty > 0 ? ' selected' : '');
-      row.dataset.sku = item.sku;
-      row.innerHTML = `
-        <div class="product-info">
-          <div class="product-name">${escapeHtml(item.name)}</div>
-          <div class="product-meta">${escapeHtml(item.sku)}</div>
-          <div class="product-price">¥${item.unitPrice.toLocaleString()} / ${escapeHtml(item.unit)}</div>
-        </div>
-        <div class="qty-control">
-          <button type="button" class="qty-btn" data-action="dec" data-sku="${item.sku}">−</button>
-          <input type="number" class="qty-input" min="0" max="9999" value="${qty}" data-sku="${item.sku}">
-          <button type="button" class="qty-btn" data-action="inc" data-sku="${item.sku}">+</button>
-        </div>
-      `;
-      container.appendChild(row);
+    line.categories.forEach(group => {
+      const groupHeader = document.createElement('div');
+      groupHeader.className = 'product-category';
+      groupHeader.textContent = group.category;
+      container.appendChild(groupHeader);
+
+      group.items.forEach(item => {
+        const qty = quantities[item.sku] || 0;
+        const row = document.createElement('div');
+        row.className = 'product-row' + (qty > 0 ? ' selected' : '');
+        row.dataset.sku = item.sku;
+        row.innerHTML = `
+          <div class="product-info">
+            <div class="product-name">${escapeHtml(item.name)}</div>
+            <div class="product-meta">${escapeHtml(item.sku)}</div>
+            <div class="product-price">¥${item.unitPrice.toLocaleString()} / ${escapeHtml(item.unit)}</div>
+          </div>
+          <div class="qty-control">
+            <button type="button" class="qty-btn" data-action="dec" data-sku="${item.sku}">−</button>
+            <input type="number" class="qty-input" min="0" max="9999" value="${qty}" data-sku="${item.sku}">
+            <button type="button" class="qty-btn" data-action="inc" data-sku="${item.sku}">+</button>
+          </div>
+        `;
+        container.appendChild(row);
+      });
     });
   });
 
@@ -803,10 +988,12 @@ function renderProductList() {
 
 function updateSummary() {
   let total = 0;
-  PRODUCTS.forEach(group => {
-    group.items.forEach(item => {
-      const qty = quantities[item.sku] || 0;
-      total += qty * item.unitPrice;
+  PRODUCTS.forEach(line => {
+    line.categories.forEach(group => {
+      group.items.forEach(item => {
+        const qty = quantities[item.sku] || 0;
+        total += qty * item.unitPrice;
+      });
     });
   });
   $('summary-total').textContent = '¥' + total.toLocaleString();
@@ -824,17 +1011,19 @@ function collectForm() {
   const phoneField = isDetailed ? 'f-phone' : 'f-phone-quick';
 
   const items = [];
-  PRODUCTS.forEach(group => {
-    group.items.forEach(item => {
-      const qty = quantities[item.sku] || 0;
-      if (qty > 0) {
-        items.push({
-          sku: item.sku,
-          name: item.name,
-          unitPrice: item.unitPrice,
-          quantity: qty,
-        });
-      }
+  PRODUCTS.forEach(line => {
+    line.categories.forEach(group => {
+      group.items.forEach(item => {
+        const qty = quantities[item.sku] || 0;
+        if (qty > 0) {
+          items.push({
+            sku: item.sku,
+            name: item.name,
+            unitPrice: item.unitPrice,
+            quantity: qty,
+          });
+        }
+      });
     });
   });
 
