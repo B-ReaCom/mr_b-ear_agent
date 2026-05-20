@@ -156,6 +156,8 @@ function validatePayload(body) {
       } : null,
       items: validItems,
       notes: sanitizeString(body.notes, 2000),
+      contactRequested: body.contactRequested !== false, // default true
+      quoteNumber: sanitizeString(body.quoteNumber, 50),
     }
   };
 }

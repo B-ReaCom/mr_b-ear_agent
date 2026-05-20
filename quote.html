@@ -440,28 +440,235 @@
     gap: 8px;
   }
 
-  /* ===== 完了画面 ===== */
-  .done-card {
+  /* ===== チェックボックス（連絡希望など） ===== */
+  .checkbox-label {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    cursor: pointer;
+    font-size: 14px;
+    user-select: none;
+  }
+  .checkbox-label input[type="checkbox"] {
+    width: 18px;
+    height: 18px;
+    cursor: pointer;
+    accent-color: var(--primary);
+  }
+  .contact-pref {
+    background: #f8fafc;
+    padding: 12px 14px;
+    border-radius: 8px;
+    border: 1px solid var(--border);
+  }
+
+  /* ===== 見積書（Screen 4） ===== */
+  .quote-doc {
+    max-width: 100%;
+  }
+  .doc-toolbar {
     background: var(--card);
     border: 1px solid var(--border);
     border-radius: var(--radius);
-    padding: 40px 24px;
-    text-align: center;
-    box-shadow: var(--shadow-lg);
+    padding: 14px 16px;
+    margin-bottom: 16px;
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
   }
-  .done-icon {
-    font-size: 48px;
-    color: var(--success);
-    margin-bottom: 12px;
-  }
-  .done-card h2 {
-    margin: 0 0 8px;
-    font-size: 20px;
-  }
-  .done-card p {
-    color: var(--text-muted);
-    margin: 8px 0;
+  .doc-toolbar-msg {
     font-size: 14px;
+  }
+  .doc-toolbar-msg strong { color: var(--success); margin-right: 6px; }
+  .doc-msg-contact { color: var(--text-muted); font-size: 13px; }
+  .doc-toolbar-actions {
+    display: flex;
+    gap: 10px;
+    flex-wrap: wrap;
+  }
+  .doc-toolbar-actions .btn {
+    flex: 1;
+    min-width: 0;
+  }
+
+  .doc-paper {
+    background: white;
+    border: 1px solid var(--border);
+    box-shadow: var(--shadow-lg);
+    padding: 28px 22px;
+    border-radius: var(--radius);
+    font-family: "Hiragino Kaku Gothic ProN", "ヒラギノ角ゴ ProN", "Yu Gothic", "游ゴシック", "Meiryo", sans-serif;
+    color: #1a1a1a;
+    line-height: 1.6;
+  }
+  @media (min-width: 640px) {
+    .doc-paper { padding: 40px 36px; }
+  }
+
+  .doc-header {
+    border-bottom: 2px solid #1a1a1a;
+    padding-bottom: 14px;
+    margin-bottom: 24px;
+  }
+  .doc-title {
+    margin: 0 0 12px;
+    font-size: 26px;
+    letter-spacing: 0.4em;
+    text-align: center;
+    font-weight: 700;
+  }
+  .doc-meta {
+    text-align: right;
+    font-size: 13px;
+    color: #444;
+  }
+  .doc-meta > div { margin-bottom: 2px; }
+
+  .doc-recipient {
+    margin-bottom: 18px;
+  }
+  .doc-recipient-name {
+    font-size: 18px;
+    font-weight: 600;
+    border-bottom: 1px solid #999;
+    padding-bottom: 4px;
+    margin-bottom: 4px;
+  }
+  .doc-recipient-detail {
+    font-size: 13px;
+    color: #555;
+  }
+  .doc-recipient-detail > div { margin-top: 2px; }
+
+  .doc-greeting {
+    margin: 16px 0;
+    font-size: 14px;
+  }
+
+  .doc-grand-summary {
+    background: #f3f4f6;
+    border-left: 4px solid #1a1a1a;
+    padding: 12px 16px;
+    margin-bottom: 18px;
+    display: flex;
+    justify-content: space-between;
+    align-items: baseline;
+  }
+  .doc-grand-summary-label {
+    font-size: 13px;
+    color: #555;
+  }
+  .doc-grand-summary-value {
+    font-size: 22px;
+    font-weight: 700;
+  }
+
+  .doc-items {
+    width: 100%;
+    border-collapse: collapse;
+    margin-bottom: 18px;
+    font-size: 13px;
+  }
+  .doc-items th, .doc-items td {
+    border: 1px solid #d1d5db;
+    padding: 8px 10px;
+    vertical-align: top;
+  }
+  .doc-items thead th {
+    background: #f3f4f6;
+    font-weight: 600;
+    font-size: 12px;
+    text-align: center;
+  }
+  .doc-items .col-name { width: 38%; }
+  .doc-items .col-sku  { width: 18%; }
+  .doc-items .col-qty  { width: 10%; text-align: right; }
+  .doc-items .col-price{ width: 17%; text-align: right; }
+  .doc-items .col-amount{ width: 17%; text-align: right; }
+  .doc-items tbody td.num { text-align: right; }
+  .doc-items tbody td.center { text-align: center; }
+
+  .doc-totals {
+    display: flex;
+    justify-content: flex-end;
+    margin-bottom: 18px;
+  }
+  .doc-totals table {
+    border-collapse: collapse;
+    font-size: 13px;
+    min-width: 240px;
+  }
+  .doc-totals th, .doc-totals td {
+    padding: 6px 12px;
+    border-bottom: 1px solid #e5e7eb;
+  }
+  .doc-totals th { text-align: left; color: #555; font-weight: 500; }
+  .doc-totals td { text-align: right; }
+  .doc-totals tr.grand-total th,
+  .doc-totals tr.grand-total td {
+    font-size: 15px;
+    font-weight: 700;
+    color: #1a1a1a;
+    border-top: 2px solid #1a1a1a;
+    border-bottom: 2px solid #1a1a1a;
+    padding-top: 10px;
+    padding-bottom: 10px;
+  }
+
+  .doc-notes {
+    background: #fafafa;
+    border: 1px solid #e5e7eb;
+    border-radius: 6px;
+    padding: 12px 14px;
+    margin-bottom: 20px;
+  }
+  .doc-notes h3 {
+    margin: 0 0 6px;
+    font-size: 13px;
+    color: #555;
+  }
+  .doc-notes > div {
+    font-size: 13px;
+    white-space: pre-wrap;
+  }
+
+  .doc-footer {
+    border-top: 1px solid #d1d5db;
+    padding-top: 14px;
+    margin-top: 28px;
+    text-align: right;
+    font-size: 13px;
+    color: #444;
+  }
+  .doc-issuer-name {
+    font-size: 15px;
+    font-weight: 700;
+    color: #1a1a1a;
+    margin-bottom: 2px;
+  }
+
+  /* ===== 印刷時のスタイル ===== */
+  @media print {
+    body { background: white; }
+    header, main > section:not(#screen-done), .no-print {
+      display: none !important;
+    }
+    main { padding: 0 !important; max-width: none !important; }
+    #screen-done.screen {
+      display: block !important;
+      opacity: 1 !important;
+    }
+    .quote-doc { max-width: none; }
+    .doc-paper {
+      border: none !important;
+      box-shadow: none !important;
+      padding: 0 !important;
+      border-radius: 0 !important;
+    }
+    .doc-grand-summary {
+      background: white !important;
+      border-left: 4px solid #1a1a1a !important;
+    }
   }
 
   /* ===== エラー表示 ===== */
@@ -564,12 +771,20 @@
       <div class="field">
         <label>メールアドレス<span class="required">*</span></label>
         <input type="email" id="f-email" placeholder="example@company.jp" maxlength="200">
-        <div class="hint">お見積もり結果をこちらにお送りします</div>
+        <div class="hint">見積書に記載されるご連絡先です</div>
       </div>
 
       <div class="field quick-only">
         <label>お電話番号<span class="optional">（任意）</span></label>
         <input type="tel" id="f-phone-quick" placeholder="03-1234-5678" maxlength="50">
+      </div>
+
+      <div class="field contact-pref">
+        <label class="checkbox-label">
+          <input type="checkbox" id="f-contact-requested" checked>
+          <span>担当者からの連絡を希望する</span>
+        </label>
+        <div class="hint">チェックを外すと、見積書のダウンロードのみで担当者からの連絡はありません。</div>
       </div>
     </div>
 
@@ -661,7 +876,7 @@
 
     <div class="actions">
       <button type="button" class="btn btn-secondary" id="btn-back-to-course">← 戻る</button>
-      <button type="button" class="btn btn-primary" id="btn-to-review">確認画面へ →</button>
+      <button type="button" class="btn btn-primary" id="btn-to-review">内容を確認 →</button>
     </div>
   </section>
 
@@ -678,19 +893,80 @@
 
     <div class="actions">
       <button type="button" class="btn btn-secondary" id="btn-back-to-form">← 修正する</button>
-      <button type="button" class="btn btn-primary" id="btn-submit">この内容で送信する</button>
+      <button type="button" class="btn btn-primary" id="btn-submit">見積書を発行する</button>
     </div>
   </section>
 
-  <!-- ===== Screen 4: 完了 ===== -->
+  <!-- ===== Screen 4: 見積書（発行完了） ===== -->
   <section id="screen-done" class="screen">
-    <div class="done-card">
-      <div class="done-icon">✓</div>
-      <h2>お見積もり依頼を承りました</h2>
-      <p>ご入力いただいたメールアドレス宛に、担当者よりご連絡いたします。</p>
-      <p style="font-size:12px; margin-top:18px">通常2営業日以内にご返信いたします。</p>
-      <div class="actions" style="margin-top:24px">
-        <button type="button" class="btn btn-secondary" id="btn-restart">最初に戻る</button>
+    <div class="quote-doc">
+      <div class="doc-toolbar no-print">
+        <div class="doc-toolbar-msg">
+          <strong>見積書を発行しました。</strong>
+          <span class="doc-msg-contact" id="doc-msg-contact"></span>
+        </div>
+        <div class="doc-toolbar-actions">
+          <button type="button" class="btn btn-primary" id="btn-print">📄 PDFで保存／印刷</button>
+          <button type="button" class="btn btn-secondary" id="btn-restart">新しい見積書を作成</button>
+        </div>
+      </div>
+
+      <div class="doc-paper" id="doc-paper">
+        <div class="doc-header">
+          <h1 class="doc-title">見　積　書</h1>
+          <div class="doc-meta">
+            <div>No. <span id="doc-number"></span></div>
+            <div>発行日：<span id="doc-issued"></span></div>
+            <div>有効期限：<span id="doc-expires"></span></div>
+          </div>
+        </div>
+
+        <div class="doc-recipient">
+          <div class="doc-recipient-name"><span id="doc-customer-name"></span> 様</div>
+          <div class="doc-recipient-detail" id="doc-recipient-detail"></div>
+        </div>
+
+        <div class="doc-greeting">
+          下記の通り御見積申し上げます。
+        </div>
+
+        <div class="doc-grand-summary">
+          <span class="doc-grand-summary-label">合計金額（税込）</span>
+          <span class="doc-grand-summary-value" id="doc-grand-headline">¥0</span>
+        </div>
+
+        <table class="doc-items">
+          <thead>
+            <tr>
+              <th class="col-name">商品名</th>
+              <th class="col-sku">型番</th>
+              <th class="col-qty">数量</th>
+              <th class="col-price">単価（税抜）</th>
+              <th class="col-amount">金額（税抜）</th>
+            </tr>
+          </thead>
+          <tbody id="doc-items-body"></tbody>
+        </table>
+
+        <div class="doc-totals">
+          <table>
+            <tr><th>小計（税抜）</th><td id="doc-subtotal">¥0</td></tr>
+            <tr><th>消費税（10%）</th><td id="doc-tax">¥0</td></tr>
+            <tr class="grand-total"><th>合計（税込）</th><td id="doc-grand-total">¥0</td></tr>
+          </table>
+        </div>
+
+        <div class="doc-notes" id="doc-notes-block" style="display:none">
+          <h3>備考</h3>
+          <div id="doc-notes-text"></div>
+        </div>
+
+        <div class="doc-footer">
+          <div class="doc-issuer">
+            <div class="doc-issuer-name">ミッドランドハーツ</div>
+            <div class="doc-issuer-contact">お問い合わせ：info@midhts.com</div>
+          </div>
+        </div>
       </div>
     </div>
   </section>
@@ -1122,6 +1398,7 @@ function collectForm() {
     },
     items,
     notes: $('f-notes').value.trim(),
+    contactRequested: $('f-contact-requested').checked,
   };
 
   if (isDetailed) {
@@ -1172,6 +1449,7 @@ function renderReview(payload) {
         ${payload.customer.department ? `<div class="label">部署・役職</div><div class="value">${escapeHtml(payload.customer.department)}</div>` : ''}
         <div class="label">メール</div><div class="value">${escapeHtml(payload.customer.email)}</div>
         ${payload.customer.phone ? `<div class="label">電話</div><div class="value">${escapeHtml(payload.customer.phone)}</div>` : ''}
+        <div class="label">担当者からの連絡</div><div class="value">${payload.contactRequested ? '希望する' : '希望しない（見積書のみ）'}</div>
       </div>
     </div>
   `;
@@ -1235,13 +1513,94 @@ function renderReview(payload) {
   container.innerHTML = html;
 }
 
+// ===== 見積書番号生成 =====
+function generateQuoteNumber() {
+  const now = new Date();
+  const yyyy = now.getFullYear();
+  const mm = String(now.getMonth() + 1).padStart(2, '0');
+  const dd = String(now.getDate()).padStart(2, '0');
+  const rand = Math.random().toString(36).slice(2, 6).toUpperCase();
+  return `Q${yyyy}${mm}${dd}-${rand}`;
+}
+
+function formatDateJa(d) {
+  return `${d.getFullYear()}年${d.getMonth() + 1}月${d.getDate()}日`;
+}
+
+// ===== 見積書の描画 =====
+function renderQuoteDoc(payload, quoteNumber) {
+  const issued = new Date();
+  const expires = new Date(issued);
+  expires.setDate(expires.getDate() + 30);
+
+  $('doc-number').textContent = quoteNumber;
+  $('doc-issued').textContent = formatDateJa(issued);
+  $('doc-expires').textContent = formatDateJa(expires);
+
+  $('doc-customer-name').textContent = payload.customer.name;
+  const detail = $('doc-recipient-detail');
+  detail.innerHTML = '';
+  const lines = [];
+  if (payload.customer.company) lines.push(payload.customer.company);
+  if (payload.customer.department) lines.push(payload.customer.department);
+  if (payload.customer.email) lines.push(payload.customer.email);
+  if (payload.customer.phone) lines.push('TEL: ' + payload.customer.phone);
+  lines.forEach(line => {
+    const div = document.createElement('div');
+    div.textContent = line;
+    detail.appendChild(div);
+  });
+
+  const tbody = $('doc-items-body');
+  tbody.innerHTML = '';
+  let subtotal = 0;
+  payload.items.forEach(it => {
+    const amount = it.unitPrice * it.quantity;
+    subtotal += amount;
+    const tr = document.createElement('tr');
+    tr.innerHTML = `
+      <td class="col-name">${escapeHtml(it.name)}</td>
+      <td class="col-sku">${escapeHtml(it.sku)}</td>
+      <td class="col-qty num">${it.quantity}</td>
+      <td class="col-price num">¥${it.unitPrice.toLocaleString()}</td>
+      <td class="col-amount num">¥${amount.toLocaleString()}</td>
+    `;
+    tbody.appendChild(tr);
+  });
+
+  const tax = Math.floor(subtotal * 0.1);
+  const grand = subtotal + tax;
+  $('doc-subtotal').textContent = '¥' + subtotal.toLocaleString();
+  $('doc-tax').textContent = '¥' + tax.toLocaleString();
+  $('doc-grand-total').textContent = '¥' + grand.toLocaleString();
+  $('doc-grand-headline').textContent = '¥' + grand.toLocaleString();
+
+  const notesBlock = $('doc-notes-block');
+  if (payload.notes) {
+    notesBlock.style.display = '';
+    $('doc-notes-text').textContent = payload.notes;
+  } else {
+    notesBlock.style.display = 'none';
+  }
+
+  // 連絡希望メッセージ
+  const msg = $('doc-msg-contact');
+  msg.textContent = payload.contactRequested
+    ? '担当者より追ってご連絡いたします。'
+    : '担当者からの連絡は希望されていません。';
+}
+
 // ===== 送信 =====
 async function submitQuote(payload) {
   const btn = $('btn-submit');
   const errBox = $('review-error');
   errBox.classList.remove('active');
   btn.disabled = true;
-  btn.innerHTML = '<span class="spinner"></span>送信中...';
+  btn.innerHTML = '<span class="spinner"></span>発行中...';
+
+  // 見積書番号を発行（クライアント側採番）
+  const quoteNumber = generateQuoteNumber();
+  payload.quoteNumber = quoteNumber;
 
   try {
     const res = await fetch('/api/quote', {
@@ -1253,13 +1612,14 @@ async function submitQuote(payload) {
     if (!res.ok) {
       throw new Error(data.message || '送信に失敗しました');
     }
+    renderQuoteDoc(payload, quoteNumber);
     showScreen('done');
   } catch (e) {
     errBox.textContent = e.message || '送信に失敗しました。時間をおいて再度お試しください。';
     errBox.classList.add('active');
   } finally {
     btn.disabled = false;
-    btn.textContent = 'この内容で送信する';
+    btn.textContent = '見積書を発行する';
   }
 }
 
@@ -1295,10 +1655,15 @@ $('btn-submit').addEventListener('click', () => {
   submitQuote(payload);
 });
 
+$('btn-print').addEventListener('click', () => {
+  window.print();
+});
+
 $('btn-restart').addEventListener('click', () => {
   // リセット
   Object.keys(quantities).forEach(k => delete quantities[k]);
   document.querySelectorAll('#screen-form input, #screen-form textarea').forEach(el => el.value = '');
+  $('f-contact-requested').checked = true;
   productSearchQuery = '';
   $('product-search-input').value = '';
   $('product-search-input').parentElement.classList.remove('has-query');

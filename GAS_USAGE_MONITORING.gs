@@ -193,14 +193,15 @@ function handleQuoteRequest(data) {
   if (!sheet) {
     sheet = ss.insertSheet(SHEET_QUOTE_LOG);
     sheet.appendRow([
-      '日時', 'コース', 'お名前', '会社名', '部署', 'メール', '電話',
-      '製品内訳', '概算合計(JPY)', '6W4H', '備考', 'IP'
+      '日時', '見積番号', 'コース', '連絡希望', 'お名前', '会社名', '部署', 'メール', '電話',
+      '製品内訳', '小計(JPY 税抜)', '合計(JPY 税込)', '6W4H', '備考', 'IP'
     ]);
   }
 
   const customer = data.customer || {};
   const items = data.items || [];
   const sit = data.situation || null;
+  const contactRequested = data.contactRequested !== false; // default true
 
   const itemsText = items.map(it =>
     `${it.name} × ${it.quantity} = ¥${(it.unitPrice * it.quantity).toLocaleString()}`
@@ -219,35 +220,48 @@ function handleQuoteRequest(data) {
     sit.howLong ? `[How long] ${sit.howLong}` : null,
   ].filter(Boolean).join('\n') : '';
 
+  const subtotal = data.subtotal || 0;
+  const grandTotal = Math.floor(subtotal * 1.1); // 税込
+
   sheet.appendRow([
     new Date(data.timestamp || Date.now()),
+    data.quoteNumber || '',
     data.mode === 'detailed' ? '詳しく相談' : 'クイック見積もり',
+    contactRequested ? '希望' : '不要',
     customer.name || '',
     customer.company || '',
     customer.department || '',
     customer.email || '',
     customer.phone || '',
     itemsText,
-    data.subtotal || 0,
+    subtotal,
+    grandTotal,
     sitText,
     data.notes || '',
     data.ip || ''
   ]);
 
-  // メール通知
-  sendQuoteNotification(data, itemsText, sitText);
+  // 連絡希望時のみメール通知
+  if (contactRequested) {
+    sendQuoteNotification(data, itemsText, sitText);
+  }
 }
 
 function sendQuoteNotification(data, itemsText, sitText) {
   const customer = data.customer || {};
   const courseLabel = data.mode === 'detailed' ? '詳しく相談' : 'クイック見積もり';
-  const subject = `【自動見積もり依頼】${customer.name || '名前未入力'} 様（${courseLabel}）`;
+  const quoteNumber = data.quoteNumber || '(自動採番なし)';
+  const subtotal = data.subtotal || 0;
+  const grandTotal = Math.floor(subtotal * 1.1);
+  const subject = `【自動見積もり】${customer.name || '名前未入力'} 様（${quoteNumber}）`;
 
-  let body = `ミッドランドハーツ 自動見積もりシステムにて依頼を受け付けました。
+  let body = `ミッドランドハーツ 自動見積もりシステムにて見積書が発行されました。
+お客様は担当者からの連絡を希望されています。
 
 ━━━━━━━━━━━━━━━━━━━━━━━━━━
+見積番号: ${quoteNumber}
 コース: ${courseLabel}
-受信日時: ${new Date(data.timestamp || Date.now()).toLocaleString('ja-JP')}
+発行日時: ${new Date(data.timestamp || Date.now()).toLocaleString('ja-JP')}
 ━━━━━━━━━━━━━━━━━━━━━━━━━━
 
 【お客様情報】
@@ -260,7 +274,9 @@ function sendQuoteNotification(data, itemsText, sitText) {
 【ご希望の製品】
 ${itemsText || '(なし)'}
 
-概算合計（税抜）: ¥${(data.subtotal || 0).toLocaleString()}
+小計（税抜）: ¥${subtotal.toLocaleString()}
+消費税（10%）: ¥${(grandTotal - subtotal).toLocaleString()}
+合計（税込）: ¥${grandTotal.toLocaleString()}
 `;
 
   if (sitText) {
