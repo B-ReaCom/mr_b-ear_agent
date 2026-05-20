@@ -336,3 +336,14 @@ function resetAlertForCurrentMonth() {
   }
   Logger.log(`${yearMonth} のアラート送信状態をリセットしました`);
 }
+
+// ========== メール送信テスト ==========
+// GASエディタで手動実行することで、MailApp の権限承認ダイアログを呼び出す
+function testQuoteEmail() {
+  MailApp.sendEmail({
+    to: QUOTE_EMAIL_TO,
+    subject: '【テスト】GASからのメール送信確認',
+    body: 'これはGASのメール送信機能の動作確認用テストメールです。\n\n受信できていれば、見積もりシステムのメール通知も正しく動作します。\n\n送信日時: ' + new Date().toLocaleString('ja-JP')
+  });
+  Logger.log('テストメールを ' + QUOTE_EMAIL_TO + ' に送信しました');
+}
