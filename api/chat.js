@@ -410,7 +410,12 @@ export default async function handler(req) {
 
     // ===== リード自動通知（高優先度のみ） =====
     try {
-      const leadInfo = detectLead(body.messages || []);
+      const messages = body.messages || [];
+      console.log('[chat.js] Messages array:', { count: messages.length, isEmpty: messages.length === 0 });
+      if (messages.length > 0) {
+        console.log('[chat.js] First message:', { role: messages[0]?.role, contentType: typeof messages[0]?.content, contentLength: messages[0]?.content ? String(messages[0].content).length : 0 });
+      }
+      const leadInfo = detectLead(messages);
       console.log('[chat.js] Lead detection:', { score: leadInfo.score, isHighPriority: leadInfo.isHighPriority, keywords: leadInfo.detectedKeywords });
       if (leadInfo.isHighPriority) {
         const messageText = formatLeadMessage(leadInfo, body.messages || [], body.session_id || body.sessionId);
