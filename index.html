@@ -1713,7 +1713,49 @@ async function callClaudeAPI(payload) {
 }
 
 // ===== Haiku 4.5 による質問妥当性事前判定（レベル4） =====
+// クライアント側で明確な業務関連キーワードを含む質問は Haiku をバイパスし即許可
+// （Haiku の気まぐれな誤拒否を防ぐ・APIコスト削減・レスポンス高速化）
+const _RELEVANT_KEYWORDS_LOWER = [
+  // B-EAR ブランド・製品名（英・日）
+  'b-ear', 'bear', 'ベアー', 'ベア',
+  'alvo', 'アルボ',
+  'bridgecom', 'ブリッジコム', 'ブリッヂコム',
+  'voisniper', 'ボイスナイパー', 'ボイスナイパ',
+  'reacom', 'リアコム',
+  // 周辺機器・他社連携
+  'auro', 'アウロ',
+  'マイク', 'ヘッドセット', 'ヘッドフォン', 'イヤホン', 'イヤフォン', '咽喉', 'いんこう',
+  // 業務用通信
+  '無線', 'インカム', 'トランシーバー', 'トランシーバ', '同時通話', 'ハンズフリー',
+  '通信機', '通信機器', '業務用',
+  // 会社・ブランド
+  'ベアリッジ', 'bearidge', '中橋',
+  // ビジネス文脈
+  '見積', '見積り', 'お見積', '価格', '料金', '値段', 'コスト',
+  'デモ', 'レンタル', '貸出', '貸し出し', 'リース',
+  '代理店', '販売店', '取扱店', '購入', '導入',
+  '採用', '求人', 'キャリア', '転職', '募集', 'wantedly',
+  '会社', '企業', '本社', '所在地', '勤務地',
+  '問い合わせ', 'お問い合わせ', '連絡先', 'tel', 'メール',
+  '修理', 'サポート', '保証', '故障',
+  // スペック・性能
+  'スペック', 'ノイズキャンセル', 'ノイキャン', 'enc', 'バッテリー',
+  '通話距離', '通信距離', '電池', '防水', '防塵', 'ip54', 'ip55', 'ip67',
+  'bluetooth', 'ブルートゥース', '充電',
+  // 現場
+  '建設', '工場', '工事', 'トンネル', '港湾', 'イベント', 'スポーツ',
+  '現場', '騒音', '防塵マスク',
+];
+
+function isObviouslyRelevant(questionText) {
+  if (!questionText) return false;
+  const normalized = String(questionText).toLowerCase();
+  return _RELEVANT_KEYWORDS_LOWER.some(kw => normalized.includes(kw));
+}
+
 async function judgeQuestionRelevance(questionText) {
+  // 明確な業務関連キーワードを含む場合は Haiku をスキップして即許可
+  if (isObviouslyRelevant(questionText)) return true;
   try {
     const { data } = await callClaudeAPI({
       model: 'claude-haiku-4-5',
