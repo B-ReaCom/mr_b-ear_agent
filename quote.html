@@ -700,6 +700,39 @@
   }
   .error-msg.active { display: block; }
 
+  /* 上下ジャンプボタン */
+  .scroll-nav {
+    position: fixed;
+    right: 14px;
+    bottom: 20px;
+    display: none;
+    flex-direction: column;
+    gap: 8px;
+    z-index: 50;
+  }
+  .scroll-nav.visible { display: flex; }
+  .scroll-nav button {
+    width: 44px;
+    height: 44px;
+    border-radius: 50%;
+    border: 1px solid var(--border);
+    background: var(--card);
+    color: var(--text);
+    font-size: 18px;
+    cursor: pointer;
+    box-shadow: var(--shadow-lg);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: transform 0.1s ease, background 0.15s ease;
+  }
+  .scroll-nav button:hover { background: var(--primary-light); color: var(--primary-dark); }
+  .scroll-nav button:active { transform: scale(0.94); }
+  @media (max-width: 480px) {
+    .scroll-nav { right: 10px; bottom: 14px; }
+    .scroll-nav button { width: 40px; height: 40px; font-size: 16px; }
+  }
+
   /* ===== ローディング ===== */
   .spinner {
     display: inline-block;
@@ -990,6 +1023,11 @@
     </div>
   </section>
 </main>
+
+<div class="scroll-nav" id="scroll-nav" aria-label="ページ内ジャンプ">
+  <button type="button" id="scroll-top" title="最上部へ" aria-label="最上部へ移動">↑</button>
+  <button type="button" id="scroll-bottom" title="最下部へ" aria-label="最下部へ移動">↓</button>
+</div>
 
 <script>
 // ==========================================================================
@@ -1282,6 +1320,7 @@ function showScreen(name) {
   Object.values(screens).forEach(s => s.classList.remove('active'));
   screens[name].classList.add('active');
   window.scrollTo({ top: 0, behavior: 'smooth' });
+  $('scroll-nav').classList.toggle('visible', name === 'form' || name === 'review');
 }
 
 function showCourseElements(course) {
@@ -1690,11 +1729,19 @@ $('btn-to-review').addEventListener('click', () => {
   if (errors.length > 0) {
     errBox.textContent = errors.join(' / ');
     errBox.classList.add('active');
+    errBox.scrollIntoView({ behavior: 'smooth', block: 'center' });
     return;
   }
   errBox.classList.remove('active');
   renderReview(payload);
   showScreen('review');
+});
+
+$('scroll-top').addEventListener('click', () => {
+  window.scrollTo({ top: 0, behavior: 'smooth' });
+});
+$('scroll-bottom').addEventListener('click', () => {
+  window.scrollTo({ top: document.documentElement.scrollHeight, behavior: 'smooth' });
 });
 
 $('btn-back-to-form').addEventListener('click', () => showScreen('form'));
