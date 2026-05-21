@@ -2154,10 +2154,15 @@ function markdownToHtml(text) {
   // Markdown 形式の [テキスト](URL) → <a>
   text = text.replace(/\[([^\]]+)\]\((https?:\/\/[^)\s]+)\)/g, '<a href="$2" target="_blank" rel="noopener">$1</a>');
 
-  // プレーン URL を自動リンク化（既存の <a> タグ属性・テキスト内は除外、末尾の句読点は除く）
-  // 否定後読み (?<!["'=>]) で既存リンク内・属性内のURLを無視（固定長で全ブラウザ対応）
-  text = text.replace(/(?<!["'=>])(https?:\/\/[A-Za-z0-9\-._~:\/?#\[\]@!$&'*+,;=%]+)/g, (match) => {
-    // 末尾の句読点・記号を URL に含めず外に出す
+  // 既存の <a>...</a> ブロックをプレースホルダーに退避（後続の自動リンク化での二重ラップ・テーブル内未リンク化バグを防止）
+  const _linkPlaceholders = [];
+  text = text.replace(/<a\s[^>]*>[\s\S]*?<\/a>/g, (match) => {
+    _linkPlaceholders.push(match);
+    return `\x00LINK${_linkPlaceholders.length - 1}\x00`;
+  });
+
+  // プレーン URL を自動リンク化（末尾の句読点は URL に含めない）
+  text = text.replace(/(https?:\/\/[A-Za-z0-9\-._~:\/?#\[\]@!$&'*+,;=%]+)/g, (match) => {
     const trailing = match.match(/[.,;:!?)]+$/);
     let url = match;
     let tail = '';
@@ -2168,11 +2173,20 @@ function markdownToHtml(text) {
     return `<a href="${url}" target="_blank" rel="noopener">${url}</a>${tail}`;
   });
 
-  // メールアドレスを mailto: リンクに（既存の <a> タグ内は除外）
-  text = text.replace(/(?<!["'=>])([\w.+-]+@[\w-]+\.[\w.-]+)(?![\w.@])/g, '<a href="mailto:$1">$1</a>');
+  // メールアドレスを mailto: リンクに
+  text = text.replace(/([\w.+-]+@[\w-]+(?:\.[\w-]+)+)(?![\w.@])/g, '<a href="mailto:$1">$1</a>');
 
-  // 日本式電話番号（0で始まる、XX-XXX-XXXX / XXX-XXX-XXXX / XXXX-XX-XXXX 等）を tel: リンクに
-  text = text.replace(/(?<!["'=>])(0\d{1,4}-\d{1,4}-\d{3,4})(?![\d-])/g, '<a href="tel:$1">$1</a>');
+  // 日本式電話番号
+  //  - 半角ハイフン: 0569-89-7969 / 03-1234-5678 / 090-1234-5678
+  //  - 全角・長音・ENダッシュ: 0569ー89ー7969 / 0569－89－7969 / 0569–89–7969
+  // tel: 用には半角ハイフン正規化した値を href に使う（製品番号・コード等の誤検出を避けるため区切り必須）
+  text = text.replace(/(0\d{1,4}[-－ー–]\d{1,4}[-－ー–]\d{3,4})(?![\d\-－ー–])/g, (m) => {
+    const tel = m.replace(/[－ー–]/g, '-');
+    return `<a href="tel:${tel}">${m}</a>`;
+  });
+
+  // 退避していた <a>...</a> ブロックを復元
+  text = text.replace(/\x00LINK(\d+)\x00/g, (_m, i) => _linkPlaceholders[parseInt(i, 10)]);
 
   // テーブル内の改行を一時保護してから<br>変換
   text = text.replace(/<table[\s\S]*?<\/table>/g, m => m.replace(/\n/g, ''));
