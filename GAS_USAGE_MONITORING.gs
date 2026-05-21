@@ -42,6 +42,33 @@ function getSpreadsheet() {
 }
 
 // ========== メイン処理 ==========
+// 診断用: ブラウザでURLを直接開いた際にデプロイ状況を表示
+function doGet(e) {
+  try {
+    const ss = getSpreadsheet();
+    const sheetNames = ss.getSheets().map(s => s.getName());
+    const info = {
+      success: true,
+      deployedAt: 'See deployment manage screen',
+      spreadsheetId: SPREADSHEET_ID,
+      spreadsheetName: ss.getName(),
+      sheetNames: sheetNames,
+      hasQALogSheet: sheetNames.indexOf(SHEET_QA_LOG) !== -1,
+      hasUsageLogSheet: sheetNames.indexOf(SHEET_USAGE_LOG) !== -1,
+      now: new Date().toISOString(),
+      message: 'GAS Web App is alive. POSTでログ送信可能。'
+    };
+    return ContentService.createTextOutput(JSON.stringify(info, null, 2))
+      .setMimeType(ContentService.MimeType.JSON);
+  } catch (err) {
+    return ContentService.createTextOutput(JSON.stringify({
+      success: false,
+      error: err.message,
+      hint: 'スプレッドシートIDが正しいか、GASがスプレッドシートへのアクセス権限を持っているか確認してください'
+    }, null, 2)).setMimeType(ContentService.MimeType.JSON);
+  }
+}
+
 function doPost(e) {
   try {
     const data = JSON.parse(e.postData.contents);
