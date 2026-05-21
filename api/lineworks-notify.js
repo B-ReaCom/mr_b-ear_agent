@@ -129,14 +129,10 @@ async function getAccessToken() {
   }
 }
 
-// ===== LINE WORKS の管理者ユーザーへDMメッセージ送信 =====
-async function sendLineWorksMessage(accessToken, messageText) {
+// ===== LINE WORKS の単一ユーザーへDMメッセージ送信 =====
+async function sendLineWorksMessageToUser(accessToken, userId, messageText) {
   const botId = process.env.LINE_WORKS_BOT_ID;
-  const userId = process.env.LINE_WORKS_NOTIFY_USER_ID;
   const url = `https://www.worksapis.com/v1.0/bots/${botId}/users/${userId}/messages`;
-
-  console.log('[sendLineWorksMessage] URL:', url);
-  console.log('[sendLineWorksMessage] Message length:', messageText.length);
 
   const response = await fetch(url, {
     method: 'POST',
@@ -145,28 +141,41 @@ async function sendLineWorksMessage(accessToken, messageText) {
       'Content-Type': 'application/json',
     },
     body: JSON.stringify({
-      content: {
-        type: 'text',
-        text: messageText,
-      },
+      content: { type: 'text', text: messageText },
     }),
   });
 
-  console.log('[sendLineWorksMessage] Response status:', response.status);
+  console.log(`[sendLineWorksMessage] userId=${userId} status=${response.status}`);
 
   if (!response.ok) {
     const errorText = await response.text();
-    console.error('[sendLineWorksMessage] Error response:', errorText);
-    throw new Error(`Message send failed: ${response.status} ${errorText}`);
+    console.error(`[sendLineWorksMessage] userId=${userId} error:`, errorText);
+    throw new Error(`send failed for ${userId}: ${response.status} ${errorText}`);
   }
+  return { ok: true, userId };
+}
 
-  // 204 No Content の場合があるので、JSON は best-effort
-  try {
-    return await response.json();
-  } catch {
-    console.log('[sendLineWorksMessage] No JSON response (204 No Content expected)');
-    return { ok: true };
+// ===== 複数ユーザーへ並列送信 =====
+async function sendLineWorksMessage(accessToken, messageText) {
+  const raw = process.env.LINE_WORKS_NOTIFY_USER_ID || '';
+  const userIds = raw.split(',').map(s => s.trim()).filter(Boolean);
+  if (userIds.length === 0) {
+    throw new Error('LINE_WORKS_NOTIFY_USER_ID is empty');
   }
+  console.log(`[sendLineWorksMessage] Sending to ${userIds.length} user(s):`, userIds);
+
+  const results = await Promise.allSettled(
+    userIds.map(uid => sendLineWorksMessageToUser(accessToken, uid, messageText))
+  );
+
+  const failures = results.filter(r => r.status === 'rejected');
+  if (failures.length > 0) {
+    console.error('[sendLineWorksMessage] Failures:', failures.map(f => f.reason?.message || String(f.reason)));
+  }
+  if (failures.length === userIds.length) {
+    throw new Error('all sends failed');
+  }
+  return { ok: true, sent: userIds.length - failures.length, failed: failures.length };
 }
 
 // ===== Node.js リクエストボディを安全に読み込む =====
