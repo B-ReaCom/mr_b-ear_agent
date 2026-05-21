@@ -799,7 +799,7 @@
     /* コンテンツ枠（max-width 720px）の右外側に寄せる。
        狭い画面では従来通り画面右端から14px。 */
     right: max(14px, calc(50vw - 360px - 52px));
-    top: 90px;
+    top: 25vh;
     display: none;
     flex-direction: column;
     gap: 5px;
@@ -827,7 +827,7 @@
   .scroll-nav button:hover { background: var(--primary-light); color: var(--primary-dark); }
   .scroll-nav button:active { transform: scale(0.92); }
   @media (max-width: 480px) {
-    .scroll-nav { right: 4px; top: 70px; gap: 3px; }
+    .scroll-nav { right: 4px; top: 25vh; gap: 3px; }
     .scroll-nav button { width: 30px; height: 30px; font-size: 13px; }
     .scroll-nav button.scroll-jump { font-size: 15px; }
   }
