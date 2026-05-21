@@ -8,7 +8,7 @@ export const config = {
 // ===== レート制限設定 =====
 const RATE_LIMITS = {
   perMinute: 5,      // 1分間に5リクエストまで
-  perHour: 50,       // 1時間に50リクエストまで
+  perHour: 100,      // 1時間に100リクエストまで
   perDay: 200,       // 1日に200リクエストまで
 };
 
