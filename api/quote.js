@@ -348,11 +348,19 @@ export default async function handler(req) {
     }
 
     if (!emailSent) {
-      // 古い GAS デプロイは contactRequested フィールドを認識しないため、
-      // 備考欄の先頭に連絡希望バナーを埋め込んでメール本文に確実に出るようにする。
+      // 古い GAS デプロイは件名を「【自動見積もり依頼】${customer.name} 様（${courseLabel}）」
+      // で組み立てており、contactRequested フィールドを認識しない。
+      // 件名から名前を消して連絡希望マーカーを入れるため、customer.name を差し替える。
+      // 本物の名前は備考欄バナーに移動して本文中で参照できるようにする。
+      const realName = payload.customer.name || '(名前未入力)';
+      const courseShort = payload.mode === 'detailed' ? '詳しく相談' : 'クイック見積り';
+      const hijackedName = payload.contactRequested
+        ? `${courseShort}☆連絡希望☆`
+        : `${courseShort}☆連絡不要☆`;
+
       const contactBanner = payload.contactRequested
-        ? '━━━━━━━━━━━━━━━━━━━━\n★ 担当者からの連絡: ★希望あり★ ★\n→ 折り返しのご連絡をお願いします\n━━━━━━━━━━━━━━━━━━━━'
-        : '━━━━━━━━━━━━━━━━━━━━\n担当者からの連絡: 希望なし\n→ 記録のみ（対応不要）\n━━━━━━━━━━━━━━━━━━━━';
+        ? `━━━━━━━━━━━━━━━━━━━━\n★ 担当者からの連絡: ★希望あり★ ★\n→ 折り返しのご連絡をお願いします\nお名前: ${realName}\n━━━━━━━━━━━━━━━━━━━━`
+        : `━━━━━━━━━━━━━━━━━━━━\n担当者からの連絡: 希望なし\n→ 記録のみ（対応不要）\nお名前: ${realName}\n━━━━━━━━━━━━━━━━━━━━`;
       const notesForGas = payload.notes
         ? `${contactBanner}\n\n${payload.notes}`
         : contactBanner;
@@ -362,6 +370,7 @@ export default async function handler(req) {
         ip,
         timestamp,
         ...payload,
+        customer: { ...payload.customer, name: hijackedName },
         notes: notesForGas,
         subtotal,
       };
