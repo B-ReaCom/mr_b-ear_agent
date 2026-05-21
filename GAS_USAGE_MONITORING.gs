@@ -25,10 +25,21 @@ const ALERT_THRESHOLD_JPY = 20000;        // ¥20,000超過でアラート
 const ALERT_EMAIL_TO = 'sales@bearidge.jp'; // 通知先メールアドレス
 const USD_TO_JPY_RATE = 150;              // 為替レート（USD→JPY、必要に応じて調整）
 
+// ▼ ミッドランドハーツ 見積もり依頼の通知先
+const QUOTE_EMAIL_TO = 'info@midhts.com';
+const QUOTE_EMAIL_CC = ''; // 必要ならカンマ区切りで追加
+
 // シート名
 const SHEET_QA_LOG = 'シート1';            // Q&Aログシート（既存・スプレッドシートのデフォルト名）
 const SHEET_USAGE_LOG = 'USAGE_LOG';      // API使用量ログ
 const SHEET_ALERT_STATUS = 'ALERT_STATUS'; // アラート送信状態
+const SHEET_QUOTE_LOG = 'QUOTE_LOG';      // 見積もり依頼ログ
+
+// スプレッドシートID（既存のQ&Aログと同じスプレッドシートを使用）
+const SPREADSHEET_ID = '1N6_QebV3Z7Idxuc4UO3xqSSoQFsZ33prstbd5S0BjEo';
+function getSpreadsheet() {
+  return SpreadsheetApp.openById(SPREADSHEET_ID);
+}
 
 // ========== メイン処理 ==========
 function doPost(e) {
@@ -39,6 +50,9 @@ function doPost(e) {
     if (data.type === 'api_usage') {
       // API使用量ログ
       handleUsageLog(data);
+    } else if (data.type === 'quote_request') {
+      // ミッドランドハーツ 見積もり依頼
+      handleQuoteRequest(data);
     } else {
       // 既存のQ&Aログ
       handleQALog(data);
@@ -54,7 +68,7 @@ function doPost(e) {
 
 // ========== Q&Aログ記録（既存機能） ==========
 function handleQALog(data) {
-  const ss = SpreadsheetApp.getActiveSpreadsheet();
+  const ss = getSpreadsheet();
   let sheet = ss.getSheetByName(SHEET_QA_LOG);
   if (!sheet) {
     sheet = ss.insertSheet(SHEET_QA_LOG);
@@ -70,7 +84,7 @@ function handleQALog(data) {
 
 // ========== API使用量ログ記録 ==========
 function handleUsageLog(data) {
-  const ss = SpreadsheetApp.getActiveSpreadsheet();
+  const ss = getSpreadsheet();
   let sheet = ss.getSheetByName(SHEET_USAGE_LOG);
   if (!sheet) {
     sheet = ss.insertSheet(SHEET_USAGE_LOG);
@@ -103,7 +117,7 @@ function handleUsageLog(data) {
 
 // ========== 月次¥20,000超過チェック ==========
 function checkMonthlyThreshold() {
-  const ss = SpreadsheetApp.getActiveSpreadsheet();
+  const ss = getSpreadsheet();
   const usageSheet = ss.getSheetByName(SHEET_USAGE_LOG);
   if (!usageSheet) return;
 
@@ -156,7 +170,7 @@ function sendAlertEmail(monthlyTotalJPY, yearMonth) {
 設定した警告閾値（¥${ALERT_THRESHOLD_JPY.toLocaleString()}）を超過しています。
 
 詳細は以下のスプレッドシートでご確認ください：
-${SpreadsheetApp.getActiveSpreadsheet().getUrl()}
+${getSpreadsheet().getUrl()}
 
 ご対応をお願いいたします。
 
@@ -172,6 +186,125 @@ ${SpreadsheetApp.getActiveSpreadsheet().getUrl()}
   });
 }
 
+// ========== ミッドランドハーツ 見積もり依頼処理 ==========
+function handleQuoteRequest(data) {
+  const ss = getSpreadsheet();
+  let sheet = ss.getSheetByName(SHEET_QUOTE_LOG);
+  if (!sheet) {
+    sheet = ss.insertSheet(SHEET_QUOTE_LOG);
+    sheet.appendRow([
+      '日時', '見積番号', 'コース', '連絡希望', 'お名前', '会社名', '部署', 'メール', '電話',
+      '製品内訳', '小計(JPY 税抜)', '合計(JPY 税込)', '6W4H', '備考', 'IP'
+    ]);
+  }
+
+  const customer = data.customer || {};
+  const items = data.items || [];
+  const sit = data.situation || null;
+  const contactRequested = data.contactRequested !== false; // default true
+
+  const itemsText = items.map(it =>
+    `${it.name} × ${it.quantity} = ¥${(it.unitPrice * it.quantity).toLocaleString()}`
+  ).join('\n');
+
+  const sitText = sit ? [
+    sit.who ? `[Who] ${sit.who}` : null,
+    sit.whom ? `[Whom] ${sit.whom}` : null,
+    sit.what ? `[What] ${sit.what}` : null,
+    sit.when ? `[When] ${sit.when}` : null,
+    sit.where ? `[Where] ${sit.where}` : null,
+    sit.why ? `[Why] ${sit.why}` : null,
+    sit.how ? `[How] ${sit.how}` : null,
+    sit.howMany ? `[How many] ${sit.howMany}` : null,
+    sit.howMuch ? `[How much] ${sit.howMuch}` : null,
+    sit.howLong ? `[How long] ${sit.howLong}` : null,
+  ].filter(Boolean).join('\n') : '';
+
+  const subtotal = data.subtotal || 0;
+  const grandTotal = Math.floor(subtotal * 1.1); // 税込
+
+  sheet.appendRow([
+    new Date(data.timestamp || Date.now()),
+    data.quoteNumber || '',
+    data.mode === 'detailed' ? '詳しく相談' : 'クイック見積もり',
+    contactRequested ? '希望' : '不要',
+    customer.name || '',
+    customer.company || '',
+    customer.department || '',
+    customer.email || '',
+    customer.phone || '',
+    itemsText,
+    subtotal,
+    grandTotal,
+    sitText,
+    data.notes || '',
+    data.ip || ''
+  ]);
+
+  // 連絡希望時のみメール通知
+  if (contactRequested) {
+    sendQuoteNotification(data, itemsText, sitText);
+  }
+}
+
+function sendQuoteNotification(data, itemsText, sitText) {
+  const customer = data.customer || {};
+  const courseLabel = data.mode === 'detailed' ? '詳しく相談' : 'クイック見積もり';
+  const quoteNumber = data.quoteNumber || '(自動採番なし)';
+  const subtotal = data.subtotal || 0;
+  const grandTotal = Math.floor(subtotal * 1.1);
+  const subject = `【自動見積もり】${customer.name || '名前未入力'} 様（${quoteNumber}）`;
+
+  let body = `ミッドランドハーツ 自動見積もりシステムにて見積書が発行されました。
+お客様は担当者からの連絡を希望されています。
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━
+見積番号: ${quoteNumber}
+コース: ${courseLabel}
+発行日時: ${new Date(data.timestamp || Date.now()).toLocaleString('ja-JP')}
+━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+【お客様情報】
+お名前: ${customer.name || ''}
+会社名: ${customer.company || '(未入力)'}
+部署・役職: ${customer.department || '(未入力)'}
+メール: ${customer.email || ''}
+電話: ${customer.phone || '(未入力)'}
+
+【ご希望の製品】
+${itemsText || '(なし)'}
+
+小計（税抜）: ¥${subtotal.toLocaleString()}
+消費税（10%）: ¥${(grandTotal - subtotal).toLocaleString()}
+合計（税込）: ¥${grandTotal.toLocaleString()}
+`;
+
+  if (sitText) {
+    body += `
+【ご利用シーン（6W4H）】
+${sitText}
+`;
+  }
+
+  if (data.notes) {
+    body += `
+【備考・ご要望】
+${data.notes}
+`;
+  }
+
+  body += `
+━━━━━━━━━━━━━━━━━━━━━━━━━━
+このメールは自動見積もりシステムより自動送信されています。
+ログはスプレッドシートでご確認ください：
+${getSpreadsheet().getUrl()}
+`;
+
+  const options = { to: QUOTE_EMAIL_TO, subject, body };
+  if (QUOTE_EMAIL_CC) options.cc = QUOTE_EMAIL_CC;
+  MailApp.sendEmail(options);
+}
+
 // ========== 動作確認・手動テスト用 ==========
 function testMonthlyCheck() {
   // 手動でチェックを実行（デバッグ用）
@@ -180,7 +313,7 @@ function testMonthlyCheck() {
 
 function showCurrentMonthlyTotal() {
   // 今月の合計を表示（デバッグ用）
-  const ss = SpreadsheetApp.getActiveSpreadsheet();
+  const ss = getSpreadsheet();
   const sheet = ss.getSheetByName(SHEET_USAGE_LOG);
   if (!sheet) {
     Logger.log('USAGE_LOG シートが存在しません');
@@ -205,7 +338,7 @@ function showCurrentMonthlyTotal() {
 
 function resetAlertForCurrentMonth() {
   // 当月のアラート送信状態をリセット（再テスト用）
-  const ss = SpreadsheetApp.getActiveSpreadsheet();
+  const ss = getSpreadsheet();
   const alertSheet = ss.getSheetByName(SHEET_ALERT_STATUS);
   if (!alertSheet) return;
 
@@ -218,4 +351,15 @@ function resetAlertForCurrentMonth() {
     }
   }
   Logger.log(`${yearMonth} のアラート送信状態をリセットしました`);
+}
+
+// ========== メール送信テスト ==========
+// GASエディタで手動実行することで、MailApp の権限承認ダイアログを呼び出す
+function testQuoteEmail() {
+  MailApp.sendEmail({
+    to: QUOTE_EMAIL_TO,
+    subject: '【テスト】GASからのメール送信確認',
+    body: 'これはGASのメール送信機能の動作確認用テストメールです。\n\n受信できていれば、見積もりシステムのメール通知も正しく動作します。\n\n送信日時: ' + new Date().toLocaleString('ja-JP')
+  });
+  Logger.log('テストメールを ' + QUOTE_EMAIL_TO + ' に送信しました');
 }

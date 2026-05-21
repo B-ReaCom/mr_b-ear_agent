@@ -1,0 +1,2078 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
+<meta http-equiv="Pragma" content="no-cache">
+<meta http-equiv="Expires" content="0">
+<title>ミッドランドハーツ 自動見積システム</title>
+<style>
+  :root {
+    --primary: #b85c38;
+    --primary-dark: #8b4426;
+    --primary-light: #f5e6df;
+    --accent: #2d4a3e;
+    --text: #2a2a2a;
+    --text-muted: #6b6b6b;
+    --border: #e2dcd6;
+    --bg: #faf7f4;
+    --card: #ffffff;
+    --error: #c0392b;
+    --success: #27ae60;
+    --radius: 10px;
+    --shadow: 0 2px 8px rgba(0,0,0,0.04);
+    --shadow-lg: 0 8px 24px rgba(0,0,0,0.08);
+  }
+  * { box-sizing: border-box; }
+  body {
+    margin: 0;
+    font-family: -apple-system, BlinkMacSystemFont, "Hiragino Kaku Gothic ProN", "Yu Gothic", Meiryo, sans-serif;
+    color: var(--text);
+    background: var(--bg);
+    line-height: 1.65;
+    -webkit-font-smoothing: antialiased;
+  }
+  header {
+    background: var(--card);
+    border-bottom: 1px solid var(--border);
+    padding: 18px 20px;
+    text-align: center;
+  }
+  header .logo-link {
+    display: inline-block;
+    margin-bottom: 10px;
+    cursor: pointer;
+    text-decoration: none;
+    border-radius: 8px;
+    transition: opacity 0.15s ease, transform 0.1s ease;
+  }
+  header .logo-link:hover { opacity: 0.85; }
+  header .logo-link:active { transform: scale(0.97); }
+  header .logo-link:focus-visible { outline: 2px solid var(--primary); outline-offset: 4px; }
+  header .logo {
+    display: block;
+    width: 72px;
+    height: auto;
+  }
+  header h1 {
+    margin: 0;
+    font-size: 18px;
+    font-weight: 600;
+    letter-spacing: 0.05em;
+  }
+  header .subtitle {
+    font-size: 12px;
+    color: var(--text-muted);
+    margin-top: 4px;
+  }
+  main {
+    max-width: 720px;
+    margin: 0 auto;
+    padding: 24px 16px 80px;
+  }
+  .screen { display: none; }
+  .screen.active { display: block; animation: fadeIn 0.3s ease; }
+  @keyframes fadeIn { from { opacity: 0; transform: translateY(4px); } to { opacity: 1; transform: translateY(0); } }
+
+  /* ===== コース選択画面 ===== */
+  .course-intro {
+    text-align: center;
+    margin-bottom: 28px;
+  }
+  .course-intro h2 {
+    font-size: 22px;
+    margin: 0 0 8px;
+    font-weight: 600;
+  }
+  .course-intro p {
+    color: var(--text-muted);
+    margin: 0;
+    font-size: 14px;
+  }
+  .course-cards {
+    display: grid;
+    grid-template-columns: 1fr;
+    gap: 16px;
+    margin-top: 24px;
+  }
+  @media (min-width: 640px) {
+    .course-cards { grid-template-columns: 1fr 1fr; }
+  }
+  .course-card {
+    background: var(--card);
+    border: 2px solid var(--border);
+    border-radius: var(--radius);
+    padding: 28px 22px;
+    cursor: pointer;
+    transition: all 0.2s;
+    text-align: left;
+    width: 100%;
+    font: inherit;
+    color: inherit;
+  }
+  .course-card:hover {
+    border-color: var(--primary);
+    transform: translateY(-2px);
+    box-shadow: var(--shadow-lg);
+  }
+  .course-card .icon {
+    font-size: 28px;
+    margin-bottom: 12px;
+  }
+  .course-card h3 {
+    margin: 0 0 6px;
+    font-size: 17px;
+    font-weight: 600;
+    color: var(--primary-dark);
+  }
+  .course-card .desc {
+    font-size: 13px;
+    color: var(--text-muted);
+    line-height: 1.5;
+    margin: 0 0 12px;
+  }
+  .course-card .meta {
+    font-size: 11px;
+    color: var(--text-muted);
+    background: var(--bg);
+    padding: 6px 10px;
+    border-radius: 6px;
+    display: inline-block;
+  }
+
+  /* ===== フォーム ===== */
+  .form-section {
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    padding: 22px;
+    margin-bottom: 18px;
+    box-shadow: var(--shadow);
+  }
+  .form-section h3 {
+    margin: 0 0 6px;
+    font-size: 16px;
+    font-weight: 600;
+    color: var(--primary-dark);
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+  .form-section h3::before {
+    content: '';
+    display: inline-block;
+    width: 3px;
+    height: 16px;
+    background: var(--primary);
+    border-radius: 2px;
+  }
+  .form-section .section-hint {
+    font-size: 12px;
+    color: var(--text-muted);
+    margin: 0 0 16px;
+    padding-left: 11px;
+  }
+  .field {
+    margin-bottom: 14px;
+  }
+  .field:last-child { margin-bottom: 0; }
+  .field label {
+    display: block;
+    font-size: 13px;
+    font-weight: 500;
+    margin-bottom: 6px;
+  }
+  .field label .required {
+    color: var(--error);
+    margin-left: 4px;
+    font-weight: 700;
+  }
+  .field label .optional {
+    color: var(--text-muted);
+    font-weight: 400;
+    font-size: 11px;
+    margin-left: 6px;
+  }
+  .field input,
+  .field textarea,
+  .field select {
+    width: 100%;
+    padding: 10px 12px;
+    border: 1px solid var(--border);
+    border-radius: 6px;
+    font: inherit;
+    font-size: 14px;
+    background: #fff;
+    transition: border-color 0.15s;
+  }
+  .field input:focus,
+  .field textarea:focus,
+  .field select:focus {
+    outline: none;
+    border-color: var(--primary);
+    box-shadow: 0 0 0 3px rgba(184,92,56,0.12);
+  }
+  .field textarea {
+    min-height: 70px;
+    resize: vertical;
+  }
+  .field .hint {
+    font-size: 11px;
+    color: var(--text-muted);
+    margin-top: 4px;
+  }
+  .row-2 {
+    display: grid;
+    grid-template-columns: 1fr;
+    gap: 14px;
+  }
+  @media (min-width: 560px) {
+    .row-2 { grid-template-columns: 1fr 1fr; }
+  }
+
+  /* ===== 製品選択 ===== */
+  .product-search {
+    position: relative;
+    margin-bottom: 8px;
+  }
+  .product-search-input {
+    width: 100%;
+    padding: 10px 36px 10px 12px;
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    font: inherit;
+    font-size: 14px;
+    box-sizing: border-box;
+  }
+  .product-search-input:focus {
+    outline: none;
+    border-color: var(--primary);
+    box-shadow: 0 0 0 2px var(--primary-light);
+  }
+  .product-search-clear {
+    position: absolute;
+    right: 6px;
+    top: 50%;
+    transform: translateY(-50%);
+    width: 28px;
+    height: 28px;
+    border: none;
+    background: transparent;
+    color: var(--text-muted);
+    font-size: 20px;
+    line-height: 1;
+    cursor: pointer;
+    border-radius: 4px;
+    display: none;
+  }
+  .product-search-clear:hover { background: var(--primary-light); color: var(--primary); }
+  .product-search.has-query .product-search-clear { display: block; }
+  .product-search-status {
+    font-size: 12px;
+    color: var(--text-muted);
+    margin-bottom: 6px;
+    min-height: 16px;
+  }
+  .product-list {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+  }
+
+  /* 対象機種チップ */
+  .device-chips {
+    display: flex;
+    gap: 4px;
+    margin-top: 5px;
+    flex-wrap: wrap;
+  }
+  .device-chip {
+    display: inline-block;
+    padding: 1px 8px;
+    border-radius: 11px;
+    font-size: 10.5px;
+    font-weight: 600;
+    letter-spacing: 0.02em;
+    border: 1px solid transparent;
+    line-height: 1.5;
+    white-space: nowrap;
+  }
+  .device-chip[data-device="X10"]        { background: #e1e6f3; color: #1f2a5b; border-color: #aab3d6; }
+  .device-chip[data-device="コンパクト"]   { background: #f1e4f7; color: #6b21a8; border-color: #d8c2e5; }
+  .device-chip[data-device="アスリート"]   { background: #fce5d0; color: #b8430c; border-color: #f0c5a2; }
+  .device-chip[data-device="X5"]         { background: #d8f0dc; color: #14722f; border-color: #b6d9bc; }
+  .device-chip[data-device="R2"]         { background: #fbdcd9; color: #ad1c1c; border-color: #ecb4b0; }
+  .device-chip[data-device="LT"]         { background: #f9ecc0; color: #936207; border-color: #e8d29a; }
+  .device-chip[data-device="汎用"]        { background: #e8eaee; color: #4b5563; border-color: #d2d5da; }
+
+  /* 機種フィルタ */
+  .device-filter {
+    display: flex;
+    gap: 6px;
+    flex-wrap: wrap;
+    margin: 12px 0 10px;
+    align-items: center;
+  }
+  .device-filter-label {
+    font-size: 12px;
+    color: var(--text-muted);
+    margin-right: 2px;
+  }
+  .device-filter-btn {
+    padding: 5px 11px;
+    border-radius: 14px;
+    font-size: 12px;
+    font-weight: 600;
+    border: 1.5px solid var(--border);
+    background: white;
+    color: var(--text-muted);
+    cursor: pointer;
+    transition: all 0.12s ease;
+    line-height: 1.4;
+  }
+  .device-filter-btn:hover {
+    background: var(--primary-light);
+    border-color: var(--primary);
+    color: var(--primary-dark);
+  }
+  .device-filter-btn.active {
+    background: var(--text);
+    border-color: var(--text);
+    color: white;
+  }
+  .device-filter-btn.active[data-device="X10"]        { background: #1f2a5b; border-color: #1f2a5b; }
+  .device-filter-btn.active[data-device="コンパクト"]   { background: #6b21a8; border-color: #6b21a8; }
+  .device-filter-btn.active[data-device="アスリート"]   { background: #b8430c; border-color: #b8430c; }
+  .device-filter-btn.active[data-device="X5"]         { background: #14722f; border-color: #14722f; }
+  .device-filter-btn.active[data-device="R2"]         { background: #ad1c1c; border-color: #ad1c1c; }
+  .device-filter-btn.active[data-device="LT"]         { background: #936207; border-color: #936207; }
+  .device-filter-btn.active[data-device="汎用"]        { background: #4b5563; border-color: #4b5563; }
+  .product-row {
+    display: grid;
+    grid-template-columns: 1fr auto;
+    gap: 12px;
+    align-items: center;
+    padding: 12px;
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    background: var(--bg);
+    transition: all 0.15s;
+  }
+  .product-row.selected {
+    background: var(--primary-light);
+    border-color: var(--primary);
+  }
+  .product-info {
+    min-width: 0;
+  }
+  .product-name {
+    font-size: 14px;
+    font-weight: 500;
+    margin-bottom: 2px;
+  }
+  .product-meta {
+    font-size: 12px;
+    color: var(--text-muted);
+  }
+  .product-price {
+    font-size: 13px;
+    color: var(--primary-dark);
+    font-weight: 500;
+    margin-top: 2px;
+  }
+  .qty-control {
+    display: flex;
+    align-items: center;
+    gap: 4px;
+  }
+  .qty-btn {
+    width: 30px;
+    height: 30px;
+    border: 1px solid var(--border);
+    background: #fff;
+    border-radius: 6px;
+    cursor: pointer;
+    font-size: 16px;
+    color: var(--text);
+    font-weight: 500;
+  }
+  .qty-btn:hover { border-color: var(--primary); color: var(--primary); }
+  .qty-input {
+    width: 48px;
+    text-align: center;
+    padding: 5px;
+    border: 1px solid var(--border);
+    border-radius: 6px;
+    font: inherit;
+    font-size: 14px;
+  }
+  .qty-input:focus { outline: none; border-color: var(--primary); }
+  .product-line {
+    font-size: 15px;
+    font-weight: 700;
+    color: var(--primary);
+    margin-top: 24px;
+    margin-bottom: 8px;
+    padding-bottom: 6px;
+    border-bottom: 2px solid var(--primary);
+  }
+  .product-line:first-child { margin-top: 0; }
+  .product-category {
+    font-size: 12px;
+    font-weight: 600;
+    color: var(--text-muted);
+    margin-top: 14px;
+    margin-bottom: 6px;
+    padding-bottom: 4px;
+    border-bottom: 1px dashed var(--border);
+  }
+
+  /* ===== サマリー ===== */
+  .summary-box {
+    background: var(--primary-light);
+    border: 1px solid var(--primary);
+    border-radius: 8px;
+    padding: 14px 16px;
+    margin-top: 16px;
+  }
+  .summary-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    font-size: 14px;
+    margin-bottom: 4px;
+  }
+  .summary-row:last-child { margin-bottom: 0; }
+  .summary-total {
+    font-size: 18px;
+    font-weight: 600;
+    color: var(--primary-dark);
+    border-top: 1px solid rgba(184,92,56,0.3);
+    padding-top: 8px;
+    margin-top: 8px;
+  }
+
+  /* ===== ボタン ===== */
+  .actions {
+    display: flex;
+    gap: 10px;
+    margin-top: 22px;
+    flex-wrap: wrap;
+  }
+  .btn {
+    padding: 12px 20px;
+    border: none;
+    border-radius: 8px;
+    font: inherit;
+    font-size: 15px;
+    font-weight: 500;
+    cursor: pointer;
+    transition: all 0.15s;
+    flex: 1;
+    min-width: 120px;
+  }
+  .btn-primary {
+    background: var(--primary);
+    color: #fff;
+  }
+  .btn-primary:hover:not(:disabled) {
+    background: var(--primary-dark);
+  }
+  .btn-primary:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+  }
+  .btn-secondary {
+    background: #fff;
+    color: var(--text);
+    border: 1px solid var(--border);
+  }
+  .btn-secondary:hover {
+    border-color: var(--primary);
+    color: var(--primary);
+  }
+
+  /* ===== 確認画面 ===== */
+  .review-section {
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    padding: 22px;
+    margin-bottom: 14px;
+  }
+  .review-section h4 {
+    margin: 0 0 10px;
+    font-size: 14px;
+    color: var(--primary-dark);
+    font-weight: 600;
+  }
+  .review-grid {
+    display: grid;
+    grid-template-columns: 100px 1fr;
+    gap: 6px 12px;
+    font-size: 13px;
+  }
+  .review-grid .label { color: var(--text-muted); }
+  .review-grid .value { word-break: break-word; white-space: pre-wrap; }
+  .review-items {
+    border-top: 1px solid var(--border);
+    margin-top: 10px;
+    padding-top: 10px;
+    font-size: 13px;
+  }
+  .review-items .item-row {
+    display: grid;
+    grid-template-columns: 1fr auto;
+    padding: 4px 0;
+    gap: 8px;
+  }
+
+  /* ===== チェックボックス（連絡希望など） ===== */
+  .checkbox-label {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    cursor: pointer;
+    font-size: 14px;
+    user-select: none;
+  }
+  .checkbox-label input[type="checkbox"] {
+    width: 18px;
+    height: 18px;
+    cursor: pointer;
+    accent-color: var(--primary);
+  }
+  .contact-pref {
+    background: #f8fafc;
+    padding: 12px 14px;
+    border-radius: 8px;
+    border: 1px solid var(--border);
+  }
+
+  /* ===== 見積書（Screen 4） ===== */
+  .quote-doc {
+    max-width: 100%;
+  }
+  .doc-toolbar {
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    padding: 14px 16px;
+    margin-bottom: 16px;
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+  }
+  .doc-toolbar-msg {
+    font-size: 14px;
+  }
+  .doc-toolbar-msg strong { color: var(--success); margin-right: 6px; }
+  .doc-msg-contact { color: var(--text-muted); font-size: 13px; }
+  .doc-toolbar-actions {
+    display: flex;
+    gap: 10px;
+    flex-wrap: wrap;
+  }
+  .doc-toolbar-actions .btn {
+    flex: 1;
+    min-width: 0;
+  }
+
+  .doc-paper {
+    background: white;
+    border: 1px solid var(--border);
+    box-shadow: var(--shadow-lg);
+    padding: 28px 22px;
+    border-radius: var(--radius);
+    font-family: "Hiragino Kaku Gothic ProN", "ヒラギノ角ゴ ProN", "Yu Gothic", "游ゴシック", "Meiryo", sans-serif;
+    color: #1a1a1a;
+    line-height: 1.6;
+  }
+  @media (min-width: 640px) {
+    .doc-paper { padding: 40px 36px; }
+  }
+
+  .doc-header {
+    border-bottom: 2px solid #1a1a1a;
+    padding-bottom: 14px;
+    margin-bottom: 24px;
+  }
+  .doc-header-top {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    gap: 16px;
+    margin-bottom: 8px;
+  }
+  .doc-logo {
+    width: 64px;
+    height: auto;
+    flex-shrink: 0;
+  }
+  @media (min-width: 640px) {
+    .doc-logo { width: 80px; }
+  }
+  .doc-title {
+    margin: 8px 0 0;
+    font-size: 26px;
+    letter-spacing: 0.4em;
+    text-align: center;
+    font-weight: 700;
+  }
+  .doc-meta {
+    text-align: right;
+    font-size: 13px;
+    color: #444;
+  }
+  .doc-meta > div { margin-bottom: 2px; }
+
+  .doc-recipient {
+    margin-bottom: 22px;
+  }
+  .doc-recipient-name {
+    font-size: 26px;
+    font-weight: 700;
+    border-bottom: 2px solid #1a1a1a;
+    padding-bottom: 8px;
+    margin-bottom: 8px;
+    letter-spacing: 0.02em;
+  }
+  @media (min-width: 640px) {
+    .doc-recipient-name { font-size: 30px; }
+  }
+  .doc-recipient-detail {
+    font-size: 13px;
+    color: #555;
+  }
+  .doc-recipient-detail > div { margin-top: 2px; }
+
+  .doc-greeting {
+    margin: 16px 0;
+    font-size: 14px;
+  }
+
+  .doc-grand-summary {
+    background: #f3f4f6;
+    border-left: 4px solid #1a1a1a;
+    padding: 12px 16px;
+    margin-bottom: 18px;
+    display: flex;
+    justify-content: space-between;
+    align-items: baseline;
+  }
+  .doc-grand-summary-label {
+    font-size: 13px;
+    color: #555;
+  }
+  .doc-grand-summary-value {
+    font-size: 22px;
+    font-weight: 700;
+  }
+
+  .doc-items {
+    width: 100%;
+    border-collapse: collapse;
+    margin-bottom: 18px;
+    font-size: 13px;
+  }
+  .doc-items th, .doc-items td {
+    border: 1px solid #d1d5db;
+    padding: 8px 10px;
+    vertical-align: top;
+  }
+  .doc-items thead th {
+    background: #f3f4f6;
+    font-weight: 600;
+    font-size: 12px;
+    text-align: center;
+  }
+  .doc-items .col-name { width: 38%; }
+  .doc-items .col-sku  { width: 18%; }
+  .doc-items .col-qty  { width: 10%; text-align: right; }
+  .doc-items .col-price{ width: 17%; text-align: right; }
+  .doc-items .col-amount{ width: 17%; text-align: right; }
+  .doc-items tbody td.num { text-align: right; }
+  .doc-items tbody td.center { text-align: center; }
+
+  .doc-totals {
+    display: flex;
+    justify-content: flex-end;
+    margin-bottom: 18px;
+  }
+  .doc-totals table {
+    border-collapse: collapse;
+    font-size: 13px;
+    min-width: 240px;
+  }
+  .doc-totals th, .doc-totals td {
+    padding: 6px 12px;
+    border-bottom: 1px solid #e5e7eb;
+  }
+  .doc-totals th { text-align: left; color: #555; font-weight: 500; }
+  .doc-totals td { text-align: right; }
+  .doc-totals tr.grand-total th,
+  .doc-totals tr.grand-total td {
+    font-size: 15px;
+    font-weight: 700;
+    color: #1a1a1a;
+    border-top: 2px solid #1a1a1a;
+    border-bottom: 2px solid #1a1a1a;
+    padding-top: 10px;
+    padding-bottom: 10px;
+  }
+
+  .doc-notes {
+    background: #fafafa;
+    border: 1px solid #e5e7eb;
+    border-radius: 6px;
+    padding: 12px 14px;
+    margin-bottom: 20px;
+  }
+  .doc-notes h3 {
+    margin: 0 0 6px;
+    font-size: 13px;
+    color: #555;
+  }
+  .doc-notes > div {
+    font-size: 13px;
+    white-space: pre-wrap;
+  }
+
+  .doc-footer {
+    border-top: 1px solid #d1d5db;
+    padding-top: 14px;
+    margin-top: 28px;
+    text-align: right;
+    font-size: 13px;
+    color: #444;
+  }
+  .doc-issuer-name {
+    font-size: 15px;
+    font-weight: 700;
+    color: #1a1a1a;
+    margin-bottom: 4px;
+  }
+  .doc-issuer > div { line-height: 1.55; }
+  .doc-issuer-addr { font-size: 12.5px; color: #444; }
+
+  /* ===== 印刷時のスタイル ===== */
+  @media print {
+    body { background: white; }
+    header, main > section:not(#screen-done), .no-print {
+      display: none !important;
+    }
+    main { padding: 0 !important; max-width: none !important; }
+    #screen-done.screen {
+      display: block !important;
+      opacity: 1 !important;
+    }
+    .quote-doc { max-width: none; }
+    .doc-paper {
+      border: none !important;
+      box-shadow: none !important;
+      padding: 0 !important;
+      border-radius: 0 !important;
+    }
+    .doc-grand-summary {
+      background: white !important;
+      border-left: 4px solid #1a1a1a !important;
+    }
+  }
+
+  /* ===== エラー表示 ===== */
+  .error-msg {
+    background: #fdf0ee;
+    border: 1px solid var(--error);
+    color: var(--error);
+    padding: 10px 14px;
+    border-radius: 6px;
+    font-size: 13px;
+    margin-bottom: 14px;
+    display: none;
+  }
+  .error-msg.active { display: block; }
+
+  /* 上下ジャンプボタン */
+  .scroll-nav {
+    position: fixed;
+    /* コンテンツ枠（max-width 720px）の右外側に寄せる。
+       狭い画面では従来通り画面右端から14px。 */
+    right: max(14px, calc(50vw - 360px - 52px));
+    bottom: 20px;
+    display: none;
+    flex-direction: column;
+    gap: 8px;
+    z-index: 50;
+  }
+  .scroll-nav.visible { display: flex; }
+  .scroll-nav button {
+    width: 44px;
+    height: 44px;
+    border-radius: 50%;
+    border: 1px solid var(--border);
+    background: var(--card);
+    color: var(--text);
+    font-size: 18px;
+    cursor: pointer;
+    box-shadow: var(--shadow-lg);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: transform 0.1s ease, background 0.15s ease;
+  }
+  .scroll-nav button:hover { background: var(--primary-light); color: var(--primary-dark); }
+  .scroll-nav button:active { transform: scale(0.94); }
+  @media (max-width: 480px) {
+    .scroll-nav { right: 10px; bottom: 14px; }
+    .scroll-nav button { width: 40px; height: 40px; font-size: 16px; }
+  }
+
+  /* ===== ローディング ===== */
+  .spinner {
+    display: inline-block;
+    width: 14px;
+    height: 14px;
+    border: 2px solid #fff;
+    border-top-color: transparent;
+    border-radius: 50%;
+    animation: spin 0.7s linear infinite;
+    vertical-align: -2px;
+    margin-right: 6px;
+  }
+  @keyframes spin { to { transform: rotate(360deg); } }
+</style>
+</head>
+<body>
+
+<header>
+  <a href="" class="logo-link" onclick="event.preventDefault(); location.reload();" aria-label="ホームに戻る（ページを再読み込み）">
+    <img src="assets/midland-hearts-logo.svg" alt="Midland Hearts Inc." class="logo">
+  </a>
+  <h1>ミッドランドハーツ</h1>
+  <div class="subtitle">自動見積システム</div>
+</header>
+
+<main>
+  <!-- ===== Screen 1: コース選択 ===== -->
+  <section id="screen-course" class="screen active">
+    <div class="course-intro">
+      <h2>お見積もり方法を選択してください</h2>
+      <p>お客様の状況に合わせた2つのコースをご用意しています</p>
+    </div>
+
+    <div class="course-cards">
+      <button type="button" class="course-card" data-course="quick">
+        <div class="icon">⚡</div>
+        <h3>クイック見積もり</h3>
+        <p class="desc">
+          製品を既にご存知の方、リピートのお客様向け。<br>
+          最短1分で見積もり依頼が完了します。
+        </p>
+        <span class="meta">所要時間 約1分</span>
+      </button>
+
+      <button type="button" class="course-card" data-course="detailed">
+        <div class="icon">🎯</div>
+        <h3>詳しく相談</h3>
+        <p class="desc">
+          初めての方、現場の状況を踏まえてご提案を受けたい方向け。<br>
+          利用シーンに合わせた最適なご提案を差し上げます。
+        </p>
+        <span class="meta">所要時間 約3〜5分</span>
+      </button>
+    </div>
+  </section>
+
+  <!-- ===== Screen 2: フォーム ===== -->
+  <section id="screen-form" class="screen">
+    <div class="error-msg" id="form-error"></div>
+
+    <!-- 連絡先 -->
+    <div class="form-section">
+      <h3>お客様情報</h3>
+      <p class="section-hint">ご連絡先をご記入ください</p>
+
+      <div class="row-2">
+        <div class="field">
+          <label>お名前<span class="required">*</span></label>
+          <input type="text" id="f-name" placeholder="山田 太郎" maxlength="100">
+        </div>
+        <div class="field">
+          <label>会社名<span class="optional">（任意）</span></label>
+          <input type="text" id="f-company" placeholder="株式会社○○" maxlength="200">
+        </div>
+      </div>
+
+      <div class="row-2 detailed-only" style="display:none">
+        <div class="field">
+          <label>部署・役職<span class="optional">（任意）</span></label>
+          <input type="text" id="f-department" placeholder="総務部 部長" maxlength="200">
+        </div>
+        <div class="field">
+          <label>お電話番号<span class="optional">（任意）</span></label>
+          <input type="tel" id="f-phone" placeholder="03-1234-5678" maxlength="50">
+        </div>
+      </div>
+
+      <div class="field">
+        <label>メールアドレス<span class="required">*</span></label>
+        <input type="email" id="f-email" placeholder="example@company.jp" maxlength="200">
+        <div class="hint">見積書に記載されるご連絡先です</div>
+      </div>
+
+      <div class="field quick-only">
+        <label>お電話番号<span class="optional">（任意）</span></label>
+        <input type="tel" id="f-phone-quick" placeholder="03-1234-5678" maxlength="50">
+      </div>
+
+      <div class="field contact-pref">
+        <label class="checkbox-label">
+          <input type="checkbox" id="f-contact-requested" checked>
+          <span>担当者からの連絡を希望する</span>
+        </label>
+        <div class="hint">チェックを外すと、見積書のダウンロードのみで担当者からの連絡はありません。</div>
+      </div>
+    </div>
+
+    <!-- 6W4H（詳細コースのみ） -->
+    <div class="form-section detailed-only" style="display:none">
+      <h3>ご利用シーンについて</h3>
+      <p class="section-hint">わかる範囲でご記入ください。すべて任意項目です。</p>
+
+      <div class="field">
+        <label>どなたがお使いになりますか？<span class="optional">（Who）</span></label>
+        <textarea id="f-who" placeholder="例：聴覚に課題のある来店のお客様、社内の高齢スタッフ など"></textarea>
+      </div>
+
+      <div class="field">
+        <label>どなたのためにご検討中ですか？<span class="optional">（Whom）</span></label>
+        <textarea id="f-whom" placeholder="例：難聴の方、ご高齢のご家族 など"></textarea>
+      </div>
+
+      <div class="field">
+        <label>解決したい課題・聞き取りたい音は？<span class="optional">（What）</span></label>
+        <textarea id="f-what" placeholder="例：窓口での会話、会議室での発言、案内放送 など"></textarea>
+      </div>
+
+      <div class="row-2">
+        <div class="field">
+          <label>いつ頃の導入をご希望ですか？<span class="optional">（When）</span></label>
+          <input type="text" id="f-when" placeholder="例：来月中、未定 など" maxlength="500">
+        </div>
+        <div class="field">
+          <label>どちらでお使いになりますか？<span class="optional">（Where）</span></label>
+          <input type="text" id="f-where" placeholder="例：店舗、病院受付、自宅 など" maxlength="500">
+        </div>
+      </div>
+
+      <div class="field">
+        <label>ご検討の背景・課題感<span class="optional">（Why）</span></label>
+        <textarea id="f-why" placeholder="例：お客様からのご要望が増えてきた、現行機の更新タイミング など"></textarea>
+      </div>
+
+      <div class="field">
+        <label>どのようにお使いになる予定ですか？<span class="optional">（How）</span></label>
+        <textarea id="f-how" placeholder="例：窓口に設置、複数台を持ち運び、会議で利用 など"></textarea>
+      </div>
+
+      <div class="row-2">
+        <div class="field">
+          <label>必要数量の目安<span class="optional">（How many）</span></label>
+          <input type="text" id="f-howmany" placeholder="例：3台、まず1台 など" maxlength="500">
+        </div>
+        <div class="field">
+          <label>ご予算の目安<span class="optional">（How much）</span></label>
+          <input type="text" id="f-howmuch" placeholder="例：30万円程度、未定 など" maxlength="500">
+        </div>
+      </div>
+
+      <div class="field">
+        <label>どのくらいの期間ご使用予定ですか？<span class="optional">（How long）</span></label>
+        <input type="text" id="f-howlong" placeholder="例：常設、イベント期間のみ など" maxlength="500">
+      </div>
+    </div>
+
+    <!-- 製品選択 -->
+    <div class="form-section">
+      <h3>ご希望の製品</h3>
+      <p class="section-hint">必要な製品の数量をご入力ください</p>
+      <div class="product-search">
+        <input type="text" id="product-search-input" class="product-search-input" placeholder="🔍 製品名・型番で検索（例：X10、ヘルメット、防水）">
+        <button type="button" id="product-search-clear" class="product-search-clear" aria-label="検索をクリア">×</button>
+      </div>
+      <div class="device-filter" id="device-filter">
+        <span class="device-filter-label">機種で絞り込み:</span>
+        <button type="button" class="device-filter-btn active" data-device="all">すべて</button>
+        <button type="button" class="device-filter-btn" data-device="X10">X10</button>
+        <button type="button" class="device-filter-btn" data-device="コンパクト">コンパクト</button>
+        <button type="button" class="device-filter-btn" data-device="アスリート">アスリート</button>
+        <button type="button" class="device-filter-btn" data-device="X5">X5</button>
+        <button type="button" class="device-filter-btn" data-device="R2">R2</button>
+        <button type="button" class="device-filter-btn" data-device="LT">LT</button>
+        <button type="button" class="device-filter-btn" data-device="汎用">汎用</button>
+      </div>
+      <div class="product-search-status" id="product-search-status"></div>
+      <div id="product-list" class="product-list"></div>
+
+      <div class="summary-box">
+        <div class="summary-row summary-total">
+          <span>概算合計（税抜）</span>
+          <span id="summary-total">¥0</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- 備考 -->
+    <div class="form-section">
+      <h3>備考・ご要望</h3>
+      <p class="section-hint">その他ご質問やご要望がございましたらご記入ください</p>
+      <div class="field">
+        <textarea id="f-notes" rows="3" placeholder="納期のご希望、設置場所の制約、その他ご質問など"></textarea>
+      </div>
+    </div>
+
+    <div class="actions">
+      <button type="button" class="btn btn-secondary" id="btn-back-to-course">← 戻る</button>
+      <button type="button" class="btn btn-primary" id="btn-to-review">内容を確認 →</button>
+    </div>
+  </section>
+
+  <!-- ===== Screen 3: 確認 ===== -->
+  <section id="screen-review" class="screen">
+    <div class="error-msg" id="review-error"></div>
+
+    <div class="course-intro">
+      <h2>送信内容の確認</h2>
+      <p>内容をご確認のうえ、送信ボタンを押してください</p>
+    </div>
+
+    <div id="review-content"></div>
+
+    <div class="actions">
+      <button type="button" class="btn btn-secondary" id="btn-back-to-form">← 修正する</button>
+      <button type="button" class="btn btn-primary" id="btn-submit">見積書を発行する</button>
+    </div>
+  </section>
+
+  <!-- ===== Screen 4: 見積書（発行完了） ===== -->
+  <section id="screen-done" class="screen">
+    <div class="quote-doc">
+      <div class="doc-toolbar no-print">
+        <div class="doc-toolbar-msg">
+          <strong>見積書を発行しました。</strong>
+          <span class="doc-msg-contact" id="doc-msg-contact"></span>
+        </div>
+        <div class="doc-toolbar-actions">
+          <button type="button" class="btn btn-primary" id="btn-print">📄 PDFで保存／印刷</button>
+          <button type="button" class="btn btn-secondary" id="btn-restart">新しい見積書を作成</button>
+        </div>
+      </div>
+
+      <div class="doc-paper" id="doc-paper">
+        <div class="doc-header">
+          <div class="doc-header-top">
+            <img src="assets/midland-hearts-logo.svg" class="doc-logo" alt="ミッドランドハーツ">
+            <div class="doc-meta">
+              <div>No. <span id="doc-number"></span></div>
+              <div>発行日：<span id="doc-issued"></span></div>
+              <div>有効期限：<span id="doc-expires"></span></div>
+            </div>
+          </div>
+          <h1 class="doc-title">見　積　書</h1>
+        </div>
+
+        <div class="doc-recipient">
+          <div class="doc-recipient-name" id="doc-recipient-name"></div>
+          <div class="doc-recipient-detail" id="doc-recipient-detail"></div>
+        </div>
+
+        <div class="doc-greeting">
+          下記の通り御見積申し上げます。
+        </div>
+
+        <div class="doc-grand-summary">
+          <span class="doc-grand-summary-label">合計金額（税込）</span>
+          <span class="doc-grand-summary-value" id="doc-grand-headline">¥0</span>
+        </div>
+
+        <table class="doc-items">
+          <thead>
+            <tr>
+              <th class="col-name">商品名</th>
+              <th class="col-sku">型番</th>
+              <th class="col-qty">数量</th>
+              <th class="col-price">単価（税抜）</th>
+              <th class="col-amount">金額（税抜）</th>
+            </tr>
+          </thead>
+          <tbody id="doc-items-body"></tbody>
+        </table>
+
+        <div class="doc-totals">
+          <table>
+            <tr><th>小計（税抜）</th><td id="doc-subtotal">¥0</td></tr>
+            <tr><th>消費税（10%）</th><td id="doc-tax">¥0</td></tr>
+            <tr class="grand-total"><th>合計（税込）</th><td id="doc-grand-total">¥0</td></tr>
+          </table>
+        </div>
+
+        <div class="doc-notes" id="doc-notes-block" style="display:none">
+          <h3>備考</h3>
+          <div id="doc-notes-text"></div>
+        </div>
+
+        <div class="doc-footer">
+          <div class="doc-issuer">
+            <div class="doc-issuer-name">ミッドランドハーツ</div>
+            <div class="doc-issuer-addr">〒479-0847</div>
+            <div class="doc-issuer-addr">愛知県常滑市新浜町一丁目１番地２</div>
+            <div class="doc-issuer-addr">Tel 0569-84-8442</div>
+            <div class="doc-issuer-addr">Email info@midhts.com</div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+</main>
+
+<div class="scroll-nav" id="scroll-nav" aria-label="ページ内ジャンプ">
+  <button type="button" id="scroll-top" title="最上部へ" aria-label="最上部へ移動">↑</button>
+  <button type="button" id="scroll-bottom" title="最下部へ" aria-label="最下部へ移動">↓</button>
+</div>
+
+<script>
+// ==========================================================================
+// 製品カタログ（BRIDGECOM X10 価格表より生成）
+// 価格は税抜・販売価格
+// ▼▼▼ 内容を変更する場合はこのブロックを編集 ▼▼▼
+// ==========================================================================
+const PRODUCTS = [
+  // ============================================================
+  //  1. 無線機本体
+  // ============================================================
+  {
+    productLine: '無線機本体',
+    categories: [
+      {
+        category: 'BRIDGECOM X10',
+        items: [
+          { sku: 'BM-X10', name: 'BRIDGECOM X10 本体', unitPrice: 110000, unit: '台' },
+        ]
+      },
+      {
+        category: 'BRIDGECOM X10 コンパクト',
+        items: [
+          { sku: 'BM-X10CP', name: 'BRIDGECOM X10 コンパクト 本体', unitPrice: 98000, unit: '台' },
+        ]
+      },
+      {
+        category: 'BRIDGECOM X10 アスリート',
+        items: [
+          { sku: 'BM-X10AT', name: 'BRIDGECOM X10 アスリート 本体', unitPrice: 90500, unit: '台' },
+        ]
+      },
+      {
+        category: 'BRIDGECOM X5',
+        items: [
+          { sku: 'BM-X5', name: 'BRIDGECOM X5 本体', unitPrice: 48000, unit: '台' },
+        ]
+      },
+      {
+        category: 'BRIDGECOM R2',
+        items: [
+          { sku: 'BM-R2',    name: 'BRIDGECOM R2 本体',                          unitPrice: 9000, unit: '台' },
+          { sku: 'FC-ZXPRO', name: '特定小電力トランシーバー（FRC製）送信機',     unitPrice: 7500, unit: '台' },
+        ]
+      },
+      {
+        category: 'BRIDGECOM LT（親機/子機）',
+        items: [
+          { sku: 'BM-LTM', name: 'LT-M 送信機 本体', unitPrice: 27000, unit: '台' },
+          { sku: 'BM-LTS', name: 'LT-S 受信機 本体', unitPrice: 22000, unit: '台' },
+        ]
+      },
+    ]
+  },
+
+  // ============================================================
+  //  2. ヘッドホン・イヤホン・マイク類
+  // ============================================================
+  {
+    productLine: 'ヘッドホン・イヤホン・マイク類',
+    categories: [
+      {
+        category: 'BRIDGECOM X10 用',
+        items: [
+          { sku: 'B-H03',         name: '標準型ヘッドホンマイク',                              unitPrice: 6800,  unit: '個' },
+          { sku: 'BM-GSRM2.5F',   name: '耳掛け式イヤホン 2.5mm F',                            unitPrice: 1820,  unit: '個' },
+          { sku: 'BM-GSRM2.5s',   name: '耳掛け式イヤホン 2.5mm S',                            unitPrice: 1820,  unit: '個' },
+          { sku: 'BM-SHSE2.5',    name: '小型高遮音性イヤホン 2.5mm',                          unitPrice: 3200,  unit: '個' },
+          { sku: 'BM-LCOE2.5',    name: 'オープンエアイヤホン 2.5mm',                          unitPrice: 1820,  unit: '個' },
+          { sku: 'B-RFAD',        name: 'ボイスナイパー アドバンス',                          unitPrice: 15600, unit: '個' },
+          { sku: 'B-RFXM',        name: 'VoiSniper ボイスナイパー RFXM',                      unitPrice: 11400, unit: '個' },
+          { sku: 'B-A05',         name: 'グースネックマイク（強力マグネット付）',             unitPrice: 28200, unit: '個' },
+          { sku: 'B-E10tnt',      name: 'X10用 PTT切替機能付タイピンマイク',                  unitPrice: 7000,  unit: '個' },
+          { sku: 'B-E06tn',       name: 'ピン型マイク 風防付 X10用',                          unitPrice: 12700, unit: '個' },
+          { sku: 'B-E06tnt',      name: 'ピン型マイク 風防付 X10用 通話ボタン付',             unitPrice: 13000, unit: '個' },
+          { sku: 'B-E03wptn',     name: 'ヘルメット取付型 防水マイク X10用',                  unitPrice: 29200, unit: '個' },
+          { sku: 'B-E03wptnt',    name: 'ヘルメット取付型 防水マイク X10用 通話ボタン付',     unitPrice: 31000, unit: '個' },
+          { sku: 'B-E03wptnt-g',  name: 'ヘルメット取付型 防水マイク トグルスイッチ付',       unitPrice: 32800, unit: '個' },
+          { sku: 'B-E03dptn',     name: 'ヘルメット取付型 防滴マイク X10用',                  unitPrice: 23800, unit: '個' },
+          { sku: 'B-E03dptnt',    name: 'ヘルメット取付型 防滴マイク X10用 通話ボタン付',     unitPrice: 26400, unit: '個' },
+          { sku: 'B-E05atn',      name: '特殊咽喉マイク X10用 通話ボタン付',                  unitPrice: 51000, unit: '個' },
+          { sku: 'B-E05atw',      name: '特殊咽喉マイク トグルスイッチ付',                    unitPrice: 55200, unit: '個' },
+        ]
+      },
+      {
+        category: 'X10 コンパクト 用',
+        items: [
+          { sku: 'BM-HPDP3.5M',   name: '防滴イヤスピーカー3.5 ブームマイク一体型',                     unitPrice: 13000, unit: '個' },
+          { sku: 'BM-HPDP3.5MR',  name: '防滴イヤスピーカー3.5 ブームマイク一体型 右耳用',             unitPrice: 13000, unit: '個' },
+          { sku: 'BM-HPDP3.5ML',  name: '防滴イヤスピーカー3.5 ブームマイク一体型 ロングコード',       unitPrice: 13000, unit: '個' },
+          { sku: 'BM-HPDP3.5MRL', name: '防滴イヤスピーカー3.5 ブームマイク一体型 ロングコード右耳用', unitPrice: 13000, unit: '個' },
+          { sku: 'B-CPM01',       name: 'X10コンパクト専用 ブームマイク',                              unitPrice: 4500,  unit: '個' },
+          { sku: 'BM-HPDP3.5',    name: '防滴イヤスピーカー3.5',                                       unitPrice: 9500,  unit: '個' },
+          { sku: 'BM-15CP3.5',    name: '15イヤホン 3.5mm',                                            unitPrice: 3700,  unit: '個' },
+          { sku: 'BM-SHSE2.5s',   name: '小型高遮音性イヤホン 2.5mm S',                                unitPrice: 3200,  unit: '個' },
+        ]
+      },
+      {
+        category: 'X10 アスリート 用',
+        items: [
+          { sku: 'B-H03',         name: '標準型ヘッドホンマイク',                              unitPrice: 6800,  unit: '個' },
+          { sku: 'BM-GSRM2.5F',   name: '耳掛け式イヤホン 2.5mm F',                            unitPrice: 1820,  unit: '個' },
+          { sku: 'BM-GSRM2.5s',   name: '耳掛け式イヤホン 2.5mm S',                            unitPrice: 1820,  unit: '個' },
+          { sku: 'BM-SHSE2.5',    name: '小型高遮音性イヤホン 2.5mm',                          unitPrice: 3200,  unit: '個' },
+          { sku: 'BM-LCOE2.5',    name: 'オープンエアイヤホン 2.5mm',                          unitPrice: 1820,  unit: '個' },
+          { sku: 'B-RFAD',        name: 'ボイスナイパー アドバンス',                          unitPrice: 15600, unit: '個' },
+          { sku: 'B-RFXM',        name: 'VoiSniper ボイスナイパー RFXM',                      unitPrice: 11400, unit: '個' },
+          { sku: 'B-A05',         name: 'グースネックマイク（強力マグネット付）',             unitPrice: 28200, unit: '個' },
+          { sku: 'B-E10tnt',      name: 'X10用 PTT切替機能付タイピンマイク',                  unitPrice: 7000,  unit: '個' },
+          { sku: 'B-E06tn',       name: 'ピン型マイク 風防付 X10用',                          unitPrice: 12700, unit: '個' },
+          { sku: 'B-E06tnt',      name: 'ピン型マイク 風防付 X10用 通話ボタン付',             unitPrice: 13000, unit: '個' },
+          { sku: 'B-E03wptn',     name: 'ヘルメット取付型 防水マイク X10用',                  unitPrice: 29200, unit: '個' },
+          { sku: 'B-E03wptnt',    name: 'ヘルメット取付型 防水マイク X10用 通話ボタン付',     unitPrice: 31000, unit: '個' },
+          { sku: 'B-E03dptn',     name: 'ヘルメット取付型 防滴マイク X10用',                  unitPrice: 23800, unit: '個' },
+          { sku: 'B-E03dptnt',    name: 'ヘルメット取付型 防滴マイク X10用 通話ボタン付',     unitPrice: 26400, unit: '個' },
+        ]
+      },
+      {
+        category: 'X5 用',
+        items: [
+          { sku: 'B-N01',      name: 'ネック型マイク',                  unitPrice: 28800, unit: '個' },
+          { sku: 'B-E05a',     name: '特殊咽喉マイク',                  unitPrice: 50400, unit: '個' },
+          { sku: 'BM-X5EP3.5', name: 'X5 専用イヤホン 3.5mm',           unitPrice: 1500,  unit: '個' },
+        ]
+      },
+      {
+        category: 'LT（親機/子機）用',
+        items: [
+          { sku: 'B-N01nz',      name: 'ネック型ノイズキャンセリングマイク',          unitPrice: 34600, unit: '個' },
+          { sku: 'B-E07',        name: 'ピン型マイク 切替付',                         unitPrice: 6900,  unit: '個' },
+          { sku: 'BM-GSTM',      name: 'I型マイク',                                   unitPrice: 1400,  unit: '個' },
+          { sku: 'BM-GSVS',      name: 'ノイズキャンセリングマイク',                  unitPrice: 25000, unit: '個' },
+          { sku: 'B-E06',        name: 'ピン型マイク 風防付',                         unitPrice: 13000, unit: '個' },
+          { sku: 'B-E03wp',      name: 'ヘルメット取付型 防水マイク',                 unitPrice: 28600, unit: '個' },
+          { sku: 'B-E03dp',      name: 'ヘルメット取付型 防滴マイク',                 unitPrice: 23400, unit: '個' },
+          { sku: 'BM-HPDP2.5',   name: '防滴イヤスピーカー',                          unitPrice: 9500,  unit: '個' },
+          { sku: 'B-E03wpnz',    name: 'ヘルメット取付型 ノイズキャンセリングマイク', unitPrice: 46000, unit: '個' },
+          { sku: 'BM-LCOE3.5',   name: 'オープンエアイヤホン 3.5mm',                  unitPrice: 1500,  unit: '個' },
+          { sku: 'BM-GSRM3.5LC', name: '耳掛け式イヤホン 3.5mm LC',                   unitPrice: 2200,  unit: '個' },
+        ]
+      },
+    ]
+  },
+
+  // ============================================================
+  //  3. その他（電源・ケース・ケーブル・付属品 等）
+  // ============================================================
+  {
+    productLine: 'その他（電源・ケース・ケーブル・付属品 等）',
+    categories: [
+      {
+        category: '充電器・電源',
+        items: [
+          { sku: 'B-X10ac',      name: 'X10アスリート専用充電器',                              unitPrice: 40000, unit: '個' },
+          { sku: 'BM-X10cg',     name: 'X10専用充電器',                                        unitPrice: 40600, unit: '個' },
+          { sku: 'B-X10bt',      name: 'X10用リチウム電池',                                    unitPrice: 3900,  unit: '個' },
+          { sku: 'BM-X5bt',      name: 'リチウム電池（X5用）',                                  unitPrice: 3100,  unit: '個' },
+          { sku: 'B-F06',        name: 'USB充電ケーブル Type-C',                                unitPrice: 300,   unit: '本' },
+          { sku: 'B-F01',        name: 'USB充電ケーブル',                                       unitPrice: 300,   unit: '本' },
+          { sku: 'B-F01R2',      name: 'USB充電ケーブル（R2用）',                               unitPrice: 300,   unit: '本' },
+          { sku: 'BM-60W',       name: '6ポート USB急速充電器（黒）',                           unitPrice: 6000,  unit: '個' },
+          { sku: 'BM-60W10',     name: '10ポート USB急速充電器（黒）',                          unitPrice: 6300,  unit: '個' },
+          { sku: 'BM-LTC20a',    name: 'LT 専用充電器 20台用',                                  unitPrice: 54000, unit: '個' },
+          { sku: 'B-A11(LTC20)', name: 'LT 20台専用充電器 ソフトキャリーケース付',              unitPrice: 64000, unit: '個' },
+          { sku: 'BM-DAC20',     name: 'R2 専用充電器 20台用',                                  unitPrice: 54000, unit: '個' },
+          { sku: 'B-A11(DAC20)', name: 'R2 20台用充電器 ソフトキャリーケース付',                unitPrice: 64000, unit: '個' },
+        ]
+      },
+      {
+        category: '中継ケーブル',
+        items: [
+          { sku: 'B-RCLwptn',  name: '中継接続ケーブルコネクター X10用 防水仕様',     unitPrice: 36300, unit: '個' },
+          { sku: 'B-RCL005wp', name: '中継延長接続ケーブル 防水仕様 5m',              unitPrice: 24240, unit: '本' },
+          { sku: 'B-RCL010wp', name: '中継延長接続ケーブル 防水仕様 10m',             unitPrice: 26280, unit: '本' },
+          { sku: 'B-RCL025wp', name: '中継延長接続ケーブル 防水仕様 25m',             unitPrice: 35160, unit: '本' },
+          { sku: 'B-RCL050wp', name: '中継延長接続ケーブル 防水仕様 50m',             unitPrice: 53760, unit: '本' },
+          { sku: 'B-RCL100wp', name: '中継延長接続ケーブル 防水仕様 100m',            unitPrice: 68160, unit: '本' },
+          { sku: 'B-RCW',      name: '中継コネクター 防水仕様（X5用）',               unitPrice: 36000, unit: '個' },
+          { sku: 'B-RCLwp',    name: '中継接続ケーブルコネクター（X5用）',           unitPrice: 36300, unit: '個' },
+        ]
+      },
+      {
+        category: 'ケース',
+        items: [
+          { sku: 'B-X10ph',   name: 'BRIDGECOM X10 専用ケース ソフト',    unitPrice: 3200, unit: '個' },
+          { sku: 'B-X10hc',   name: 'X10 アスリート専用ケース',           unitPrice: 1500, unit: '個' },
+          { sku: 'B-A11',     name: 'ソフトキャリーケース',               unitPrice: 8500, unit: '個' },
+          { sku: 'B-A11(10)', name: 'ソフトキャリーケース 10',            unitPrice: 8500, unit: '個' },
+          { sku: 'B-A11(F)',  name: 'ソフトキャリーケース F',             unitPrice: 8500, unit: '個' },
+          { sku: 'B-A06',     name: 'オリジナルケース',                   unitPrice: 1200, unit: '個' },
+          { sku: 'B-A02',     name: 'BRIDGECOM X5 専用ケース',            unitPrice: 2000, unit: '個' },
+        ]
+      },
+      {
+        category: '装着アクセサリー',
+        items: [
+          { sku: 'B-X10bc',   name: 'X10用クリップ付電池カバー',          unitPrice: 1300, unit: '個' },
+          { sku: 'B-CPA01',   name: 'アームバンド',                       unitPrice: 2300, unit: '個' },
+          { sku: 'B-ABL',     name: 'アームサポーター L',                 unitPrice: 300,  unit: '個' },
+          { sku: 'B-ABM',     name: 'アームサポーター M',                 unitPrice: 300,  unit: '個' },
+          { sku: 'BM-ABHm',   name: 'ソフトアームバンドホルダー M',       unitPrice: 550,  unit: '個' },
+          { sku: 'BM-ABHl',   name: 'ソフトアームバンドホルダー L',       unitPrice: 550,  unit: '個' },
+          { sku: 'B-CPM01ms', name: 'ボイスナイパー風防',                 unitPrice: 250,  unit: '個' },
+          { sku: 'B-AHH',     name: 'ヘルメット取付クリップ',             unitPrice: 800,  unit: '個' },
+          { sku: 'B-F05',     name: 'ケーブルマジックバンド',             unitPrice: 130,  unit: '個' },
+          { sku: 'B-F02',     name: 'ストラップ',                         unitPrice: 130,  unit: '個' },
+        ]
+      },
+      {
+        category: 'X10 専用アンテナ',
+        items: [
+          { sku: 'B-X10ans',  name: 'X10 アンテナ 標準',         unitPrice: 1900,  unit: '個' },
+          { sku: 'B-X10anl',  name: 'X10 アンテナ ロング',       unitPrice: 1900,  unit: '個' },
+          { sku: 'B-X10ca02', name: 'X10 ケーブルアンテナ 2m',   unitPrice: 11400, unit: '個' },
+        ]
+      },
+      {
+        category: 'X10 コンパクト 専用クリップ',
+        items: [
+          { sku: 'B-CPC01',   name: 'X10コンパクト専用クリップ タイプA',     unitPrice: 3100, unit: '個' },
+          { sku: 'B-CPC03h',  name: 'X10コンパクト専用クリップ タイプA03h',  unitPrice: 3100, unit: '個' },
+          { sku: 'B-CPC01ch', name: 'X10コンパクト専用クリップ タイプB01ch', unitPrice: 3100, unit: '個' },
+          { sku: 'B-CPC02ch', name: 'X10コンパクト専用クリップ タイプB02ch', unitPrice: 3100, unit: '個' },
+          { sku: 'B-CPC03hh', name: 'X10コンパクト専用クリップ タイプB03hh', unitPrice: 3100, unit: '個' },
+          { sku: 'B-CPC01cc', name: 'X10コンパクト専用クリップ タイプC01cc', unitPrice: 3100, unit: '個' },
+        ]
+      },
+      {
+        category: 'X10 コンパクト 専用イヤーパッド',
+        items: [
+          { sku: 'BM-HPDP3.5ep',  name: '防滴イヤスピーカー3.5 イヤーパッド',         unitPrice: 460, unit: '個' },
+          { sku: 'BM-HPDP3.5Lep', name: '防滴イヤスピーカー3.5 レザーイヤーパッド',   unitPrice: 700, unit: '個' },
+        ]
+      },
+      {
+        category: 'R2 専用付属品',
+        items: [
+          { sku: 'B-R2C', name: 'R2 専用ホルダー',         unitPrice: 360, unit: '個' },
+          { sku: 'B-R2M', name: 'R2 用マジックテープ',     unitPrice: 220, unit: '個' },
+        ]
+      },
+      {
+        category: 'LT 専用付属品',
+        items: [
+          { sku: 'BM-GSH', name: 'LT 専用ホルダー', unitPrice: 1150, unit: '個' },
+        ]
+      },
+      {
+        category: 'BRIDGECOMスピーカー周辺',
+        items: [
+          { sku: 'B-A10ac',     name: 'BRIDGECOMスピーカー ACアダプター',           unitPrice: 13000, unit: '個' },
+          { sku: 'B-A10ss',     name: 'BRIDGECOMスピーカー シガーソケット',         unitPrice: 13000, unit: '個' },
+          { sku: 'B-A10usb',    name: 'BRIDGECOMスピーカー USB充電ケーブル',        unitPrice: 13000, unit: '個' },
+          { sku: 'B-F07',       name: 'スピーカー専用 ACアダプター',                unitPrice: 1700,  unit: '個' },
+          { sku: 'B-F08',       name: 'スピーカー専用 シガーソケット',              unitPrice: 1700,  unit: '個' },
+          { sku: 'B-F09',       name: 'スピーカー専用 USBケーブル',                 unitPrice: 1700,  unit: '本' },
+          { sku: 'B-F10',       name: 'A10スピーカー専用 マグネット',               unitPrice: 1300, unit: '個' },
+          { sku: 'B-F11',       name: 'A10スピーカー専用 オーディオケーブル',       unitPrice: 1300, unit: '本' },
+          { sku: 'B-A10ac24',   name: 'A10スピーカー 24V変換',                      unitPrice: 2000, unit: '個' },
+          { sku: 'BM-24V2',     name: '24V 2ポート シガーソケット',                 unitPrice: 2400, unit: '個' },
+        ]
+      },
+      {
+        category: 'X5 専用付属品',
+        items: [
+          { sku: 'B-X5gcr', name: 'X5 録音用専用ケーブル', unitPrice: 18000, unit: '本' },
+        ]
+      },
+    ]
+  }
+];
+// ==========================================================================
+// ▲▲▲ ここまでが価格表 ▲▲▲
+// ==========================================================================
+
+// ===== SKU → 対応機種マップ =====
+// 各SKUが「どの本体機種で使えるか」。フィルタ・チップ表示に使用。
+const SKU_DEVICES = {
+  // 本体
+  'BM-X10': ['X10'],
+  'BM-X10CP': ['コンパクト'],
+  'BM-X10AT': ['アスリート'],
+  'BM-X5': ['X5'],
+  'BM-R2': ['R2'],
+  'FC-ZXPRO': ['R2'],
+  'BM-LTM': ['LT'],
+  'BM-LTS': ['LT'],
+
+  // ヘッドホン・イヤホン・マイク類
+  // X10 と X10アスリートで共用される 15 品
+  'B-H03': ['X10', 'アスリート'],
+  'BM-GSRM2.5F': ['X10', 'アスリート'],
+  'BM-GSRM2.5s': ['X10', 'アスリート'],
+  'BM-SHSE2.5': ['X10', 'アスリート'],
+  'BM-LCOE2.5': ['X10', 'アスリート'],
+  'B-RFAD': ['X10', 'アスリート'],
+  'B-RFXM': ['X10', 'アスリート'],
+  'B-A05': ['X10', 'アスリート'],
+  'B-E10tnt': ['X10', 'アスリート'],
+  'B-E06tn': ['X10', 'アスリート'],
+  'B-E06tnt': ['X10', 'アスリート'],
+  'B-E03wptn': ['X10', 'アスリート'],
+  'B-E03wptnt': ['X10', 'アスリート'],
+  'B-E03dptn': ['X10', 'アスリート'],
+  'B-E03dptnt': ['X10', 'アスリート'],
+  // X10 のみ
+  'B-E03wptnt-g': ['X10'],
+  'B-E05atn': ['X10'],
+  'B-E05atw': ['X10'],
+  // コンパクト 用
+  'BM-HPDP3.5M': ['コンパクト'],
+  'BM-HPDP3.5MR': ['コンパクト'],
+  'BM-HPDP3.5ML': ['コンパクト'],
+  'BM-HPDP3.5MRL': ['コンパクト'],
+  'B-CPM01': ['コンパクト'],
+  'BM-HPDP3.5': ['コンパクト'],
+  'BM-15CP3.5': ['コンパクト'],
+  'BM-SHSE2.5s': ['コンパクト'],
+  // X5 用
+  'B-N01': ['X5'],
+  'B-E05a': ['X5'],
+  'BM-X5EP3.5': ['X5'],
+  // LT 用
+  'B-N01nz': ['LT'],
+  'B-E07': ['LT'],
+  'BM-GSTM': ['LT'],
+  'BM-GSVS': ['LT'],
+  'B-E06': ['LT'],
+  'B-E03wp': ['LT'],
+  'B-E03dp': ['LT'],
+  'BM-HPDP2.5': ['LT'],
+  'B-E03wpnz': ['LT'],
+  'BM-LCOE3.5': ['LT'],
+  'BM-GSRM3.5LC': ['LT'],
+
+  // その他
+  // 充電器・電源
+  'B-X10ac': ['アスリート'],
+  'BM-X10cg': ['X10'],
+  'B-X10bt': ['X10'],
+  'BM-X5bt': ['X5'],
+  'B-F06': ['X10'],
+  'B-F01': ['X5'],
+  'B-F01R2': ['R2'],
+  'BM-60W': ['汎用'],
+  'BM-60W10': ['汎用'],
+  'BM-LTC20a': ['LT'],
+  'B-A11(LTC20)': ['LT'],
+  'BM-DAC20': ['R2'],
+  'B-A11(DAC20)': ['R2'],
+  // 中継ケーブル
+  'B-RCLwptn': ['X10'],
+  'B-RCL005wp': ['X10'],
+  'B-RCL010wp': ['X10'],
+  'B-RCL025wp': ['X10'],
+  'B-RCL050wp': ['X10'],
+  'B-RCL100wp': ['X10'],
+  'B-RCW': ['X5'],
+  'B-RCLwp': ['X5'],
+  // ケース
+  'B-X10ph': ['X10'],
+  'B-X10hc': ['アスリート'],
+  'B-A11': ['汎用'],
+  'B-A11(10)': ['汎用'],
+  'B-A11(F)': ['汎用'],
+  'B-A06': ['汎用'],
+  'B-A02': ['X5'],
+  // 装着アクセサリー
+  'B-X10bc': ['X10'],
+  'B-CPA01': ['X10', 'アスリート'],
+  'B-ABL': ['X10', 'アスリート'],
+  'B-ABM': ['X10', 'アスリート'],
+  'BM-ABHm': ['X10', 'アスリート'],
+  'BM-ABHl': ['X10', 'アスリート'],
+  'B-CPM01ms': ['X10', 'アスリート'],
+  'B-AHH': ['汎用'],
+  'B-F05': ['汎用'],
+  'B-F02': ['汎用'],
+  // X10 専用アンテナ
+  'B-X10ans': ['X10'],
+  'B-X10anl': ['X10'],
+  'B-X10ca02': ['X10'],
+  // X10 コンパクト 専用クリップ
+  'B-CPC01': ['コンパクト'],
+  'B-CPC03h': ['コンパクト'],
+  'B-CPC01ch': ['コンパクト'],
+  'B-CPC02ch': ['コンパクト'],
+  'B-CPC03hh': ['コンパクト'],
+  'B-CPC01cc': ['コンパクト'],
+  // コンパクト イヤーパッド
+  'BM-HPDP3.5ep': ['コンパクト'],
+  'BM-HPDP3.5Lep': ['コンパクト'],
+  // R2 専用付属品
+  'B-R2C': ['R2'],
+  'B-R2M': ['R2'],
+  // LT 専用付属品
+  'BM-GSH': ['LT'],
+  // BRIDGECOMスピーカー周辺
+  'B-A10ac': ['汎用'],
+  'B-A10ss': ['汎用'],
+  'B-A10usb': ['汎用'],
+  'B-F07': ['汎用'],
+  'B-F08': ['汎用'],
+  'B-F09': ['汎用'],
+  'B-F10': ['汎用'],
+  'B-F11': ['汎用'],
+  'B-A10ac24': ['汎用'],
+  'BM-24V2': ['汎用'],
+  // X5 専用付属品
+  'B-X5gcr': ['X5'],
+};
+
+function getItemDevices(item) {
+  return SKU_DEVICES[item.sku] || ['汎用'];
+}
+
+// ===== 状態 =====
+let currentCourse = 'quick'; // 'quick' or 'detailed'
+const quantities = {}; // { sku: quantity }
+let deviceFilter = 'all'; // 'all' or one of the device codes
+
+// ===== DOM 取得 =====
+const $ = (id) => document.getElementById(id);
+const screens = {
+  course: $('screen-course'),
+  form: $('screen-form'),
+  review: $('screen-review'),
+  done: $('screen-done'),
+};
+
+function showScreen(name) {
+  Object.values(screens).forEach(s => s.classList.remove('active'));
+  screens[name].classList.add('active');
+  window.scrollTo({ top: 0, behavior: 'smooth' });
+  $('scroll-nav').classList.toggle('visible', name === 'form' || name === 'review');
+}
+
+function showCourseElements(course) {
+  document.querySelectorAll('.detailed-only').forEach(el => {
+    el.style.display = course === 'detailed' ? '' : 'none';
+  });
+  document.querySelectorAll('.quick-only').forEach(el => {
+    el.style.display = course === 'quick' ? '' : 'none';
+  });
+}
+
+// ===== 製品リスト描画 =====
+let productSearchQuery = '';
+
+function matchesSearch(item, q) {
+  if (!q) return true;
+  const hay = (item.sku + ' ' + item.name).toLowerCase();
+  // Space-separated tokens, all must match (AND)
+  return q.split(/\s+/).filter(Boolean).every(tok => hay.includes(tok));
+}
+
+function matchesDeviceFilter(item) {
+  if (deviceFilter === 'all') return true;
+  return getItemDevices(item).includes(deviceFilter);
+}
+
+function renderDeviceChips(item) {
+  return getItemDevices(item)
+    .map(d => `<span class="device-chip" data-device="${escapeHtml(d)}">${escapeHtml(d)}</span>`)
+    .join('');
+}
+
+function renderProductList() {
+  const container = $('product-list');
+  container.innerHTML = '';
+  const q = productSearchQuery.trim().toLowerCase();
+
+  let visibleCount = 0;
+  let totalCount = 0;
+
+  PRODUCTS.forEach(line => {
+    const visibleCategories = line.categories.map(group => ({
+      group,
+      items: group.items.filter(it => matchesSearch(it, q) && matchesDeviceFilter(it)),
+    })).filter(c => {
+      totalCount += c.group.items.length;
+      return c.items.length > 0;
+    });
+
+    if (visibleCategories.length === 0) return;
+
+    const lineHeader = document.createElement('div');
+    lineHeader.className = 'product-line';
+    lineHeader.textContent = line.productLine;
+    container.appendChild(lineHeader);
+
+    visibleCategories.forEach(({ group, items }) => {
+      const groupHeader = document.createElement('div');
+      groupHeader.className = 'product-category';
+      groupHeader.textContent = group.category;
+      container.appendChild(groupHeader);
+
+      items.forEach(item => {
+        visibleCount++;
+        const qty = quantities[item.sku] || 0;
+        const row = document.createElement('div');
+        row.className = 'product-row' + (qty > 0 ? ' selected' : '');
+        row.dataset.sku = item.sku;
+        row.innerHTML = `
+          <div class="product-info">
+            <div class="product-name">${escapeHtml(item.name)}</div>
+            <div class="device-chips">${renderDeviceChips(item)}</div>
+            <div class="product-meta">${escapeHtml(item.sku)}</div>
+            <div class="product-price">¥${item.unitPrice.toLocaleString()} / ${escapeHtml(item.unit)}</div>
+          </div>
+          <div class="qty-control">
+            <button type="button" class="qty-btn" data-action="dec" data-sku="${item.sku}">−</button>
+            <input type="number" class="qty-input" min="0" max="9999" value="${qty}" data-sku="${item.sku}">
+            <button type="button" class="qty-btn" data-action="inc" data-sku="${item.sku}">+</button>
+          </div>
+        `;
+        container.appendChild(row);
+      });
+    });
+  });
+
+  // ステータス表示
+  const status = $('product-search-status');
+  if (q) {
+    if (visibleCount === 0) {
+      status.textContent = `「${productSearchQuery}」に該当する製品はありません`;
+      container.innerHTML = '<div class="product-row" style="justify-content:center;color:var(--text-muted);padding:24px">該当する製品が見つかりませんでした</div>';
+    } else {
+      status.textContent = `${visibleCount} 件 / 全 ${totalCount} 件中`;
+    }
+  } else {
+    status.textContent = '';
+  }
+
+  // 数量変更ハンドラ
+  container.querySelectorAll('.qty-btn').forEach(btn => {
+    btn.addEventListener('click', () => {
+      const sku = btn.dataset.sku;
+      const action = btn.dataset.action;
+      const cur = quantities[sku] || 0;
+      const next = action === 'inc' ? Math.min(9999, cur + 1) : Math.max(0, cur - 1);
+      quantities[sku] = next;
+      renderProductList();
+      updateSummary();
+    });
+  });
+  container.querySelectorAll('.qty-input').forEach(input => {
+    input.addEventListener('change', () => {
+      const sku = input.dataset.sku;
+      const val = Math.max(0, Math.min(9999, parseInt(input.value, 10) || 0));
+      quantities[sku] = val;
+      renderProductList();
+      updateSummary();
+    });
+  });
+}
+
+function updateSummary() {
+  let total = 0;
+  Object.entries(quantities).forEach(([sku, qty]) => {
+    const item = findItemBySku(sku);
+    if (item && qty > 0) total += qty * item.unitPrice;
+  });
+  $('summary-total').textContent = '¥' + total.toLocaleString();
+}
+
+function findItemBySku(sku) {
+  for (const line of PRODUCTS) {
+    for (const group of line.categories) {
+      for (const item of group.items) {
+        if (item.sku === sku) return item;
+      }
+    }
+  }
+  return null;
+}
+
+function escapeHtml(s) {
+  return String(s).replace(/[&<>"']/g, c => ({
+    '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;'
+  }[c]));
+}
+
+// ===== 入力値収集 =====
+function collectForm() {
+  const isDetailed = currentCourse === 'detailed';
+  const phoneField = isDetailed ? 'f-phone' : 'f-phone-quick';
+
+  const items = [];
+  Object.entries(quantities).forEach(([sku, qty]) => {
+    if (qty <= 0) return;
+    const item = findItemBySku(sku);
+    if (!item) return;
+    items.push({
+      sku: item.sku,
+      name: item.name,
+      unitPrice: item.unitPrice,
+      quantity: qty,
+    });
+  });
+
+  const payload = {
+    mode: currentCourse,
+    customer: {
+      name: $('f-name').value.trim(),
+      company: $('f-company').value.trim(),
+      department: isDetailed ? $('f-department').value.trim() : '',
+      email: $('f-email').value.trim(),
+      phone: $(phoneField).value.trim(),
+    },
+    items,
+    notes: $('f-notes').value.trim(),
+    contactRequested: $('f-contact-requested').checked,
+  };
+
+  if (isDetailed) {
+    payload.situation = {
+      who: $('f-who').value.trim(),
+      whom: $('f-whom').value.trim(),
+      what: $('f-what').value.trim(),
+      when: $('f-when').value.trim(),
+      where: $('f-where').value.trim(),
+      why: $('f-why').value.trim(),
+      how: $('f-how').value.trim(),
+      howMany: $('f-howmany').value.trim(),
+      howMuch: $('f-howmuch').value.trim(),
+      howLong: $('f-howlong').value.trim(),
+    };
+  }
+
+  return payload;
+}
+
+function validateForm(payload) {
+  const errors = [];
+  if (!payload.customer.name) errors.push('お名前を入力してください');
+  if (!payload.customer.email) errors.push('メールアドレスを入力してください');
+  else if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(payload.customer.email)) {
+    errors.push('メールアドレスの形式が正しくありません');
+  }
+  if (payload.items.length === 0) errors.push('製品を1つ以上選択してください');
+  return errors;
+}
+
+// ===== 確認画面の描画 =====
+function renderReview(payload) {
+  const container = $('review-content');
+  const sit = payload.situation;
+  const courseLabel = payload.mode === 'detailed' ? '詳しく相談' : 'クイック見積もり';
+
+  let html = `
+    <div class="review-section">
+      <h4>コース</h4>
+      <div>${courseLabel}</div>
+    </div>
+    <div class="review-section">
+      <h4>お客様情報</h4>
+      <div class="review-grid">
+        <div class="label">お名前</div><div class="value">${escapeHtml(payload.customer.name)}</div>
+        ${payload.customer.company ? `<div class="label">会社名</div><div class="value">${escapeHtml(payload.customer.company)}</div>` : ''}
+        ${payload.customer.department ? `<div class="label">部署・役職</div><div class="value">${escapeHtml(payload.customer.department)}</div>` : ''}
+        <div class="label">メール</div><div class="value">${escapeHtml(payload.customer.email)}</div>
+        ${payload.customer.phone ? `<div class="label">電話</div><div class="value">${escapeHtml(payload.customer.phone)}</div>` : ''}
+        <div class="label">担当者からの連絡</div><div class="value">${payload.contactRequested ? '希望する' : '希望しない（見積書のみ）'}</div>
+      </div>
+    </div>
+  `;
+
+  if (sit && (sit.who || sit.whom || sit.what || sit.when || sit.where || sit.why || sit.how || sit.howMany || sit.howMuch || sit.howLong)) {
+    const sitRows = [
+      ['Who', 'どなたが', sit.who],
+      ['Whom', 'どなたのために', sit.whom],
+      ['What', '解決したい課題', sit.what],
+      ['When', '導入時期', sit.when],
+      ['Where', '利用場所', sit.where],
+      ['Why', '背景・課題', sit.why],
+      ['How', '利用方法', sit.how],
+      ['How many', '数量', sit.howMany],
+      ['How much', '予算', sit.howMuch],
+      ['How long', '期間', sit.howLong],
+    ].filter(r => r[2]);
+
+    html += `<div class="review-section"><h4>ご利用シーン</h4><div class="review-grid">`;
+    sitRows.forEach(([key, lbl, val]) => {
+      html += `<div class="label">${escapeHtml(lbl)}</div><div class="value">${escapeHtml(val)}</div>`;
+    });
+    html += `</div></div>`;
+  }
+
+  let total = 0;
+  let itemsHtml = '';
+  payload.items.forEach(it => {
+    const sub = it.unitPrice * it.quantity;
+    total += sub;
+    itemsHtml += `
+      <div class="item-row">
+        <div>${escapeHtml(it.name)} × ${it.quantity}</div>
+        <div>¥${sub.toLocaleString()}</div>
+      </div>
+    `;
+  });
+
+  html += `
+    <div class="review-section">
+      <h4>ご希望の製品</h4>
+      <div class="review-items">${itemsHtml}</div>
+      <div class="summary-box" style="margin-top:12px">
+        <div class="summary-row summary-total">
+          <span>概算合計（税抜）</span>
+          <span>¥${total.toLocaleString()}</span>
+        </div>
+      </div>
+    </div>
+  `;
+
+  if (payload.notes) {
+    html += `
+      <div class="review-section">
+        <h4>備考・ご要望</h4>
+        <div class="value" style="white-space:pre-wrap; font-size:13px">${escapeHtml(payload.notes)}</div>
+      </div>
+    `;
+  }
+
+  container.innerHTML = html;
+}
+
+// ===== 見積書番号生成 =====
+function generateQuoteNumber() {
+  const now = new Date();
+  const yyyy = now.getFullYear();
+  const mm = String(now.getMonth() + 1).padStart(2, '0');
+  const dd = String(now.getDate()).padStart(2, '0');
+  const rand = Math.random().toString(36).slice(2, 6).toUpperCase();
+  return `Q${yyyy}${mm}${dd}-${rand}`;
+}
+
+function formatDateJa(d) {
+  return `${d.getFullYear()}年${d.getMonth() + 1}月${d.getDate()}日`;
+}
+
+// ===== 見積書の描画 =====
+function renderQuoteDoc(payload, quoteNumber) {
+  const issued = new Date();
+  const expires = new Date(issued);
+  expires.setDate(expires.getDate() + 30);
+
+  $('doc-number').textContent = quoteNumber;
+  $('doc-issued').textContent = formatDateJa(issued);
+  $('doc-expires').textContent = formatDateJa(expires);
+
+  const c = payload.customer;
+  $('doc-recipient-name').textContent = c.company
+    ? c.company + ' 御中'
+    : 'ご担当者 様';
+  const detail = $('doc-recipient-detail');
+  detail.innerHTML = '';
+  const lines = [];
+  if (c.department) lines.push(c.department);
+  if (c.email) lines.push(c.email);
+  if (c.phone) lines.push('TEL: ' + c.phone);
+  lines.forEach(line => {
+    const div = document.createElement('div');
+    div.textContent = line;
+    detail.appendChild(div);
+  });
+
+  const tbody = $('doc-items-body');
+  tbody.innerHTML = '';
+  let subtotal = 0;
+  payload.items.forEach(it => {
+    const amount = it.unitPrice * it.quantity;
+    subtotal += amount;
+    const tr = document.createElement('tr');
+    tr.innerHTML = `
+      <td class="col-name">${escapeHtml(it.name)}</td>
+      <td class="col-sku">${escapeHtml(it.sku)}</td>
+      <td class="col-qty num">${it.quantity}</td>
+      <td class="col-price num">¥${it.unitPrice.toLocaleString()}</td>
+      <td class="col-amount num">¥${amount.toLocaleString()}</td>
+    `;
+    tbody.appendChild(tr);
+  });
+
+  const tax = Math.floor(subtotal * 0.1);
+  const grand = subtotal + tax;
+  $('doc-subtotal').textContent = '¥' + subtotal.toLocaleString();
+  $('doc-tax').textContent = '¥' + tax.toLocaleString();
+  $('doc-grand-total').textContent = '¥' + grand.toLocaleString();
+  $('doc-grand-headline').textContent = '¥' + grand.toLocaleString();
+
+  const notesBlock = $('doc-notes-block');
+  if (payload.notes) {
+    notesBlock.style.display = '';
+    $('doc-notes-text').textContent = payload.notes;
+  } else {
+    notesBlock.style.display = 'none';
+  }
+
+  // 連絡希望メッセージ
+  const msg = $('doc-msg-contact');
+  msg.textContent = payload.contactRequested
+    ? '担当者より追ってご連絡いたします。'
+    : '担当者からの連絡は希望されていません。';
+}
+
+// ===== 送信 =====
+async function submitQuote(payload) {
+  const btn = $('btn-submit');
+  const errBox = $('review-error');
+  errBox.classList.remove('active');
+  btn.disabled = true;
+  btn.innerHTML = '<span class="spinner"></span>発行中...';
+
+  // 見積書番号を発行（クライアント側採番）
+  const quoteNumber = generateQuoteNumber();
+  payload.quoteNumber = quoteNumber;
+
+  try {
+    const res = await fetch('/api/quote', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(payload),
+    });
+    const data = await res.json();
+    if (!res.ok) {
+      throw new Error(data.message || '送信に失敗しました');
+    }
+    renderQuoteDoc(payload, quoteNumber);
+    showScreen('done');
+  } catch (e) {
+    errBox.textContent = e.message || '送信に失敗しました。時間をおいて再度お試しください。';
+    errBox.classList.add('active');
+  } finally {
+    btn.disabled = false;
+    btn.textContent = '見積書を発行する';
+  }
+}
+
+// ===== イベント =====
+document.querySelectorAll('.course-card').forEach(card => {
+  card.addEventListener('click', () => {
+    currentCourse = card.dataset.course;
+    showCourseElements(currentCourse);
+    showScreen('form');
+  });
+});
+
+$('btn-back-to-course').addEventListener('click', () => showScreen('course'));
+
+$('btn-to-review').addEventListener('click', () => {
+  const payload = collectForm();
+  const errors = validateForm(payload);
+  const errBox = $('form-error');
+  if (errors.length > 0) {
+    errBox.textContent = errors.join(' / ');
+    errBox.classList.add('active');
+    errBox.scrollIntoView({ behavior: 'smooth', block: 'center' });
+    return;
+  }
+  errBox.classList.remove('active');
+  renderReview(payload);
+  showScreen('review');
+});
+
+$('scroll-top').addEventListener('click', () => {
+  window.scrollTo({ top: 0, behavior: 'smooth' });
+});
+$('scroll-bottom').addEventListener('click', () => {
+  window.scrollTo({ top: document.documentElement.scrollHeight, behavior: 'smooth' });
+});
+
+$('btn-back-to-form').addEventListener('click', () => showScreen('form'));
+
+$('btn-submit').addEventListener('click', () => {
+  const payload = collectForm();
+  submitQuote(payload);
+});
+
+$('btn-print').addEventListener('click', () => {
+  window.print();
+});
+
+$('btn-restart').addEventListener('click', () => {
+  // リセット
+  Object.keys(quantities).forEach(k => delete quantities[k]);
+  document.querySelectorAll('#screen-form input, #screen-form textarea').forEach(el => el.value = '');
+  $('f-contact-requested').checked = true;
+  productSearchQuery = '';
+  $('product-search-input').value = '';
+  $('product-search-input').parentElement.classList.remove('has-query');
+  deviceFilter = 'all';
+  document.querySelectorAll('.device-filter-btn').forEach(b => {
+    b.classList.toggle('active', b.dataset.device === 'all');
+  });
+  renderProductList();
+  updateSummary();
+  showScreen('course');
+});
+
+// 製品検索
+const searchInput = $('product-search-input');
+const searchClear = $('product-search-clear');
+const searchWrapper = searchInput.parentElement;
+searchInput.addEventListener('input', () => {
+  productSearchQuery = searchInput.value;
+  searchWrapper.classList.toggle('has-query', productSearchQuery.length > 0);
+  renderProductList();
+});
+searchClear.addEventListener('click', () => {
+  productSearchQuery = '';
+  searchInput.value = '';
+  searchWrapper.classList.remove('has-query');
+  renderProductList();
+  searchInput.focus();
+});
+
+// 機種フィルタ
+document.querySelectorAll('.device-filter-btn').forEach(btn => {
+  btn.addEventListener('click', () => {
+    const device = btn.dataset.device;
+    deviceFilter = device;
+    document.querySelectorAll('.device-filter-btn').forEach(b => {
+      b.classList.toggle('active', b.dataset.device === device);
+    });
+    renderProductList();
+  });
+});
+
+// 初期化
+renderProductList();
+updateSummary();
+</script>
+
+</body>
+</html>

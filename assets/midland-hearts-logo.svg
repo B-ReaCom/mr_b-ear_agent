@@ -1,0 +1,20 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 400 380" role="img" aria-label="Midland Hearts Inc.">
+  <rect width="400" height="380" fill="#1f2a5b"/>
+  <path d="
+    M 0,54
+    C 10,24 44,10 95,10
+    C 148,12 190,42 216,86
+    C 232,50 256,24 282,24
+    C 332,24 376,60 376,112
+    C 376,152 358,178 342,196
+    C 372,216 396,256 388,300
+    C 376,346 328,372 268,378
+    L 0,378
+    Z
+  " fill="#ffffff"/>
+  <g fill="#1a1a1a" font-family="'Avenir Next', 'Helvetica Neue', 'Hiragino Sans', sans-serif" font-weight="500">
+    <text x="44" y="170" font-size="54" letter-spacing="-0.5">Midland</text>
+    <text x="44" y="238" font-size="54" letter-spacing="-0.5">Hearts</text>
+    <text x="44" y="306" font-size="54" letter-spacing="-0.5">Inc.</text>
+  </g>
+</svg>
