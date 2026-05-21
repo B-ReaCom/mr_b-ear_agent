@@ -4,8 +4,12 @@
 export const config = { runtime: 'edge' };
 
 export default async function handler(req) {
+  // LINE WORKS の検証リクエスト（GET）にも 200 を返す
   if (req.method !== 'POST') {
-    return new Response(JSON.stringify({ error: 'method_not_allowed' }), { status: 405 });
+    return new Response(JSON.stringify({ ok: true }), {
+      status: 200,
+      headers: { 'Content-Type': 'application/json' },
+    });
   }
 
   let body = {};
