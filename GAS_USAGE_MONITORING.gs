@@ -69,7 +69,21 @@ function doPost(e) {
 // ========== Q&Aログ記録（既存機能） ==========
 function handleQALog(data) {
   const ss = getSpreadsheet();
+  // 1. 指定名（シート1）のシートを探す
   let sheet = ss.getSheetByName(SHEET_QA_LOG);
+  // 2. 見つからなければ Q&A 以外の用途シートを除外したうえで「最初のシート」にフォールバック
+  //    （シート名が「QA_LOG」「Sheet1」「シート１」（全角）等でも問い合わせログとして使えるよう柔軟対応）
+  if (!sheet) {
+    const reservedNames = [SHEET_USAGE_LOG, SHEET_ALERT_STATUS, SHEET_QUOTE_LOG];
+    const allSheets = ss.getSheets();
+    for (const s of allSheets) {
+      if (reservedNames.indexOf(s.getName()) === -1) {
+        sheet = s;
+        break;
+      }
+    }
+  }
+  // 3. それでも無ければ新規作成
   if (!sheet) {
     sheet = ss.insertSheet(SHEET_QA_LOG);
     sheet.appendRow(['日時', '質問', '回答', 'デバイス']);
