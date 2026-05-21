@@ -799,33 +799,37 @@
     /* コンテンツ枠（max-width 720px）の右外側に寄せる。
        狭い画面では従来通り画面右端から14px。 */
     right: max(14px, calc(50vw - 360px - 52px));
-    bottom: 20px;
+    top: 90px;
     display: none;
     flex-direction: column;
-    gap: 8px;
+    gap: 5px;
     z-index: 50;
   }
   .scroll-nav.visible { display: flex; }
   .scroll-nav button {
-    width: 44px;
-    height: 44px;
+    width: 40px;
+    height: 40px;
     border-radius: 50%;
     border: 1px solid var(--border);
     background: var(--card);
     color: var(--text);
-    font-size: 18px;
+    font-size: 16px;
+    line-height: 1;
     cursor: pointer;
     box-shadow: var(--shadow-lg);
     display: flex;
     align-items: center;
     justify-content: center;
     transition: transform 0.1s ease, background 0.15s ease;
+    padding: 0;
   }
+  .scroll-nav button.scroll-jump { font-size: 20px; }
   .scroll-nav button:hover { background: var(--primary-light); color: var(--primary-dark); }
-  .scroll-nav button:active { transform: scale(0.94); }
+  .scroll-nav button:active { transform: scale(0.92); }
   @media (max-width: 480px) {
-    .scroll-nav { right: 10px; bottom: 14px; }
-    .scroll-nav button { width: 40px; height: 40px; font-size: 16px; }
+    .scroll-nav { right: 4px; top: 70px; gap: 3px; }
+    .scroll-nav button { width: 30px; height: 30px; font-size: 13px; }
+    .scroll-nav button.scroll-jump { font-size: 15px; }
   }
 
   /* ===== ローディング ===== */
@@ -1137,8 +1141,10 @@
 </main>
 
 <div class="scroll-nav" id="scroll-nav" aria-label="ページ内ジャンプ">
-  <button type="button" id="scroll-top" title="最上部へ" aria-label="最上部へ移動">↑</button>
-  <button type="button" id="scroll-bottom" title="最下部へ" aria-label="最下部へ移動">↓</button>
+  <button type="button" class="scroll-jump" id="scroll-top" title="最上部へ" aria-label="最上部へ移動">⇈</button>
+  <button type="button" id="scroll-up" title="少し上へ" aria-label="少し上へスクロール">↑</button>
+  <button type="button" id="scroll-down" title="少し下へ" aria-label="少し下へスクロール">↓</button>
+  <button type="button" class="scroll-jump" id="scroll-bottom" title="最下部へ" aria-label="最下部へ移動">⇊</button>
 </div>
 
 <script>
@@ -2010,6 +2016,13 @@ $('scroll-top').addEventListener('click', () => {
 });
 $('scroll-bottom').addEventListener('click', () => {
   window.scrollTo({ top: document.documentElement.scrollHeight, behavior: 'smooth' });
+});
+const scrollStep = () => Math.max(280, Math.round(window.innerHeight * 0.55));
+$('scroll-up').addEventListener('click', () => {
+  window.scrollBy({ top: -scrollStep(), behavior: 'smooth' });
+});
+$('scroll-down').addEventListener('click', () => {
+  window.scrollBy({ top: scrollStep(), behavior: 'smooth' });
 });
 
 $('btn-back-to-form').addEventListener('click', () => showScreen('form'));
