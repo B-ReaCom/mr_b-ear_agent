@@ -1,0 +1,12 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 400 380" role="img" aria-label="Midland Hearts Inc.">
+  <rect width="400" height="380" fill="#1f2a5b"/>
+  <g fill="#ffffff">
+    <ellipse cx="148" cy="240" rx="238" ry="180"/>
+    <circle cx="292" cy="100" r="92"/>
+  </g>
+  <g fill="#1a1a1a" font-family="'Helvetica Neue', 'Hiragino Sans', Arial, sans-serif" font-weight="500" font-size="56">
+    <text x="40" y="180">Midland</text>
+    <text x="40" y="252">Hearts</text>
+    <text x="40" y="324">Inc.</text>
+  </g>
+</svg>

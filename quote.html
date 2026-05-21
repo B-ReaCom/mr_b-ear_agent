@@ -36,6 +36,22 @@
     padding: 18px 20px;
     text-align: center;
   }
+  header .logo-link {
+    display: inline-block;
+    margin-bottom: 10px;
+    cursor: pointer;
+    text-decoration: none;
+    border-radius: 8px;
+    transition: opacity 0.15s ease, transform 0.1s ease;
+  }
+  header .logo-link:hover { opacity: 0.85; }
+  header .logo-link:active { transform: scale(0.97); }
+  header .logo-link:focus-visible { outline: 2px solid var(--primary); outline-offset: 4px; }
+  header .logo {
+    display: block;
+    width: 72px;
+    height: auto;
+  }
   header h1 {
     margin: 0;
     font-size: 18px;
@@ -702,6 +718,9 @@
 <body>
 
 <header>
+  <a href="" class="logo-link" onclick="event.preventDefault(); location.reload();" aria-label="ホームに戻る（ページを再読み込み）">
+    <img src="assets/midland-hearts-logo.svg" alt="Midland Hearts Inc." class="logo">
+  </a>
   <h1>ミッドランドハーツ</h1>
   <div class="subtitle">自動見積システム</div>
 </header>
