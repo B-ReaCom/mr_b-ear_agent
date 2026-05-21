@@ -9,7 +9,7 @@ export const config = {
 const RATE_LIMITS = {
   perMinute: 5,      // 1分間に5リクエストまで
   perHour: 100,      // 1時間に100リクエストまで
-  perDay: 200,       // 1日に200リクエストまで
+  perDay: 500,       // 1日に500リクエストまで
 };
 
 // ===== Origin 許可リスト（CSRF対策） =====
