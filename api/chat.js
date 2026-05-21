@@ -405,6 +405,20 @@ export default async function handler(req) {
 
     // Anthropic API へ転送（独自フィールドを除外）
     const { session_id, sessionId, ...anthropicBody } = body;
+
+    // ===== リード検出・通知（Anthropic API 呼び出し前に開始） =====
+    if (isStream) {
+      const sid = session_id || sessionId || '';
+      const leadInfo = detectLead(body.messages || []);
+      if (leadInfo.isHighPriority) {
+        const messageText = formatLeadMessage(leadInfo, body.messages || [], sid);
+        fetch('https://mr-b-ear-agent.vercel.app/api/lineworks-notify', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ messageText }),
+        }).catch(err => console.error('[chat.js] notify error:', err?.message));
+      }
+    }
     const upstream = await fetch('https://api.anthropic.com/v1/messages', {
       method: 'POST',
       headers: {
@@ -458,21 +472,6 @@ export default async function handler(req) {
             cost_usd: cost,
             timestamp: new Date().toISOString()
           });
-        }
-        // ===== リード検出・通知（ストリーム完了後） =====
-        try {
-          const sid = body.session_id || body.sessionId || '';
-          const leadInfo = detectLead(body.messages || []);
-          if (leadInfo.isHighPriority) {
-            const messageText = formatLeadMessage(leadInfo, body.messages || [], sid);
-            await fetch('https://mr-b-ear-agent.vercel.app/api/lineworks-notify', {
-              method: 'POST',
-              headers: { 'Content-Type': 'application/json' },
-              body: JSON.stringify({ messageText }),
-            });
-          }
-        } catch (err) {
-          console.error('[chat.js] lead notification error:', err?.message || err);
         }
       })();
 
