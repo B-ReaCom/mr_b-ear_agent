@@ -348,11 +348,21 @@ export default async function handler(req) {
     }
 
     if (!emailSent) {
+      // 古い GAS デプロイは contactRequested フィールドを認識しないため、
+      // 備考欄の先頭に連絡希望バナーを埋め込んでメール本文に確実に出るようにする。
+      const contactBanner = payload.contactRequested
+        ? '━━━━━━━━━━━━━━━━━━━━\n★ 担当者からの連絡: ★希望あり★ ★\n→ 折り返しのご連絡をお願いします\n━━━━━━━━━━━━━━━━━━━━'
+        : '━━━━━━━━━━━━━━━━━━━━\n担当者からの連絡: 希望なし\n→ 記録のみ（対応不要）\n━━━━━━━━━━━━━━━━━━━━';
+      const notesForGas = payload.notes
+        ? `${contactBanner}\n\n${payload.notes}`
+        : contactBanner;
+
       const gasPayload = {
         type: 'quote_request',
         ip,
         timestamp,
         ...payload,
+        notes: notesForGas,
         subtotal,
       };
       try {
