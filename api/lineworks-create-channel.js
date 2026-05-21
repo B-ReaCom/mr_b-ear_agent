@@ -62,19 +62,14 @@ export default async function handler(req, res) {
     const botId = process.env.LINE_WORKS_BOT_ID;
 
     // 試す候補エンドポイント
+    const base = `https://www.worksapis.com/v1.0/bots/${botId}/channels`;
     const attempts = [
-      {
-        url: `https://www.worksapis.com/v1.0/bots/${botId}/channels`,
-        body: { title, memberIds },
-      },
-      {
-        url: `https://www.worksapis.com/v1.0/channels`,
-        body: { title, memberIds: [...memberIds, botId] },
-      },
-      {
-        url: `https://www.worksapis.com/v1.0/bots/${botId}/channels`,
-        body: { title, members: memberIds.map(id => ({ id })) },
-      },
+      { url: base, body: { title, members: memberIds } },
+      { url: base, body: { title, members: memberIds.map(id => ({ accountId: id })) } },
+      { url: base, body: { title, members: memberIds.map(id => ({ userId: id })) } },
+      { url: base, body: { title, members: { accountIds: memberIds } } },
+      { url: base, body: { title, members: { userIds: memberIds } } },
+      { url: base, body: { title, members: { memberIds } } },
     ];
 
     const results = [];
