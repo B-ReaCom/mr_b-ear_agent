@@ -1,10 +1,19 @@
 // Midland Hearts 自動見積もり API
-// フロントエンドからの見積もり依頼を受け取り、GAS Webhook 経由でメール通知
+// 見積もり依頼を受け取り、Resend 経由でメール通知を送信する。
 // Vercel Edge Function
+//
+// 必要な環境変数 (Vercel → Settings → Environment Variables):
+//   RESEND_API_KEY    Resend の API キー (re_xxxxxxxx) — 必須
+//   QUOTE_EMAIL_TO    通知先メールアドレス。未指定なら下記デフォルトを使用
+//   QUOTE_EMAIL_FROM  送信元メールアドレス。未指定なら下記デフォルトを使用
+//   QUOTE_EMAIL_CC    Cc に入れたいアドレス（カンマ区切り可）— 任意
 
 export const config = {
   runtime: 'edge',
 };
+
+const DEFAULT_EMAIL_TO   = 'info@midhts.com';
+const DEFAULT_EMAIL_FROM = 'onboarding@resend.dev'; // ドメイン検証前のテスト用送信元
 
 // ===== レート制限設定（チャットより厳しめに） =====
 const RATE_LIMITS = {
@@ -95,9 +104,6 @@ function checkRateLimit(ip) {
   return { allowed: true };
 }
 
-// 既存の GAS Webhook（USAGE_LOG/QA_LOG と同居）
-const GAS_WEBHOOK_URL = 'https://script.google.com/macros/s/AKfycbz0Jm2Fc_7pimlmmjGaH2CP_wkQL8MQWsthm0_BBKMOHXIRrdE-lqyTOaDhDT6tRazM/exec';
-
 // ===== バリデーション =====
 function sanitizeString(v, maxLen = 500) {
   if (typeof v !== 'string') return '';
@@ -162,6 +168,99 @@ function validatePayload(body) {
   };
 }
 
+// ===== 通知メールの本文組み立て =====
+function buildEmailContent(payload, subtotal, timestamp) {
+  const c = payload.customer;
+  const courseLabel = payload.mode === 'detailed' ? '詳しく相談' : 'クイック見積もり';
+  const quoteNumber = payload.quoteNumber || '(自動採番なし)';
+  const grandTotal = Math.floor(subtotal * 1.1);
+  const tax = grandTotal - subtotal;
+  const recipientName = c.company || c.name || '名前未入力';
+
+  const subject = payload.contactRequested
+    ? `【自動見積もり / 要対応】${recipientName}（${quoteNumber}）`
+    : `【自動見積もり / 連絡不要】${recipientName}（${quoteNumber}）`;
+
+  const contactBlock = payload.contactRequested
+    ? `■ 担当者からの連絡: ★希望あり★  → 折り返しのご連絡をお願いします`
+    : `■ 担当者からの連絡: 希望なし    → 記録のみ（対応不要）`;
+
+  const itemsText = payload.items
+    .map(it => `${it.name} × ${it.quantity} = ¥${(it.unitPrice * it.quantity).toLocaleString()}`)
+    .join('\n');
+
+  const sit = payload.situation;
+  const sitText = sit ? [
+    sit.who      ? `[Who] ${sit.who}` : null,
+    sit.whom     ? `[Whom] ${sit.whom}` : null,
+    sit.what     ? `[What] ${sit.what}` : null,
+    sit.when     ? `[When] ${sit.when}` : null,
+    sit.where    ? `[Where] ${sit.where}` : null,
+    sit.why      ? `[Why] ${sit.why}` : null,
+    sit.how      ? `[How] ${sit.how}` : null,
+    sit.howMany  ? `[How many] ${sit.howMany}` : null,
+    sit.howMuch  ? `[How much] ${sit.howMuch}` : null,
+    sit.howLong  ? `[How long] ${sit.howLong}` : null,
+  ].filter(Boolean).join('\n') : '';
+
+  let body = `ミッドランドハーツ 自動見積もりシステムにて見積書が発行されました。
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━
+${contactBlock}
+━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+見積番号: ${quoteNumber}
+コース: ${courseLabel}
+発行日時: ${new Date(timestamp).toLocaleString('ja-JP', { timeZone: 'Asia/Tokyo' })}
+
+【お客様情報】
+お名前: ${c.name || ''}
+会社名: ${c.company || '(未入力)'}
+部署・役職: ${c.department || '(未入力)'}
+メール: ${c.email || ''}
+電話: ${c.phone || '(未入力)'}
+
+【ご希望の製品】
+${itemsText || '(なし)'}
+
+小計（税抜）: ¥${subtotal.toLocaleString()}
+消費税（10%）: ¥${tax.toLocaleString()}
+合計（税込）: ¥${grandTotal.toLocaleString()}
+`;
+
+  if (sitText) {
+    body += `\n【ご利用シーン（6W4H）】\n${sitText}\n`;
+  }
+
+  if (payload.notes) {
+    body += `\n【備考・ご要望】\n${payload.notes}\n`;
+  }
+
+  body += `\n━━━━━━━━━━━━━━━━━━━━━━━━━━\nこのメールは自動見積もりシステムより自動送信されています。\n`;
+
+  return { subject, body };
+}
+
+// ===== Resend へ送信 =====
+async function sendEmailViaResend({ apiKey, from, to, cc, subject, text }) {
+  const body = { from, to: [to], subject, text };
+  if (cc) body.cc = cc.split(',').map(s => s.trim()).filter(Boolean);
+
+  const res = await fetch('https://api.resend.com/emails', {
+    method: 'POST',
+    headers: {
+      'Authorization': `Bearer ${apiKey}`,
+      'Content-Type': 'application/json',
+    },
+    body: JSON.stringify(body),
+  });
+  if (!res.ok) {
+    const errText = await res.text().catch(() => '');
+    throw new Error(`Resend ${res.status}: ${errText}`);
+  }
+  return res.json();
+}
+
 export default async function handler(req) {
   const corsHeaders = buildCorsHeaders(req);
 
@@ -220,25 +319,25 @@ export default async function handler(req) {
 
     // 金額計算（クライアントを信用せずサーバー側でも合計）
     const subtotal = payload.items.reduce((sum, it) => sum + it.unitPrice * it.quantity, 0);
+    const timestamp = new Date().toISOString();
 
-    // GAS へ転送（メール送信＆ログ記録）
-    const gasPayload = {
-      type: 'quote_request',
-      ip,
-      timestamp: new Date().toISOString(),
-      ...payload,
-      subtotal,
-    };
+    const apiKey = process.env.RESEND_API_KEY;
+    const to     = process.env.QUOTE_EMAIL_TO   || DEFAULT_EMAIL_TO;
+    const from   = process.env.QUOTE_EMAIL_FROM || DEFAULT_EMAIL_FROM;
+    const cc     = process.env.QUOTE_EMAIL_CC   || '';
 
-    try {
-      await fetch(GAS_WEBHOOK_URL, {
-        method: 'POST',
-        body: JSON.stringify(gasPayload),
-      });
-    } catch (e) {
-      // GAS への送信失敗は致命的ではない（ログ）
-      // ただしユーザーには成功を返す（GAS側で再送やリトライを別途検討）
-      console.error('GAS webhook failed:', e);
+    if (!apiKey) {
+      console.error('RESEND_API_KEY is not configured');
+      // ユーザー操作の流れを止めないため、本人にはエラーを返さず成功扱いとする。
+      // 管理側で Vercel のログを確認して対処する。
+    } else {
+      const { subject, body: text } = buildEmailContent(payload, subtotal, timestamp);
+      try {
+        await sendEmailViaResend({ apiKey, from, to, cc, subject, text });
+      } catch (e) {
+        // 送信失敗もユーザーには成功扱い（業務影響を最小化）
+        console.error('Resend send failed:', e?.message || e);
+      }
     }
 
     return new Response(JSON.stringify({
