@@ -282,28 +282,35 @@ function handleQuoteRequest(data) {
     data.ip || ''
   ]);
 
-  // 連絡希望時のみメール通知
-  if (contactRequested) {
-    sendQuoteNotification(data, itemsText, sitText);
-  }
+  // 連絡希望の有無にかかわらず常に通知メールを送信。
+  // 受信側が件名と本文冒頭を見て対応要否を判断する。
+  sendQuoteNotification(data, itemsText, sitText, contactRequested);
 }
 
-function sendQuoteNotification(data, itemsText, sitText) {
+function sendQuoteNotification(data, itemsText, sitText, contactRequested) {
   const customer = data.customer || {};
   const courseLabel = data.mode === 'detailed' ? '詳しく相談' : 'クイック見積もり';
   const quoteNumber = data.quoteNumber || '(自動採番なし)';
   const subtotal = data.subtotal || 0;
   const grandTotal = Math.floor(subtotal * 1.1);
-  const subject = `【自動見積もり】${customer.name || '名前未入力'} 様（${quoteNumber}）`;
+  const recipientName = customer.company || customer.name || '名前未入力';
+  const subject = contactRequested
+    ? `【自動見積もり / 要対応】${recipientName}（${quoteNumber}）`
+    : `【自動見積もり / 連絡不要】${recipientName}（${quoteNumber}）`;
+
+  const contactBlock = contactRequested
+    ? `■ 担当者からの連絡: ★希望あり★  → 折り返しのご連絡をお願いします`
+    : `■ 担当者からの連絡: 希望なし    → 記録のみ（対応不要）`;
 
   let body = `ミッドランドハーツ 自動見積もりシステムにて見積書が発行されました。
-お客様は担当者からの連絡を希望されています。
 
 ━━━━━━━━━━━━━━━━━━━━━━━━━━
+${contactBlock}
+━━━━━━━━━━━━━━━━━━━━━━━━━━
+
 見積番号: ${quoteNumber}
 コース: ${courseLabel}
 発行日時: ${new Date(data.timestamp || Date.now()).toLocaleString('ja-JP')}
-━━━━━━━━━━━━━━━━━━━━━━━━━━
 
 【お客様情報】
 お名前: ${customer.name || ''}
