@@ -465,7 +465,11 @@ export default async function handler(req) {
           const leadInfo = detectLead(body.messages || []);
           if (leadInfo.isHighPriority) {
             const messageText = formatLeadMessage(leadInfo, body.messages || [], sid);
-            await sendLineWorksDirectNotification(messageText);
+            await fetch('https://mr-b-ear-agent.vercel.app/api/lineworks-notify', {
+              method: 'POST',
+              headers: { 'Content-Type': 'application/json' },
+              body: JSON.stringify({ messageText }),
+            });
           }
         } catch (err) {
           console.error('[chat.js] lead notification error:', err?.message || err);
