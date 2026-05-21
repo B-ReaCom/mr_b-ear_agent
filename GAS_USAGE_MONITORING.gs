@@ -15,7 +15,7 @@
  * 5. デプロイURL が変わる場合は、api/chat.js の USAGE_LOG_URL も更新
  *
  * 必要なシート構成：
- * - シート「QA_LOG」：既存のQ&Aログ用（現行のまま）
+ * - シート「シート1」：既存のQ&Aログ用（現行のまま・Google Sheets日本語版のデフォルト名）
  * - シート「USAGE_LOG」：API使用量ログ用（新規・自動作成される）
  * - シート「ALERT_STATUS」：アラート送信状態管理（新規・自動作成される）
  */
@@ -26,7 +26,7 @@ const ALERT_EMAIL_TO = 'sales@bearidge.jp'; // 通知先メールアドレス
 const USD_TO_JPY_RATE = 150;              // 為替レート（USD→JPY、必要に応じて調整）
 
 // シート名
-const SHEET_QA_LOG = 'QA_LOG';            // Q&Aログシート（既存）
+const SHEET_QA_LOG = 'シート1';            // Q&Aログシート（既存・スプレッドシートのデフォルト名）
 const SHEET_USAGE_LOG = 'USAGE_LOG';      // API使用量ログ
 const SHEET_ALERT_STATUS = 'ALERT_STATUS'; // アラート送信状態
 
