@@ -403,7 +403,8 @@ export default async function handler(req) {
     const body = await req.json();
     const isStream = body.stream === true;
 
-    // Anthropic API へ転送
+    // Anthropic API へ転送（独自フィールドを除外）
+    const { session_id, sessionId, ...anthropicBody } = body;
     const upstream = await fetch('https://api.anthropic.com/v1/messages', {
       method: 'POST',
       headers: {
@@ -411,7 +412,7 @@ export default async function handler(req) {
         'x-api-key': apiKey,
         'anthropic-version': '2023-06-01',
       },
-      body: JSON.stringify(body)
+      body: JSON.stringify(anthropicBody)
     });
 
     // ===== ストリーミング応答（SSE） =====
