@@ -279,6 +279,75 @@
     flex-direction: column;
     gap: 10px;
   }
+
+  /* 対象機種チップ */
+  .device-chips {
+    display: flex;
+    gap: 4px;
+    margin-top: 5px;
+    flex-wrap: wrap;
+  }
+  .device-chip {
+    display: inline-block;
+    padding: 1px 8px;
+    border-radius: 11px;
+    font-size: 10.5px;
+    font-weight: 600;
+    letter-spacing: 0.02em;
+    border: 1px solid transparent;
+    line-height: 1.5;
+    white-space: nowrap;
+  }
+  .device-chip[data-device="X10"]        { background: #e1e6f3; color: #1f2a5b; border-color: #aab3d6; }
+  .device-chip[data-device="コンパクト"]   { background: #f1e4f7; color: #6b21a8; border-color: #d8c2e5; }
+  .device-chip[data-device="アスリート"]   { background: #fce5d0; color: #b8430c; border-color: #f0c5a2; }
+  .device-chip[data-device="X5"]         { background: #d8f0dc; color: #14722f; border-color: #b6d9bc; }
+  .device-chip[data-device="R2"]         { background: #fbdcd9; color: #ad1c1c; border-color: #ecb4b0; }
+  .device-chip[data-device="LT"]         { background: #f9ecc0; color: #936207; border-color: #e8d29a; }
+  .device-chip[data-device="汎用"]        { background: #e8eaee; color: #4b5563; border-color: #d2d5da; }
+
+  /* 機種フィルタ */
+  .device-filter {
+    display: flex;
+    gap: 6px;
+    flex-wrap: wrap;
+    margin: 12px 0 10px;
+    align-items: center;
+  }
+  .device-filter-label {
+    font-size: 12px;
+    color: var(--text-muted);
+    margin-right: 2px;
+  }
+  .device-filter-btn {
+    padding: 5px 11px;
+    border-radius: 14px;
+    font-size: 12px;
+    font-weight: 600;
+    border: 1.5px solid var(--border);
+    background: white;
+    color: var(--text-muted);
+    cursor: pointer;
+    transition: all 0.12s ease;
+    line-height: 1.4;
+  }
+  .device-filter-btn:hover {
+    background: var(--primary-light);
+    border-color: var(--primary);
+    color: var(--primary-dark);
+  }
+  .device-filter-btn.active {
+    background: var(--text);
+    border-color: var(--text);
+    color: white;
+  }
+  .device-filter-btn.active[data-device="X10"]        { background: #1f2a5b; border-color: #1f2a5b; }
+  .device-filter-btn.active[data-device="コンパクト"]   { background: #6b21a8; border-color: #6b21a8; }
+  .device-filter-btn.active[data-device="アスリート"]   { background: #b8430c; border-color: #b8430c; }
+  .device-filter-btn.active[data-device="X5"]         { background: #14722f; border-color: #14722f; }
+  .device-filter-btn.active[data-device="R2"]         { background: #ad1c1c; border-color: #ad1c1c; }
+  .device-filter-btn.active[data-device="LT"]         { background: #936207; border-color: #936207; }
+  .device-filter-btn.active[data-device="汎用"]        { background: #4b5563; border-color: #4b5563; }
   .product-row {
     display: grid;
     grid-template-columns: 1fr auto;
@@ -932,6 +1001,17 @@
         <input type="text" id="product-search-input" class="product-search-input" placeholder="🔍 製品名・型番で検索（例：X10、ヘルメット、防水）">
         <button type="button" id="product-search-clear" class="product-search-clear" aria-label="検索をクリア">×</button>
       </div>
+      <div class="device-filter" id="device-filter">
+        <span class="device-filter-label">機種で絞り込み:</span>
+        <button type="button" class="device-filter-btn active" data-device="all">すべて</button>
+        <button type="button" class="device-filter-btn" data-device="X10">X10</button>
+        <button type="button" class="device-filter-btn" data-device="コンパクト">コンパクト</button>
+        <button type="button" class="device-filter-btn" data-device="アスリート">アスリート</button>
+        <button type="button" class="device-filter-btn" data-device="X5">X5</button>
+        <button type="button" class="device-filter-btn" data-device="R2">R2</button>
+        <button type="button" class="device-filter-btn" data-device="LT">LT</button>
+        <button type="button" class="device-filter-btn" data-device="汎用">汎用</button>
+      </div>
       <div class="product-search-status" id="product-search-status"></div>
       <div id="product-list" class="product-list"></div>
 
@@ -1335,9 +1415,151 @@ const PRODUCTS = [
 // ▲▲▲ ここまでが価格表 ▲▲▲
 // ==========================================================================
 
+// ===== SKU → 対応機種マップ =====
+// 各SKUが「どの本体機種で使えるか」。フィルタ・チップ表示に使用。
+const SKU_DEVICES = {
+  // 本体
+  'BM-X10': ['X10'],
+  'BM-X10CP': ['コンパクト'],
+  'BM-X10AT': ['アスリート'],
+  'BM-X5': ['X5'],
+  'BM-R2': ['R2'],
+  'FC-ZXPRO': ['R2'],
+  'BM-LTM': ['LT'],
+  'BM-LTS': ['LT'],
+
+  // ヘッドホン・イヤホン・マイク類
+  // X10 と X10アスリートで共用される 15 品
+  'B-H03': ['X10', 'アスリート'],
+  'BM-GSRM2.5F': ['X10', 'アスリート'],
+  'BM-GSRM2.5s': ['X10', 'アスリート'],
+  'BM-SHSE2.5': ['X10', 'アスリート'],
+  'BM-LCOE2.5': ['X10', 'アスリート'],
+  'B-RFAD': ['X10', 'アスリート'],
+  'B-RFXM': ['X10', 'アスリート'],
+  'B-A05': ['X10', 'アスリート'],
+  'B-E10tnt': ['X10', 'アスリート'],
+  'B-E06tn': ['X10', 'アスリート'],
+  'B-E06tnt': ['X10', 'アスリート'],
+  'B-E03wptn': ['X10', 'アスリート'],
+  'B-E03wptnt': ['X10', 'アスリート'],
+  'B-E03dptn': ['X10', 'アスリート'],
+  'B-E03dptnt': ['X10', 'アスリート'],
+  // X10 のみ
+  'B-E03wptnt-g': ['X10'],
+  'B-E05atn': ['X10'],
+  'B-E05atw': ['X10'],
+  // コンパクト 用
+  'BM-HPDP3.5M': ['コンパクト'],
+  'BM-HPDP3.5MR': ['コンパクト'],
+  'BM-HPDP3.5ML': ['コンパクト'],
+  'BM-HPDP3.5MRL': ['コンパクト'],
+  'B-CPM01': ['コンパクト'],
+  'BM-HPDP3.5': ['コンパクト'],
+  'BM-15CP3.5': ['コンパクト'],
+  'BM-SHSE2.5s': ['コンパクト'],
+  // X5 用
+  'B-N01': ['X5'],
+  'B-E05a': ['X5'],
+  'BM-X5EP3.5': ['X5'],
+  // LT 用
+  'B-N01nz': ['LT'],
+  'B-E07': ['LT'],
+  'BM-GSTM': ['LT'],
+  'BM-GSVS': ['LT'],
+  'B-E06': ['LT'],
+  'B-E03wp': ['LT'],
+  'B-E03dp': ['LT'],
+  'BM-HPDP2.5': ['LT'],
+  'B-E03wpnz': ['LT'],
+  'BM-LCOE3.5': ['LT'],
+  'BM-GSRM3.5LC': ['LT'],
+
+  // その他
+  // 充電器・電源
+  'B-X10ac': ['アスリート'],
+  'BM-X10cg': ['X10'],
+  'B-X10bt': ['X10'],
+  'BM-X5bt': ['X5'],
+  'B-F06': ['X10'],
+  'B-F01': ['X5'],
+  'B-F01R2': ['R2'],
+  'BM-60W': ['汎用'],
+  'BM-60W10': ['汎用'],
+  'BM-LTC20a': ['LT'],
+  'B-A11(LTC20)': ['LT'],
+  'BM-DAC20': ['R2'],
+  'B-A11(DAC20)': ['R2'],
+  // 中継ケーブル
+  'B-RCLwptn': ['X10'],
+  'B-RCL005wp': ['X10'],
+  'B-RCL010wp': ['X10'],
+  'B-RCL025wp': ['X10'],
+  'B-RCL050wp': ['X10'],
+  'B-RCL100wp': ['X10'],
+  'B-RCW': ['X5'],
+  'B-RCLwp': ['X5'],
+  // ケース
+  'B-X10ph': ['X10'],
+  'B-X10hc': ['アスリート'],
+  'B-A11': ['汎用'],
+  'B-A11(10)': ['汎用'],
+  'B-A11(F)': ['汎用'],
+  'B-A06': ['汎用'],
+  'B-A02': ['X5'],
+  // 装着アクセサリー
+  'B-X10bc': ['X10'],
+  'B-CPA01': ['X10', 'アスリート'],
+  'B-ABL': ['X10', 'アスリート'],
+  'B-ABM': ['X10', 'アスリート'],
+  'BM-ABHm': ['X10', 'アスリート'],
+  'BM-ABHl': ['X10', 'アスリート'],
+  'B-CPM01ms': ['X10', 'アスリート'],
+  'B-AHH': ['汎用'],
+  'B-F05': ['汎用'],
+  'B-F02': ['汎用'],
+  // X10 専用アンテナ
+  'B-X10ans': ['X10'],
+  'B-X10anl': ['X10'],
+  'B-X10ca02': ['X10'],
+  // X10 コンパクト 専用クリップ
+  'B-CPC01': ['コンパクト'],
+  'B-CPC03h': ['コンパクト'],
+  'B-CPC01ch': ['コンパクト'],
+  'B-CPC02ch': ['コンパクト'],
+  'B-CPC03hh': ['コンパクト'],
+  'B-CPC01cc': ['コンパクト'],
+  // コンパクト イヤーパッド
+  'BM-HPDP3.5ep': ['コンパクト'],
+  'BM-HPDP3.5Lep': ['コンパクト'],
+  // R2 専用付属品
+  'B-R2C': ['R2'],
+  'B-R2M': ['R2'],
+  // LT 専用付属品
+  'BM-GSH': ['LT'],
+  // BRIDGECOMスピーカー周辺
+  'B-A10ac': ['汎用'],
+  'B-A10ss': ['汎用'],
+  'B-A10usb': ['汎用'],
+  'B-F07': ['汎用'],
+  'B-F08': ['汎用'],
+  'B-F09': ['汎用'],
+  'B-F10': ['汎用'],
+  'B-F11': ['汎用'],
+  'B-A10ac24': ['汎用'],
+  'BM-24V2': ['汎用'],
+  // X5 専用付属品
+  'B-X5gcr': ['X5'],
+};
+
+function getItemDevices(item) {
+  return SKU_DEVICES[item.sku] || ['汎用'];
+}
+
 // ===== 状態 =====
 let currentCourse = 'quick'; // 'quick' or 'detailed'
 const quantities = {}; // { sku: quantity }
+let deviceFilter = 'all'; // 'all' or one of the device codes
 
 // ===== DOM 取得 =====
 const $ = (id) => document.getElementById(id);
@@ -1374,6 +1596,17 @@ function matchesSearch(item, q) {
   return q.split(/\s+/).filter(Boolean).every(tok => hay.includes(tok));
 }
 
+function matchesDeviceFilter(item) {
+  if (deviceFilter === 'all') return true;
+  return getItemDevices(item).includes(deviceFilter);
+}
+
+function renderDeviceChips(item) {
+  return getItemDevices(item)
+    .map(d => `<span class="device-chip" data-device="${escapeHtml(d)}">${escapeHtml(d)}</span>`)
+    .join('');
+}
+
 function renderProductList() {
   const container = $('product-list');
   container.innerHTML = '';
@@ -1385,7 +1618,7 @@ function renderProductList() {
   PRODUCTS.forEach(line => {
     const visibleCategories = line.categories.map(group => ({
       group,
-      items: group.items.filter(it => matchesSearch(it, q)),
+      items: group.items.filter(it => matchesSearch(it, q) && matchesDeviceFilter(it)),
     })).filter(c => {
       totalCount += c.group.items.length;
       return c.items.length > 0;
@@ -1413,6 +1646,7 @@ function renderProductList() {
         row.innerHTML = `
           <div class="product-info">
             <div class="product-name">${escapeHtml(item.name)}</div>
+            <div class="device-chips">${renderDeviceChips(item)}</div>
             <div class="product-meta">${escapeHtml(item.sku)}</div>
             <div class="product-price">¥${item.unitPrice.toLocaleString()} / ${escapeHtml(item.unit)}</div>
           </div>
@@ -1797,6 +2031,10 @@ $('btn-restart').addEventListener('click', () => {
   productSearchQuery = '';
   $('product-search-input').value = '';
   $('product-search-input').parentElement.classList.remove('has-query');
+  deviceFilter = 'all';
+  document.querySelectorAll('.device-filter-btn').forEach(b => {
+    b.classList.toggle('active', b.dataset.device === 'all');
+  });
   renderProductList();
   updateSummary();
   showScreen('course');
@@ -1817,6 +2055,18 @@ searchClear.addEventListener('click', () => {
   searchWrapper.classList.remove('has-query');
   renderProductList();
   searchInput.focus();
+});
+
+// 機種フィルタ
+document.querySelectorAll('.device-filter-btn').forEach(btn => {
+  btn.addEventListener('click', () => {
+    const device = btn.dataset.device;
+    deviceFilter = device;
+    document.querySelectorAll('.device-filter-btn').forEach(b => {
+      b.classList.toggle('active', b.dataset.device === device);
+    });
+    renderProductList();
+  });
 });
 
 // 初期化
