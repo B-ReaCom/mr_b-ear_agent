@@ -526,8 +526,23 @@
     padding-bottom: 14px;
     margin-bottom: 24px;
   }
+  .doc-header-top {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    gap: 16px;
+    margin-bottom: 8px;
+  }
+  .doc-logo {
+    width: 64px;
+    height: auto;
+    flex-shrink: 0;
+  }
+  @media (min-width: 640px) {
+    .doc-logo { width: 80px; }
+  }
   .doc-title {
-    margin: 0 0 12px;
+    margin: 8px 0 0;
     font-size: 26px;
     letter-spacing: 0.4em;
     text-align: center;
@@ -541,14 +556,18 @@
   .doc-meta > div { margin-bottom: 2px; }
 
   .doc-recipient {
-    margin-bottom: 18px;
+    margin-bottom: 22px;
   }
   .doc-recipient-name {
-    font-size: 18px;
-    font-weight: 600;
-    border-bottom: 1px solid #999;
-    padding-bottom: 4px;
-    margin-bottom: 4px;
+    font-size: 26px;
+    font-weight: 700;
+    border-bottom: 2px solid #1a1a1a;
+    padding-bottom: 8px;
+    margin-bottom: 8px;
+    letter-spacing: 0.02em;
+  }
+  @media (min-width: 640px) {
+    .doc-recipient-name { font-size: 30px; }
   }
   .doc-recipient-detail {
     font-size: 13px;
@@ -660,8 +679,10 @@
     font-size: 15px;
     font-weight: 700;
     color: #1a1a1a;
-    margin-bottom: 2px;
+    margin-bottom: 4px;
   }
+  .doc-issuer > div { line-height: 1.55; }
+  .doc-issuer-addr { font-size: 12.5px; color: #444; }
 
   /* ===== 印刷時のスタイル ===== */
   @media print {
@@ -703,7 +724,9 @@
   /* 上下ジャンプボタン */
   .scroll-nav {
     position: fixed;
-    right: 14px;
+    /* コンテンツ枠（max-width 720px）の右外側に寄せる。
+       狭い画面では従来通り画面右端から14px。 */
+    right: max(14px, calc(50vw - 360px - 52px));
     bottom: 20px;
     display: none;
     flex-direction: column;
@@ -965,16 +988,19 @@
 
       <div class="doc-paper" id="doc-paper">
         <div class="doc-header">
-          <h1 class="doc-title">見　積　書</h1>
-          <div class="doc-meta">
-            <div>No. <span id="doc-number"></span></div>
-            <div>発行日：<span id="doc-issued"></span></div>
-            <div>有効期限：<span id="doc-expires"></span></div>
+          <div class="doc-header-top">
+            <img src="assets/midland-hearts-logo.svg" class="doc-logo" alt="ミッドランドハーツ">
+            <div class="doc-meta">
+              <div>No. <span id="doc-number"></span></div>
+              <div>発行日：<span id="doc-issued"></span></div>
+              <div>有効期限：<span id="doc-expires"></span></div>
+            </div>
           </div>
+          <h1 class="doc-title">見　積　書</h1>
         </div>
 
         <div class="doc-recipient">
-          <div class="doc-recipient-name"><span id="doc-customer-name"></span> 様</div>
+          <div class="doc-recipient-name" id="doc-recipient-name"></div>
           <div class="doc-recipient-detail" id="doc-recipient-detail"></div>
         </div>
 
@@ -1016,7 +1042,10 @@
         <div class="doc-footer">
           <div class="doc-issuer">
             <div class="doc-issuer-name">ミッドランドハーツ</div>
-            <div class="doc-issuer-contact">お問い合わせ：info@midhts.com</div>
+            <div class="doc-issuer-addr">〒479-0847</div>
+            <div class="doc-issuer-addr">愛知県常滑市新浜町一丁目１番地２</div>
+            <div class="doc-issuer-addr">Tel 0569-84-8442</div>
+            <div class="doc-issuer-addr">Email info@midhts.com</div>
           </div>
         </div>
       </div>
@@ -1625,14 +1654,16 @@ function renderQuoteDoc(payload, quoteNumber) {
   $('doc-issued').textContent = formatDateJa(issued);
   $('doc-expires').textContent = formatDateJa(expires);
 
-  $('doc-customer-name').textContent = payload.customer.name;
+  const c = payload.customer;
+  $('doc-recipient-name').textContent = c.company
+    ? c.company + ' 御中'
+    : 'ご担当者 様';
   const detail = $('doc-recipient-detail');
   detail.innerHTML = '';
   const lines = [];
-  if (payload.customer.company) lines.push(payload.customer.company);
-  if (payload.customer.department) lines.push(payload.customer.department);
-  if (payload.customer.email) lines.push(payload.customer.email);
-  if (payload.customer.phone) lines.push('TEL: ' + payload.customer.phone);
+  if (c.department) lines.push(c.department);
+  if (c.email) lines.push(c.email);
+  if (c.phone) lines.push('TEL: ' + c.phone);
   lines.forEach(line => {
     const div = document.createElement('div');
     div.textContent = line;
