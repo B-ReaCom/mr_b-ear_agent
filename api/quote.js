@@ -1,9 +1,13 @@
 // Midland Hearts 自動見積もり API
-// 見積もり依頼を受け取り、Resend 経由でメール通知を送信する。
+// 見積もり依頼を受け取り、メール通知を送信する。
 // Vercel Edge Function
 //
-// 必要な環境変数 (Vercel → Settings → Environment Variables):
-//   RESEND_API_KEY    Resend の API キー (re_xxxxxxxx) — 必須
+// 送信経路（優先順）:
+//   1. RESEND_API_KEY が設定されていれば Resend で送信（新フォーマット）
+//   2. 未設定 or Resend 送信失敗時は GAS Webhook にフォールバック（旧フォーマット）
+//
+// 環境変数 (Vercel → Settings → Environment Variables):
+//   RESEND_API_KEY    Resend の API キー (re_xxxxxxxx) — 任意（無ければ GAS にフォールバック）
 //   QUOTE_EMAIL_TO    通知先メールアドレス。未指定なら下記デフォルトを使用
 //   QUOTE_EMAIL_FROM  送信元メールアドレス。未指定なら下記デフォルトを使用
 //   QUOTE_EMAIL_CC    Cc に入れたいアドレス（カンマ区切り可）— 任意
@@ -14,6 +18,9 @@ export const config = {
 
 const DEFAULT_EMAIL_TO   = 'info@midhts.com';
 const DEFAULT_EMAIL_FROM = 'onboarding@resend.dev'; // ドメイン検証前のテスト用送信元
+
+// GAS フォールバック用 Webhook（USAGE_LOG/QA_LOG と同居）
+const GAS_WEBHOOK_URL = 'https://script.google.com/macros/s/AKfycbz0Jm2Fc_7pimlmmjGaH2CP_wkQL8MQWsthm0_BBKMOHXIRrdE-lqyTOaDhDT6tRazM/exec';
 
 // ===== レート制限設定（チャットより厳しめに） =====
 const RATE_LIMITS = {
@@ -326,17 +333,35 @@ export default async function handler(req) {
     const from   = process.env.QUOTE_EMAIL_FROM || DEFAULT_EMAIL_FROM;
     const cc     = process.env.QUOTE_EMAIL_CC   || '';
 
-    if (!apiKey) {
-      console.error('RESEND_API_KEY is not configured');
-      // ユーザー操作の流れを止めないため、本人にはエラーを返さず成功扱いとする。
-      // 管理側で Vercel のログを確認して対処する。
-    } else {
+    let emailSent = false;
+
+    if (apiKey) {
       const { subject, body: text } = buildEmailContent(payload, subtotal, timestamp);
       try {
         await sendEmailViaResend({ apiKey, from, to, cc, subject, text });
+        emailSent = true;
       } catch (e) {
-        // 送信失敗もユーザーには成功扱い（業務影響を最小化）
-        console.error('Resend send failed:', e?.message || e);
+        console.error('Resend send failed, will try GAS fallback:', e?.message || e);
+      }
+    } else {
+      console.log('RESEND_API_KEY not set — using GAS fallback');
+    }
+
+    if (!emailSent) {
+      const gasPayload = {
+        type: 'quote_request',
+        ip,
+        timestamp,
+        ...payload,
+        subtotal,
+      };
+      try {
+        await fetch(GAS_WEBHOOK_URL, {
+          method: 'POST',
+          body: JSON.stringify(gasPayload),
+        });
+      } catch (e) {
+        console.error('GAS webhook fallback also failed:', e?.message || e);
       }
     }
 
